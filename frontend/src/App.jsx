@@ -1,14 +1,21 @@
+import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireRole } from './auth/AuthContext';
 import { ServerWakingBanner } from './components/ui';
 import { Login, Register } from './pages/Auth';
 import Landing from './pages/Landing';
-import Placeholder from './pages/Placeholder';
+import CarerHome from './pages/carer/CarerHome';
+import CheckIn from './pages/elder/CheckIn';
 import ConfirmMeds from './pages/elder/ConfirmMeds';
 import ElderLayout from './pages/elder/ElderLayout';
 import ElderHome from './pages/elder/Home';
+import Invite from './pages/elder/Invite';
 import Reminders from './pages/elder/Reminders';
 import Upload from './pages/elder/Upload';
+import Vitals from './pages/elder/Vitals';
+
+// Charts (Recharts) only load for carers.
+const Dashboard = lazy(() => import('./pages/carer/Dashboard'));
 
 export default function App() {
   return (
@@ -31,16 +38,26 @@ export default function App() {
           <Route path="upload" element={<Upload />} />
           <Route path="confirm" element={<ConfirmMeds />} />
           <Route path="reminders" element={<Reminders />} />
-          <Route path="checkin" element={<Placeholder title="Hal-chaal" back="/elder" />} />
-          <Route path="vitals" element={<Placeholder title="BP / Sugar" back="/elder" />} />
-          <Route path="invite" element={<Placeholder title="Ghar walon ko jorein" back="/elder" />} />
+          <Route path="checkin" element={<CheckIn />} />
+          <Route path="vitals" element={<Vitals />} />
+          <Route path="invite" element={<Invite />} />
         </Route>
 
         <Route
-          path="/carer/*"
+          path="/carer"
           element={
             <RequireRole roles={['family', 'doctor']}>
-              <Placeholder title="Dashboard" />
+              <CarerHome />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/carer/elder/:elderId"
+          element={
+            <RequireRole roles={['family', 'doctor']}>
+              <Suspense fallback={<p className="page muted">Load ho raha hai…</p>}>
+                <Dashboard />
+              </Suspense>
             </RequireRole>
           }
         />

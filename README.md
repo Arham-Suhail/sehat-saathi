@@ -22,6 +22,14 @@ cp .env.example .env                                   # fill MONGODB_URI and JW
 ```
 API docs (dev only): http://127.0.0.1:8000/docs
 
+### Frontend (React + Vite)
+```bash
+cd frontend
+npm ci
+cp .env.example .env.local      # VITE_API_URL=http://127.0.0.1:8000
+npm run dev                     # http://localhost:5173
+```
+
 ### Switching the LLM provider
 All LLM calls go through `backend/app/llm/`. Change only env vars:
 - `PROVIDER=fake` → offline deterministic responses (default until a key is set)
@@ -53,3 +61,11 @@ browser Web Speech API and Notification API.
 **Backend (Python):** fastapi, starlette, uvicorn, pydantic, pydantic-settings, email-validator, pymongo, PyJWT, bcrypt,
 openai (used only as an OpenAI-compatible HTTP client), httpx, slowapi, pillow, tzdata.
 Dev: pytest, pytest-asyncio, mongomock-motor, ruff, pip-audit. CI: GitHub Actions, gitleaks.
+
+**Frontend (npm):** react, react-dom, react-router-dom, recharts, @vapi-ai/web (Vapi Web SDK; uses Daily.co WebRTC),
+@fontsource/atkinson-hyperlegible (self-hosted font). Dev: vite, @vitejs/plugin-react, eslint, @eslint/js,
+eslint-plugin-react, eslint-plugin-react-hooks, globals.
+
+## Demo data
+`cd backend && .venv/Scripts/python -m scripts.seed_demo` creates a linked demo elder, family member and doctor
+with 14 days of FAKE history (`--reset` recreates them). The password is printed once (or set `SEED_PASSWORD`).
