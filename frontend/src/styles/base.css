@@ -47,8 +47,8 @@ a {
   text-underline-offset: 0.15em;
 }
 
-img,
-svg {
+/* Only raster images: a global svg rule would squash Recharts' SVGs to 0 width. */
+img {
   max-width: 100%;
   height: auto;
 }

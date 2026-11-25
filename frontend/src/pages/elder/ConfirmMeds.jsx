@@ -39,7 +39,7 @@ function fromDraft(d) {
 
 const clean = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
 
-function MedicineCard({ med, index, onChange, onRemove }) {
+function MedicineCard({ med, index, onChange, onRemove, showErrors }) {
   const id = (f) => `m${med.key}-${f}`;
   const set = (f) => (e) => onChange({ ...med, [f]: e.target.value, edited_by_user: true });
   const setTime = (i) => (e) => {
@@ -56,7 +56,7 @@ function MedicineCard({ med, index, onChange, onRemove }) {
 
       <Field id={id('name')} label={t('confirm.name')}>
         <input id={id('name')} className="input" maxLength={120} value={med.name} onChange={set('name')}
-          aria-invalid={!med.name.trim()} />
+          aria-invalid={showErrors && !med.name.trim()} />
       </Field>
       <div className="grid-2">
         <Field id={id('strength')} label={t('confirm.strength')}>
@@ -120,9 +120,11 @@ export default function ConfirmMeds() {
   const [meds, setMeds] = useState(() => (extraction ? extraction.medicines.map(fromDraft) : [blank()]));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [showErrors, setShowErrors] = useState(false);
 
   const save = async () => {
     setErr(null);
+    setShowErrors(true);
     if (meds.some((m) => !m.name.trim())) return setErr(t('confirm.need_name'));
     if (meds.some((m) => !m.timings.filter((x) => /^\d\d:\d\d$/.test(x)).length)) return setErr(t('confirm.need_time'));
     const body = {
@@ -170,6 +172,7 @@ export default function ConfirmMeds() {
           index={i}
           onChange={(nm) => setMeds((list) => list.map((x) => (x.key === m.key ? nm : x)))}
           onRemove={() => setMeds((list) => list.filter((x) => x.key !== m.key))}
+          showErrors={showErrors}
         />
       ))}
       {meds.length < 15 ? (

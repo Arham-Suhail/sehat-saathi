@@ -1,7 +1,10 @@
 /* Dashboard charts (Recharts). Colours come from theme tokens via CSS variables. */
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-const css = (name) => `var(${name})`;
+// SVG presentation attributes can't resolve CSS variables, so read the real values
+// from theme.css at render time (theme.css stays the single source of colours).
+const css = (name) =>
+  (typeof window !== 'undefined' && getComputedStyle(document.documentElement).getPropertyValue(name).trim()) || '#555';
 const shortDate = (iso) => {
   const [, m, d] = iso.split('-');
   return `${Number(d)}/${Number(m)}`;
@@ -20,7 +23,7 @@ export function MoodChart({ series }) {
             <YAxis domain={[1, 3]} ticks={[1, 2, 3]} tickFormatter={(v) => MOOD_LABEL[v]} width={64}
               tick={{ fill: css('--text-muted'), fontSize: 14 }} />
             <Tooltip formatter={(v) => [MOOD_LABEL[Math.round(v)] ?? v, 'Mood']} labelFormatter={shortDate} />
-            <Line type="monotone" dataKey="score" stroke={css('--accent')} strokeWidth={3} dot={{ r: 5 }}
+            <Line type="linear" dataKey="score" stroke={css('--accent')} strokeWidth={3} dot={{ r: 5 }}
               isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>

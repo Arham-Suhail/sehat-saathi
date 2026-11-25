@@ -73,6 +73,7 @@ export default function CheckIn() {
   return (
     <main className="page page--with-bar stack">
       <TopBar back="/elder" title="Hal-chaal" />
+      <h1>Aaj ka hal-chaal</h1>
 
       {/* CHOTU PLACEHOLDER — Stage B: <ChotuAgent state={...} /> goes here */}
       <div className="chotu-placeholder" aria-hidden="true">
