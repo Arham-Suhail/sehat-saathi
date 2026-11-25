@@ -27,7 +27,7 @@
 - Secrets only in `.env` (never committed); `.env.example` documents every variable.
 
 ## Commands
-- Backend: `cd backend && python -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt` · run `uvicorn app.main:app --reload` · test `pytest` · lint `ruff check .`
+- Backend: `cd backend && python -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt` · run `.venv/Scripts/python -m uvicorn --factory app.main:app_factory --reload` · test `.venv/Scripts/python -m pytest` · lint `.venv/Scripts/python -m ruff check .` (always `python -m`: Windows App Control blocks the venv .exe launchers)
 - Frontend: `cd frontend && npm ci` · `npm run dev` · `npm run lint` · `npm run build`
 - Run tests before every commit. Small commits; keep `main` deployable.
 
