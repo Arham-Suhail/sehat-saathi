@@ -48,6 +48,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
         if app.state.db is None:
             client = make_client(settings.mongodb_uri)
             app.state.db = client[settings.mongodb_db]
+
         async def _indexes() -> None:
             try:
                 await asyncio.wait_for(ensure_indexes(app.state.db), timeout=30)
