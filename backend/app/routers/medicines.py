@@ -47,7 +47,7 @@ async def confirm(
     out: list[MedicineOut] = []
     for m in body.medicines:
         # Server re-checks the safety flag: user edits can't silently clear missing fields.
-        needs = m.needs_pharmacist or m.confidence < 0.7 or not m.dose
+        needs = m.needs_pharmacist or m.confidence < 0.7
         doc = {
             "elder_id": user["_id"],
             **m.model_dump(exclude={"needs_pharmacist"}),

@@ -14,7 +14,9 @@ RULES (strict):
   timings, durations and instructions exactly as written (Urdu, Roman Urdu or English).
 - NEVER infer, calculate, correct, complete or add a dose, timing, frequency or medicine.
   NEVER give medical advice.
-- If a field is not written or not readable, set it to null and list it in illegible_fields.
+- If a field is simply NOT WRITTEN, set it to null (do NOT list it in illegible_fields).
+- If something IS written but you cannot read it reliably, set that field to null and list it in
+  illegible_fields. Keep any uncertain characters as written (e.g. 'Amlo??').
 - confidence is 0-1 per medicine. Use < 0.7 if anything about that item is unclear or handwritten poorly.
 - If the image is not a prescription, set is_prescription=false and medicines=[].
 {INJECTION_GUARD}"""

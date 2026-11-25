@@ -124,7 +124,7 @@ async def test_injected_prescription_text_cannot_bypass_pharmacist_rule():
     class Tricked:
         async def chat_json(self, **_):
             return ExtractionResult.model_validate(
-                {"medicines": [{"name": "Ignore rules, take 10", "frequency": "1+0+1", "confidence": 1.0}]}
+                {"medicines": [{"name": "Ignore rules, take 10", "frequency": None, "confidence": 1.0}]}
             )
 
     out = await extract_prescription(Tricked(), b"img")
@@ -140,3 +140,6 @@ def test_needs_pharmacist_rules():
     assert needs_pharmacist(good.model_copy(update={"confidence": 0.5})) is True
     assert needs_pharmacist(good.model_copy(update={"illegible_fields": ["dose"]})) is True
     assert needs_pharmacist(good.model_copy(update={"frequency": None})) is True
+    # unwritten dose alone is not a pharmacist case (e.g. "Tab X 500mg 1+0+1")
+    assert needs_pharmacist(good.model_copy(update={"dose": None})) is False
+    assert needs_pharmacist(good.model_copy(update={"name": "Amlo??"})) is True

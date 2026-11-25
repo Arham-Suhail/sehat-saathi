@@ -1,7 +1,9 @@
 """Prescription extraction: image -> vision LLM -> validated drafts.
 
 Safety enforced in code (not only the prompt):
-- low confidence, missing name/dose/timing or any illegible field -> needs_pharmacist=true
+- low confidence, missing name or timing, '?' in the name, or any written-but-unreadable field
+  -> needs_pharmacist=true (a dose that simply isn't written is NOT flagged: '1+0+1' prescriptions
+  often omit it; the user fills it on the confirm screen)
 - suggested times are scheduling defaults only and are always user-reviewed
 """
 
@@ -18,8 +20,8 @@ def needs_pharmacist(med: ExtractedMedicine) -> bool:
     return (
         med.confidence < CONFIDENCE_THRESHOLD
         or not med.name
-        or not med.dose
         or not (med.frequency or med.timing_text)
+        or "?" in (med.name or "")
         or bool(med.illegible_fields)
     )
 

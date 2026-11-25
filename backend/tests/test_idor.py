@@ -126,9 +126,9 @@ async def test_confirm_validation(client):
     assert (
         await client.post("/medicines/confirm", json={"medicines": [long_name]}, headers=h)
     ).status_code == 422
-    # server re-applies pharmacist flag when dose is missing even if client says False
-    no_dose = {**MED, "dose": None, "needs_pharmacist": False}
-    r = await client.post("/medicines/confirm", json={"medicines": [no_dose]}, headers=h)
+    # server re-applies pharmacist flag for low confidence even if client says False
+    low_conf = {**MED, "confidence": 0.4, "needs_pharmacist": False}
+    r = await client.post("/medicines/confirm", json={"medicines": [low_conf]}, headers=h)
     assert r.status_code == 201
     assert r.json()[0]["needs_pharmacist"] is True
 
