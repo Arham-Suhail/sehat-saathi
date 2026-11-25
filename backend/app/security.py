@@ -124,3 +124,10 @@ def resolve_elder_access(user: dict, elder_id: str | None, mode: Literal["read",
     if mode == "write" and role != "family":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ijazat nahi")
     return target
+
+
+def allowed_elder_ids(user: dict) -> list[ObjectId]:
+    """Elders this user may read: themselves (elder) or linked elders (carer)."""
+    if user.get("role") == "elder":
+        return [user["_id"]]
+    return list(user.get("linked_elder_ids") or [])

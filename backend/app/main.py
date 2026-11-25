@@ -19,7 +19,17 @@ from app.db import ensure_indexes, make_client
 from app.llm import build_providers
 from app.logging_setup import setup_logging
 from app.ratelimit import limiter
-from app.routers import auth, medicines, prescriptions, reminders
+from app.routers import (
+    alternatives,
+    auth,
+    checkins,
+    dashboard,
+    invites,
+    medicines,
+    prescriptions,
+    reminders,
+    vitals,
+)
 
 log = logging.getLogger("app")
 
@@ -165,6 +175,11 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.include_router(prescriptions.router)
     app.include_router(medicines.router)
     app.include_router(reminders.router)
+    app.include_router(checkins.router)
+    app.include_router(vitals.router)
+    app.include_router(invites.router)
+    app.include_router(dashboard.router)
+    app.include_router(alternatives.router)
     return app
 
 

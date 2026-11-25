@@ -146,3 +146,88 @@ class ReminderOut(BaseModel):
     scheduled_at: datetime
     status: Literal["pending", "taken", "skipped", "missed"]
     acted_at: datetime | None
+
+
+# ---------- check-ins ----------
+ChannelIn = Literal["text", "speech"]
+
+
+class CheckinTextIn(Strict):
+    message: Text(1000, 1)
+    channel: ChannelIn = "text"
+
+
+class TranscriptTurn(Strict):
+    role: Literal["ai", "elder"]
+    text: Text(1000, 1)
+
+
+class CheckinVoiceIn(Strict):
+    transcript: Annotated[list[TranscriptTurn], Field(min_length=1, max_length=60)]
+    vapi_call_id: OptText(100) = None
+
+
+class CheckinOut(BaseModel):
+    id: str
+    created_at: datetime
+    channel: Literal["text", "speech", "vapi"]
+    transcript: list[dict]
+    reply: str
+    wellness_tip: str
+    mood: Mood
+    mood_score: int
+    concern_flag: bool
+    concern_reason: str | None
+    disclaimer: str = "Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein."
+
+
+# ---------- vitals ----------
+VitalType = Literal["bp", "sugar", "heart_rate"]
+
+
+class VitalIn(Strict):
+    elder_id: OptText(24) = None
+    type: VitalType
+    systolic: Annotated[int, Field(ge=50, le=260)] | None = None
+    diastolic: Annotated[int, Field(ge=30, le=160)] | None = None
+    value: Annotated[float, Field(ge=10, le=600)] | None = None
+    measured_at: datetime | None = None
+    note: OptText(120) = None
+
+
+class VitalOut(BaseModel):
+    id: str
+    type: VitalType
+    systolic: int | None
+    diastolic: int | None
+    value: float | None
+    unit: str
+    measured_at: datetime
+    entered_by_role: str
+    note: str | None
+
+
+# ---------- invites ----------
+class InviteOut(BaseModel):
+    code: str
+    expires_at: datetime
+
+
+class RedeemIn(Strict):
+    code: Annotated[str, StringConstraints(pattern=r"^\d{6}$")]
+
+
+class ElderRef(BaseModel):
+    id: str
+    name: str
+
+
+# ---------- alternatives ----------
+class AlternativesOut(BaseModel):
+    medicine_id: str
+    medicine_name: str
+    generic_name: str
+    alternatives: list[str]
+    needs_doctor_verification: Literal[True] = True
+    label: str = "Needs doctor verification / doctor se tasdeeq zaroori"
+    disclaimer: str = DISCLAIMER
