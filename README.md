@@ -17,8 +17,8 @@ cd backend
 python -m venv .venv
 .venv/Scripts/pip install -r requirements-dev.txt      # Windows (use .venv/bin/ on macOS/Linux)
 cp .env.example .env                                   # fill MONGODB_URI and JWT_SECRET
-.venv/Scripts/uvicorn --factory app.main:app_factory --reload
-.venv/Scripts/pytest                                   # tests run fully offline (PROVIDER=fake, mock DB)
+.venv/Scripts/python -m uvicorn --factory app.main:app_factory --reload
+.venv/Scripts/python -m pytest                                 # tests run fully offline (PROVIDER=fake, mock DB)
 ```
 API docs (dev only): http://127.0.0.1:8000/docs
 
