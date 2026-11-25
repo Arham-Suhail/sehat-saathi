@@ -1,4 +1,5 @@
 import io
+import secrets
 
 import httpx
 import pytest
@@ -47,7 +48,7 @@ async def client(app):
 
 
 async def register(client, role="elder", email=None, name="Test User", password="pass-1234") -> dict:
-    email = email or f"{role}-{id(object())}@example.com"
+    email = email or f"{role}-{secrets.token_hex(6)}@example.com"
     r = await client.post(
         "/auth/register", json={"name": name, "email": email, "password": password, "role": role}
     )
