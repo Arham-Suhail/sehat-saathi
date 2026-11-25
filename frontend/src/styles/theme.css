@@ -1,0 +1,38 @@
+/* ============================================================
+   THEME — the ONLY file that defines colours and fonts.
+   Stage A: neutral placeholder palette. Re-palette by editing this file only.
+
+   Contrast (WCAG 2.x, checked):
+     --text      on --bg / --surface   ≈ 15.6 / 16.5 : 1  (AAA)
+     --text-muted on --surface          ≈ 7.7 : 1          (AAA)
+     --accent-text on --accent          ≈ 6.7 : 1          (AA)
+     --accent    on --surface (links)   ≈ 6.7 : 1          (AA)
+     --success / --danger on --surface  ≥ 6.4 : 1          (AA)
+     --warning-text on --warning-bg     ≈ 7.0 : 1          (AA)
+   ============================================================ */
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-alt: #efece5;
+  --text: #1b1f24;
+  --text-muted: #4a5260;
+  --accent: #0b5fa5;
+  --accent-text: #ffffff;
+  --accent-soft: #e3eef8;
+  --success: #1e6b3a;
+  --success-bg: #e4f3e8;
+  --warning-text: #6e4600;
+  --warning-bg: #fff2cc;
+  --warning-border: #c98a00;
+  --danger: #a61b1b;
+  --danger-bg: #fbe5e5;
+  --border: #c9c3b8;
+  --focus: #0b5fa5;
+  --overlay: rgb(27 31 36 / 0.55);
+
+  --font-body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 14px rgb(0 0 0 / 0.06);
+}
