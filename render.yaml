@@ -29,7 +29,7 @@ services:
       - key: VISION_API_KEY
         sync: false
       - key: VISION_MODEL
-        sync: false
+        value: gemini-3.5-flash-lite
       - key: VISION_JSON_MODE
         value: json_schema
       - key: TEXT_BASE_URL
@@ -37,6 +37,6 @@ services:
       - key: TEXT_API_KEY
         sync: false
       - key: TEXT_MODEL
-        sync: false
+        value: gemini-3.5-flash-lite
       - key: TEXT_JSON_MODE
         value: json_schema
