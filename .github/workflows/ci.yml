@@ -33,21 +33,24 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('frontend/package-lock.json') != '' }}
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - id: check
+        run: |
+          if [ -f frontend/package-lock.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.check.outputs.present == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run build
-      - run: npm audit --audit-level=high --omit=dev
+      - if: steps.check.outputs.present == 'true'
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+          npm audit --audit-level=high --omit=dev
 
   secrets:
     runs-on: ubuntu-latest
