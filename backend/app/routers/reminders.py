@@ -1,0 +1,73 @@
+from datetime import UTC, datetime, timedelta
+from typing import Any, Literal
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from app.db import get_db
+from app.ids import parse_object_id
+from app.schemas import ReminderOut
+from app.security import require_role
+from app.services.reminders import mark_missed, top_up
+
+router = APIRouter(prefix="/reminders", tags=["reminders"])
+
+
+async def _out(db: Any, docs: list[dict]) -> list[ReminderOut]:
+    med_ids = list({d["medicine_id"] for d in docs})
+    meds = {m["_id"]: m for m in await db.medicines.find({"_id": {"$in": med_ids}}).to_list(length=200)}
+    out = []
+    for d in docs:
+        m = meds.get(d["medicine_id"], {})
+        out.append(
+            ReminderOut(
+                id=str(d["_id"]),
+                medicine_id=str(d["medicine_id"]),
+                medicine_name=m.get("name", "Dawai"),
+                dose=m.get("dose"),
+                instructions=m.get("instructions"),
+                scheduled_at=d["scheduled_at"],
+                status=d["status"],
+                acted_at=d.get("acted_at"),
+            )
+        )
+    return out
+
+
+@router.get("/upcoming", response_model=list[ReminderOut])
+async def upcoming(
+    user: dict = Depends(require_role("elder")), db: Any = Depends(get_db)
+) -> list[ReminderOut]:
+    """Reminders from 12h ago to 24h ahead (what the in-app reminder engine polls)."""
+    now = datetime.now(UTC)
+    await top_up(db, user["_id"], now)
+    await mark_missed(db, user["_id"], now)
+    docs = (
+        await db.reminders.find(
+            {
+                "elder_id": user["_id"],
+                "scheduled_at": {"$gte": now - timedelta(hours=12), "$lte": now + timedelta(hours=24)},
+            }
+        )
+        .sort("scheduled_at", 1)
+        .to_list(length=200)
+    )
+    return await _out(db, docs)
+
+
+@router.post("/{reminder_id}/{action}", response_model=ReminderOut)
+async def act(
+    reminder_id: str,
+    action: Literal["taken", "skipped"],
+    user: dict = Depends(require_role("elder")),
+    db: Any = Depends(get_db),
+) -> ReminderOut:
+    rid = parse_object_id(reminder_id)
+    now = datetime.now(UTC)
+    doc = await db.reminders.find_one_and_update(
+        {"_id": rid, "elder_id": user["_id"], "scheduled_at": {"$lte": now + timedelta(hours=1)}},
+        {"$set": {"status": action, "acted_at": now}},
+        return_document=True,
+    )
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
+    return (await _out(db, [doc]))[0]

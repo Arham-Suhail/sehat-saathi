@@ -1,0 +1,16 @@
+title = "sehat-saathi gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and test fixtures"
+paths = [
+  '''backend/\.env\.example''',
+  '''frontend/\.env\.example''',
+]
+regexes = [
+  '''<generate-a-long-random-secret>''',
+  '''<your-gemini-key>''',
+  '''"t" \* 64''',
+]
