@@ -20,7 +20,7 @@
 
 ## Stack
 - Frontend: React + Vite, react-router-dom, Recharts, plain CSS, @vapi-ai/web → Vercel.
-- Backend: FastAPI (Python 3.12 on Render), Pydantic v2, Motor, PyJWT + `bcrypt` package directly (no passlib) → Render free tier.
+- Backend: FastAPI (Python 3.12 on Render), Pydantic v2 (pinned 2.12.5: newer pydantic-core DLL is blocked by Windows App Control on the dev machine), PyMongo async client (Motor is deprecated), PyJWT + `bcrypt` package directly (no passlib) → Render free tier.
 - DB: MongoDB Atlas M0.
 - LLM: provider-agnostic module `backend/app/llm/`, OpenAI-compatible chat API. Default Gemini (free tier).
   Vision and text are configured separately via `VISION_*` / `TEXT_*` env vars. `PROVIDER=fake` for tests/dev without keys.
