@@ -1,7 +1,7 @@
 """Browser push subscriptions. Any logged-in user may register their own browser."""
 
 from datetime import UTC, datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import AfterValidator, StringConstraints
@@ -26,6 +26,7 @@ class PushKeys(Strict):
 class SubscribeIn(Strict):
     endpoint: Endpoint
     keys: PushKeys
+    lang: Literal["roman", "ur", "en"] = "roman"  # language of the notifications for this browser
 
 
 class UnsubscribeIn(Strict):
@@ -54,6 +55,7 @@ async def subscribe(
                 "user_id": user["_id"],
                 "role": user["role"],
                 "keys": body.keys.model_dump(),
+                "lang": body.lang,
                 "updated_at": now,
             },
             "$setOnInsert": {"created_at": now},

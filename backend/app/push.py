@@ -20,6 +20,14 @@ from py_vapid import Vapid
 from pywebpush import WebPushException, webpush_async
 
 from app.services.reminders import top_up
+from app.texts import (
+    PUSH_CONCERN_BODY,
+    PUSH_CONCERN_TITLE,
+    PUSH_DOSE_DEFAULT,
+    PUSH_DOSE_TITLE,
+    PUSH_ELDER_DEFAULT,
+    pick,
+)
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +37,6 @@ MAX_ENDPOINT = 1000
 DOSE_WINDOW = timedelta(minutes=10)  # catch-up after a restart; older doses are not pushed
 TICK_SECONDS = 60
 SEND_TIMEOUT = 10
-CONCERN_TEXT = "aaj ke hal-chaal mein dhyan dene wali baat hai. Dashboard dekhein."
 
 
 def validate_endpoint(url: str) -> str:
@@ -78,14 +85,16 @@ class RealSender:
         return "ok"
 
 
-async def notify_users(db: Any, sender: Any, user_ids: list, payload: dict) -> int:
-    """Push to every browser of these users; drop subscriptions the push service says are gone."""
+async def notify_users(db: Any, sender: Any, user_ids: list, payload: Any) -> int:
+    """Push to every browser of these users; drop subscriptions the push service says are gone.
+    payload: a dict, or a function lang -> dict so each browser gets its own UI language."""
     if sender is None or not user_ids:
         return 0
     sent = 0
     subs = await db.push_subscriptions.find({"user_id": {"$in": user_ids}}).to_list(length=50)
     for s in subs:
-        result = await sender({"endpoint": s["endpoint"], "keys": s["keys"]}, payload)
+        body = payload(s.get("lang", "roman")) if callable(payload) else payload
+        result = await sender({"endpoint": s["endpoint"], "keys": s["keys"]}, body)
         if result == "gone":
             await db.push_subscriptions.delete_one({"_id": s["_id"]})
         elif result == "ok":
@@ -121,19 +130,19 @@ async def due_reminders_tick(db: Any, sender: Any, now: datetime) -> None:
             continue
         med = await db.medicines.find_one({"_id": r["medicine_id"], "elder_id": r["elder_id"]}) or {}
         dose = med.get("dose_text") or med.get("dose")
-        await notify_users(
-            db,
-            sender,
-            [r["elder_id"]],
-            {
+
+        def dose_payload(lang: str, med: dict = med, dose: str | None = dose) -> dict:
+            name = med.get("name") or pick(PUSH_DOSE_DEFAULT, lang)  # medicine names stay as written
+            return {
                 "type": "reminder",
-                "title": "Dawai ka waqt",
-                "body": f"{med.get('name', 'Dawai')}{' — ' + dose if dose else ''}",
+                "title": pick(PUSH_DOSE_TITLE, lang),
+                "body": f"{name}{' — ' + dose if dose else ''}",
                 "tag": "sehat-saathi-dose",  # same tag as the in-app alarm: never two alerts
                 "url": "/elder/reminders",
                 "ttl": 3600,
-            },
-        )
+            }
+
+        await notify_users(db, sender, [r["elder_id"]], dose_payload)
 
 
 async def alert_carers_of_concern(db: Any, sender: Any, elder_id: Any) -> None:
@@ -144,19 +153,18 @@ async def alert_carers_of_concern(db: Any, sender: Any, elder_id: Any) -> None:
     carers = await db.users.find(
         {"linked_elder_ids": elder_id, "role": {"$in": ["family", "doctor"]}}, {"_id": 1}
     ).to_list(length=50)
-    await notify_users(
-        db,
-        sender,
-        [c["_id"] for c in carers],
-        {
+    def concern_payload(lang: str) -> dict:
+        name = elder.get("name") or pick(PUSH_ELDER_DEFAULT, lang)
+        return {
             "type": "concern",
-            "title": "Sehat Saathi",
-            "body": f"{elder.get('name', 'Buzurg')}: {CONCERN_TEXT}",
+            "title": pick(PUSH_CONCERN_TITLE, lang),
+            "body": f"{name}: {pick(PUSH_CONCERN_BODY, lang)}",
             "tag": f"concern-{elder_id}",
             "url": f"/carer/elder/{elder_id}",
             "ttl": 86400,
-        },
-    )
+        }
+
+    await notify_users(db, sender, [c["_id"] for c in carers], concern_payload)
 
 
 async def push_loop(app: Any) -> None:

@@ -127,9 +127,23 @@ class FakeProvider:
                 mood = "low"
             else:
                 mood = "okay"
+            if any(w in text for w in ("اچھا", "ٹھیک", "خوش")):
+                mood = "good"
+            elif any(w in text for w in ("اداس", "تھک", "اکیلا", "پریشان")):
+                mood = "low"
+            # Answer in the language the system prompt asks for (see texts.LANG_INSTRUCTION).
+            if "Urdu (Arabic/Nastaliq) script" in system:
+                reply = "بتانے کا شکریہ۔ میں آپ کی بات سن رہا ہوں۔"
+                tip = "آج تھوڑا پانی زیادہ پئیں اور کسی اپنے سے بات کریں۔"
+            elif "plain English" in system:
+                reply = "Thank you for telling me. I am listening."
+                tip = "Drink a little more water today and talk to someone you love."
+            else:
+                reply = "Shukriya batane ka. Main aap ki baat sun raha hoon."
+                tip = "Aaj thora paani zyada piyen aur kisi apne se baat karein."
             data = {
-                "reply": "Shukriya batane ka. Main aap ki baat sun raha hoon.",
-                "wellness_tip": "Aaj thora paani zyada piyen aur kisi apne se baat karein.",
+                "reply": reply,
+                "wellness_tip": tip,
                 "mood": mood,
                 "concern": False,  # fake never flags; the keyword fallback must catch symptoms
                 "concern_reason": None,

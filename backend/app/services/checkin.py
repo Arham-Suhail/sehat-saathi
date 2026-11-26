@@ -7,28 +7,28 @@ keyword-based concern flag — an outage must never hide a red flag or lose the 
 import logging
 
 from app.llm import LLMError, LLMProvider
-from app.llm.prompts import CHECKIN_SYSTEM, wrap_user_message
+from app.llm.prompts import checkin_system, wrap_user_message
 from app.llm.schemas import CheckinLLM
 from app.services.concern import detect_concern
 from app.services.translit import to_roman
+from app.texts import CONCERN_REPLY, DOCTOR_WORDS, FALLBACK_REPLY, FALLBACK_TIP, pick
 
 log = logging.getLogger(__name__)
 
-GREETING = "Assalam o Alaikum! Aaj aap kaisa mehsoos kar rahe hain?"
 MOOD_SCORE = {"good": 3, "okay": 2, "low": 1}
-CONCERN_REPLY = "Aap ne jo bataya us par dhyan dein — apne doctor ya ghar walon se baat karein."
-FALLBACK = CheckinLLM(
-    reply="Shukriya batane ka. Main ne aap ki baat note kar li hai.",
-    wellness_tip="Aaj thora paani zyada piyen aur kuch dair aaram karein.",
-    mood="okay",
-    concern=False,
-)
 
 
-async def analyse(provider: LLMProvider, elder_text: str) -> dict:
+def _fallback(lang: str) -> CheckinLLM:
+    return CheckinLLM(
+        reply=pick(FALLBACK_REPLY, lang), wellness_tip=pick(FALLBACK_TIP, lang), mood="okay", concern=False
+    )
+
+
+async def analyse(provider: LLMProvider, elder_text: str, lang: str = "roman") -> dict:
+    """lang: 'roman' | 'ur' | 'en' — the language of the reply the elder will read."""
     try:
         out = await provider.chat_json(
-            system=CHECKIN_SYSTEM,
+            system=checkin_system(lang),
             user_text=wrap_user_message(elder_text),
             schema=CheckinLLM,
             max_tokens=400,
@@ -36,21 +36,22 @@ async def analyse(provider: LLMProvider, elder_text: str) -> dict:
         llm_ok = True
     except LLMError as e:
         log.warning("checkin llm failed: %s", e)
-        out, llm_ok = FALLBACK, False
+        out, llm_ok = _fallback(lang), False
 
     # Keywords on the original script AND its Roman form, so a red flag is caught either way.
     keywords = detect_concern(elder_text + "\n" + to_roman(elder_text))
     concern = out.concern or bool(keywords)
     reasons = [r for r in [", ".join(keywords) or None, out.concern_reason if out.concern else None] if r]
     reply = out.reply
-    if concern and "doctor" not in reply.lower():
+    if concern and not any(w in reply.lower() for w in DOCTOR_WORDS.get(lang, DOCTOR_WORDS["roman"])):
         # Enforce the safety reply in code, not only in the prompt.
-        reply = f"{reply} {CONCERN_REPLY}".strip()
+        reply = f"{reply} {pick(CONCERN_REPLY, lang)}".strip()
     mood = out.mood
     if keywords and mood == "good":
         mood = "okay"
     return {
-        "reply": to_roman(reply)[:500],
+        # Roman UI: a Hindi-script slip is transliterated. Urdu/English replies are kept as written.
+        "reply": (to_roman(reply) if lang == "roman" else reply)[:500],
         "wellness_tip": out.wellness_tip,
         "mood": mood,
         "mood_score": MOOD_SCORE[mood],

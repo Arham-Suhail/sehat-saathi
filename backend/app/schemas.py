@@ -200,11 +200,14 @@ class ReminderOut(BaseModel):
 
 # ---------- check-ins ----------
 ChannelIn = Literal["text", "speech"]
+# UI language of the requesting device ("roman" = the original Roman Urdu UI, the default).
+UiLang = Literal["roman", "ur", "en"]
 
 
 class CheckinTextIn(Strict):
     message: Text(1000, 1)
     channel: ChannelIn = "text"
+    lang: UiLang = "roman"
 
 
 class TranscriptTurn(Strict):
@@ -215,6 +218,7 @@ class TranscriptTurn(Strict):
 class CheckinVoiceIn(Strict):
     transcript: Annotated[list[TranscriptTurn], Field(min_length=1, max_length=60)]
     vapi_call_id: OptText(100) = None
+    lang: UiLang = "roman"
 
 
 class CheckinOut(BaseModel):

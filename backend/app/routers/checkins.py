@@ -9,8 +9,15 @@ from app.push import alert_carers_of_concern
 from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import CheckinOut, CheckinTextIn, CheckinVoiceIn
 from app.security import get_current_user, require_role, resolve_elder_access
-from app.services.checkin import GREETING, analyse
+from app.services.checkin import analyse
 from app.services.translit import to_roman
+from app.texts import GREETING, pick
+
+
+def _display(text: str, lang: str) -> str:
+    """What the elder's words look like when shown back: Roman UI transliterates Hindi script;
+    the Urdu/English UIs show the text as sent (the browser already converted Hindi script)."""
+    return to_roman(text) if lang == "roman" else text
 
 router = APIRouter(prefix="/checkins", tags=["checkins"])
 
@@ -68,10 +75,10 @@ async def text_checkin(
     user: dict = Depends(require_role("elder")),
     db: Any = Depends(get_db),
 ) -> CheckinOut:
-    result = await analyse(get_text(request), body.message)
+    result = await analyse(get_text(request), body.message, body.lang)
     transcript = [
-        {"role": "ai", "text": GREETING},
-        {"role": "elder", "text": to_roman(body.message)},  # the app shows Roman Urdu only
+        {"role": "ai", "text": pick(GREETING, body.lang)},
+        {"role": "elder", "text": _display(body.message, body.lang)},
         {"role": "ai", "text": result["reply"]},
     ]
     doc = await _store(db, user["_id"], body.channel, transcript, result)
@@ -100,8 +107,8 @@ async def voice_checkin(
             break
         kept.append(t)
     elder_text = "\n".join(t["text"] for t in kept if t["role"] == "elder") or "(kuch nahi kaha)"
-    result = await analyse(get_text(request), elder_text)  # original script: best for the LLM
-    stored = [{"role": t["role"], "text": to_roman(t["text"])} for t in kept]  # Roman Urdu for display
+    result = await analyse(get_text(request), elder_text, body.lang)  # original script: best for the LLM
+    stored = [{"role": t["role"], "text": _display(t["text"], body.lang)} for t in kept]
     doc = await _store(db, user["_id"], "vapi", stored, result, body.vapi_call_id)
     _alert_if_concern(request, background, db, doc)
     return checkin_out(doc)
