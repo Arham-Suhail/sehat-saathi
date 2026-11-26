@@ -12,13 +12,13 @@ Plain, clean UI. Atkinson Hyperlegible only, neutral placeholder palette, mobile
 | 3 — carer + extras | Invites + redeem (lockout), dashboard (timeline, mood trend, taken vs missed, vitals list), alternatives (+ cache), seed script, Vapi plain button + transcript logging | Full demo path on live URLs |
 
 ### "STABLE REACHED" checklist (all on live URLs)
-- [ ] Register/login for elder, family, doctor; invite code flow works
-- [ ] Fake prescription → extract → edit → confirm; pharmacist banner on low confidence
-- [ ] Reminders generated; alerts + notifications while open; taken/skipped
-- [ ] Text check-in with concern_flag (incl. keyword fallback); Web Speech check-in in Chrome
-- [ ] Dashboard: timeline, mood trend, taken vs missed, vitals list, alternatives ("needs doctor verification")
-- [ ] Vapi plain button works; hidden when not configured
-- [ ] All security tests pass, CI green, Render + Vercel live, seed script works
+- [x] Register/login for elder, family, doctor; invite code flow works
+- [x] Fake prescription → extract → edit → confirm; pharmacist banner on low confidence
+- [ ] Reminders generated; alerts + notifications while open; taken/skipped  _(API verified live; notification firing needs a real-device check)_
+- [ ] Text check-in with concern_flag (incl. keyword fallback); Web Speech check-in in Chrome  _(text verified live; Web Speech needs a real-device check)_
+- [x] Dashboard: timeline, mood trend, taken vs missed, vitals list, alternatives ("needs doctor verification")
+- [ ] Vapi plain button works; hidden when not configured  _(hidden-when-unconfigured verified; needs Vapi assistant + keys)_
+- [x] All security tests pass, CI green, Render + Vercel live, seed script works
 
 ## Stage B — polish (only after the user confirms Stage A)
 Driven by separate prompts: display-font landing hero, Gallery3D, Chotu mascot (ChotuAgent, ChotuBoundary) and animations, decorative gradients/grain.
