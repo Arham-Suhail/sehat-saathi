@@ -56,7 +56,11 @@ A full independent audit with every finding and its status is in `docs/security/
 (threat model: `docs/security/threat-model.md`; per-endpoint status: `docs/security-checklist.md`).
 
 ## Known limitations
-- Reminders and notifications only fire while the app is open in a browser tab.
+- **Alarms when the app is closed** use Web Push: Android Chrome/Edge/Firefox and desktop browsers receive them while
+  the browser is installed and allowed to run (aggressive battery savers can delay them); **iPhone only after "Add to
+  Home Screen"** (iOS 16.4+). Without push (not enabled, or permission denied) alarms only fire while the app is open.
+- Push timing depends on the server being awake (free Render tier + uptime monitor) and on the browser's push service;
+  a dose is pushed within ~1 minute, and a missed push is not retried after 10 minutes.
 - Render free tier sleeps when idle; the first request can take ~50 seconds.
 - AI output can be wrong — every extraction is reviewed by a human, and low confidence shows
   "please confirm with a pharmacist".

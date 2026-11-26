@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import { BigButton, ErrorText, Field, Notice } from '../../components/ui';
+import { usePush } from '../../hooks/usePush';
+import { t } from '../../i18n/useT';
 
 export default function CarerHome() {
   const { user, logout, refresh } = useAuth();
+  const push = usePush();
   const [elders, setElders] = useState(null);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -49,6 +52,15 @@ export default function CarerHome() {
           Log out
         </BigButton>
       </header>
+
+      {push.state === 'on' ? <Notice kind="success">🔔 {t('push.carer.enabled')}</Notice> : null}
+      {push.state === 'denied' ? <Notice kind="warning">{t('push.denied')}</Notice> : null}
+      {push.state === 'off' ? (
+        <BigButton variant="secondary" onClick={push.enable}>
+          {t('push.carer.on')}
+        </BigButton>
+      ) : null}
+      <ErrorText>{push.error}</ErrorText>
       <p className="muted">{user.role === 'doctor' ? 'Doctor' : 'Family'} account · sirf dekhne ke liye</p>
 
       <section className="card stack" aria-labelledby="elders-h">

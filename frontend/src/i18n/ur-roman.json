@@ -12,7 +12,6 @@
   "common.error": "Kuch ghalat ho gaya. Dobara koshish karein.",
   "common.offline": "Internet nahi mil raha. Connection check karein.",
   "server.waking": "Server jag raha hai… thora intezar karein (30–60 second)",
-
   "auth.email": "Email",
   "auth.password": "Password",
   "auth.password.hint": "Kam az kam 8 huroof",
@@ -23,12 +22,10 @@
   "auth.role.doctor": "Doctor",
   "auth.have_account": "Pehle se account hai? Login karein",
   "auth.no_account": "Account nahi hai? Naya banayein",
-
   "disclaimer.medical": "Yeh maloomat doctor ki tasdeeq ke baghair istemal na karein. Apne doctor se zaroor poochein.",
   "disclaimer.ai": "Yeh AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein.",
   "pharmacist.title": "Pharmacist se tasdeeq karein",
   "pharmacist.body": "Is dawai ka kuch hissa saaf nahi parha gaya. Please confirm with a pharmacist.",
-
   "home.greeting": "Assalam o Alaikum, {name}",
   "home.upload": "Nuskha (prescription) ki tasveer",
   "home.upload.sub": "Dawaiyan khud parh li jayengi",
@@ -42,7 +39,6 @@
   "home.invite.sub": "Code share karein",
   "home.next": "Agli dawai",
   "home.next.none": "Agle 24 ghante mein koi dawai nahi",
-
   "upload.title": "Nuskhe ki tasveer",
   "upload.help": "Nuskha seedha rakh kar, achi roshni mein tasveer lein. Sirf JPG, PNG ya WebP.",
   "upload.pick": "Tasveer lein / chunein",
@@ -53,7 +49,6 @@
   "upload.bad_type": "Yeh tasveer nahi lagti. JPG, PNG ya WebP chunein.",
   "upload.not_rx": "Is tasveer mein dawaiyan nahi milin. Doosri tasveer lein ya khud likh dein.",
   "upload.manual": "Khud likh dein",
-
   "confirm.title": "Dawaiyan check karein",
   "confirm.help": "Har dawai dhyan se dekhein. Ghalat ho to theek karein. Waqt zaroor set karein.",
   "confirm.name": "Dawai ka naam",
@@ -73,7 +68,6 @@
   "confirm.need_name": "Har dawai ka naam likhein.",
   "confirm.empty": "Koi dawai nahi. Neeche se dawai likhein.",
   "confirm.suggested": "Ye waqt sirf mashwara hain — tasdeeq karein ya badlein.",
-
   "rem.title": "Aaj ki dawaiyan",
   "rem.none": "Abhi koi dawai nahi. Nuskhe ki tasveer se dawaiyan shamil karein.",
   "rem.taken": "Le li",
@@ -89,7 +83,12 @@
   "rem.tab_note": "Yaad dehani sirf tab aati hai jab Sehat Saathi browser mein khula ho.",
   "rem.alert.title": "Dawai ka waqt!",
   "rem.alert.later": "Baad mein (10 min)",
-
   "dash.title": "Dashboard",
-  "dash.placeholder": "Dashboard jald aa raha hai."
+  "dash.placeholder": "Dashboard jald aa raha hai.",
+  "push.elder.on": "🔔 Alarm on karein (app band ho tab bhi)",
+  "push.elder.enabled": "Alarm on hai: app band ho tab bhi dawai ke waqt phone par alarm aayega.",
+  "push.carer.on": "🔔 Takleef par fori itlaa on karein",
+  "push.carer.enabled": "Fori itlaa on hai: jab buzurg hal-chaal mein takleef batayenge, is phone par alert aayega.",
+  "push.denied": "Notifications band hain. Browser settings mein is site ke liye notifications allow karein.",
+  "push.ios": "iPhone par: Safari mein Share → \"Add to Home Screen\" karein, phir wahan se app khol kar alarm on karein."
 }

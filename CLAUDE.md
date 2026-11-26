@@ -5,7 +5,9 @@
 2. Hackathon (Capital Youth Expo, Healthcare). Solo dev. Started Thu Nov 26 2026; deadline Sat Nov 28, 11:59 PM; freeze Sat 6 PM; submit by 9 PM.
 3. Elders photograph a prescription; a vision LLM transcribes medicines, dose and timing with per-item confidence.
 4. The user reviews and edits the extraction before saving; reminders are generated from confirmed medicines.
-5. Reminders show as in-app alerts + browser notifications while the app is open; elder marks taken or skipped.
+5. Reminders show as in-app alerts while the app is open and as **Web Push** notifications when it is closed
+   (optional: needs VAPID_* keys); elder marks taken or skipped. A flagged check-in sends a generic Web Push alert to the
+   elder's currently linked family/doctors. Push endpoints are allowlisted (FCM, Mozilla, Apple, Windows) to prevent SSRF.
 6. A daily Roman Urdu check-in ("Aaj aap kaisa mehsoos kar rahe hain?") via text, Web Speech (hi-IN) or Vapi voice (Deepgram `hi`).
    Speech-to-text returns Hindi script; `services/translit.py` / `src/i18n/translit.js` (shared vectors in
    `shared/translit-vectors.json`) turn it into Roman Urdu. The app only ever shows Roman Urdu; concern keywords
@@ -90,7 +92,8 @@
 - OAuth, OTP, email verification, password reset emails.
 - Payments or subscriptions.
 - Scraping of pharmacy or price sites (alternatives are LLM-suggested only).
-- Push notifications when the tab is closed (FCM/APNs/background alarms).
+- Native push SDKs (FCM/APNs) and native background alarms. (Web Push for closed-tab dose alarms and concern alerts
+  was moved INTO scope on Nov 26 at the user's request; iPhone needs the app added to the Home Screen.)
 - AI-generated dosages, diagnoses, treatment plans or condition-specific medical advice.
 - Phone-number calling (Vapi is browser Web SDK only).
 - Stage B polish items before the user confirms Stage A is stable.

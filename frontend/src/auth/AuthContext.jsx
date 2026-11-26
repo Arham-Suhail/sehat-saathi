@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { api, getToken, setToken, setUnauthorizedHandler } from '../api/client';
+import { disablePushForLogout } from '../hooks/usePush';
 
 const AuthContext = createContext(null);
 
@@ -12,13 +13,19 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
 
-  const logout = useCallback(() => {
+  const clearSession = useCallback(() => {
     setToken(null);
     setUser(null);
   }, []);
 
+  // Explicit logout also stops this browser's push alerts (shared phones). An expired token
+  // (401) only clears the session: an elder's dose alarms keep working until they log out.
+  const logout = useCallback(() => {
+    disablePushForLogout().finally(clearSession);
+  }, [clearSession]);
+
   useEffect(() => {
-    setUnauthorizedHandler(logout);
+    setUnauthorizedHandler(clearSession);
     if (!getToken()) {
       setReady(true);
       return;
@@ -29,7 +36,7 @@ export function AuthProvider({ children }) {
         /* 401 handled by logout; network errors keep token for retry */
       })
       .finally(() => setReady(true));
-  }, [logout]);
+  }, [clearSession]);
 
   const finish = useCallback((data) => {
     setToken(data.access_token);

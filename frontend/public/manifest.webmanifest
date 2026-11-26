@@ -1,0 +1,11 @@
+{
+  "name": "Sehat Saathi",
+  "short_name": "Sehat Saathi",
+  "description": "Dawai ki yaad dehani aur rozana hal-chaal, buzurgon ke liye.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F5F0",
+  "theme_color": "#F7F5F0",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

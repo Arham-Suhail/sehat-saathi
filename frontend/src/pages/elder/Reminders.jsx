@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BigButton, ErrorText, Notice, TopBar, fmtDay, fmtTime } from '../../components/ui';
+import { isIosNotInstalled, usePush } from '../../hooks/usePush';
 import { notificationsSupported } from '../../hooks/useReminderEngine';
 import { t } from '../../i18n/useT';
 import { useReminders } from './ElderLayout';
@@ -15,6 +16,25 @@ function NotificationToggle() {
       🔔 {t('rem.notify.on')}
     </BigButton>
   );
+}
+
+// Web Push when available (alarm even with the app closed); otherwise in-app notifications.
+function AlarmToggle() {
+  const push = usePush();
+  if (push.state === 'on') return <Notice kind="success">🔔 {t('push.elder.enabled')}</Notice>;
+  if (push.state === 'denied') return <Notice kind="warning">{t('push.denied')}</Notice>;
+  if (push.state === 'off')
+    return (
+      <>
+        <BigButton variant="secondary" onClick={push.enable}>
+          {t('push.elder.on')}
+        </BigButton>
+        <ErrorText>{push.error}</ErrorText>
+      </>
+    );
+  if (push.state === 'unsupported' && isIosNotInstalled()) return <Notice>{t('push.ios')}</Notice>;
+  if (push.state === 'loading') return null;
+  return <NotificationToggle />;
 }
 
 export default function Reminders() {
@@ -45,7 +65,7 @@ export default function Reminders() {
       <TopBar back="/elder" title={t('rem.title')} />
       <h1>{t('rem.title')}</h1>
       {state?.saved ? <Notice kind="success">✓ {t('confirm.saved')}</Notice> : null}
-      <NotificationToggle />
+      <AlarmToggle />
       <p className="muted small">{t('rem.tab_note')}</p>
       <ErrorText>{err || error}</ErrorText>
 
