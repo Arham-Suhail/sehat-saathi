@@ -255,3 +255,17 @@ async def test_f6_normal_phone_photo_still_accepted(client):
     elder = await register(client, "elder")
     r = await _extract(client, elder["token"], _img_bytes((4000, 3000), "JPEG", "RGB"), "image/jpeg")
     assert r.status_code == 200
+
+
+# ---------- F7: one global LLM budget shared by every LLM route and every account ----------
+async def test_f7_global_llm_cap_shared_across_users_and_routes(client, monkeypatch):
+    monkeypatch.setattr(ratelimit, "GLOBAL_LLM_LIMIT", "2/minute")
+    e1, e2, e3 = [await register(client, "elder") for _ in range(3)]
+    text = {"message": "theek hoon"}
+    voice = {"transcript": [{"role": "elder", "text": "theek hoon"}]}
+    codes = [
+        (await client.post("/checkins/text", json=text, headers=auth(e1["token"]))).status_code,
+        (await client.post("/checkins/voice", json=voice, headers=auth(e2["token"]))).status_code,
+        (await client.post("/checkins/text", json=text, headers=auth(e3["token"]))).status_code,
+    ]
+    assert codes == [201, 201, 429]

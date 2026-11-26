@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 
 from app.db import get_db
 from app.llm import get_text
-from app.ratelimit import LLM_LIMIT, limiter, user_key
+from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import CheckinOut, CheckinTextIn, CheckinVoiceIn
 from app.security import get_current_user, require_role, resolve_elder_access
 from app.services.checkin import GREETING, analyse
@@ -52,6 +52,7 @@ async def _store(db: Any, elder_id, channel: str, transcript: list[dict], result
 
 @router.post("/text", response_model=CheckinOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit(LLM_LIMIT, key_func=user_key)
+@llm_global
 async def text_checkin(
     request: Request,
     body: CheckinTextIn,
@@ -70,6 +71,7 @@ async def text_checkin(
 
 @router.post("/voice", response_model=CheckinOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit(LLM_LIMIT, key_func=user_key)
+@llm_global
 async def voice_checkin(
     request: Request,
     body: CheckinVoiceIn,

@@ -65,3 +65,15 @@ def global_redeem_limit() -> str:
 
 # Per verified user: protects the free LLM quota.
 LLM_LIMIT = "10/minute;60/day"
+
+# Audit F7: one budget shared by ALL LLM routes and ALL accounts, so many throwaway
+# accounts can't drain the provider's free daily quota for everyone. Size it just under
+# the provider quota (Gemini free tier) and adjust if the quota changes.
+GLOBAL_LLM_LIMIT = "20/minute;800/day"
+
+
+def global_llm_limit() -> str:
+    return GLOBAL_LLM_LIMIT
+
+
+llm_global = limiter.shared_limit(global_llm_limit, scope="llm-global", key_func=global_key)

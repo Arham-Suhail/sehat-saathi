@@ -9,7 +9,7 @@ from app.ids import parse_object_id
 from app.llm import LLMError, get_text
 from app.llm.prompts import ALTERNATIVES_SYSTEM, wrap_user_message
 from app.llm.schemas import AlternativesLLM
-from app.ratelimit import LLM_LIMIT, limiter, user_key
+from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import AlternativesOut
 from app.security import allowed_elder_ids, get_current_user
 
@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 @router.get("/medicines/{medicine_id}/alternatives", response_model=AlternativesOut)
 @limiter.limit(LLM_LIMIT, key_func=user_key)
+@llm_global
 async def alternatives(
     request: Request,
     medicine_id: str,
