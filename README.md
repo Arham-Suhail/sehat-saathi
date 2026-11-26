@@ -71,7 +71,7 @@ A full independent audit with every finding and its status is in `docs/security/
   Gemini API. On Google's free tier, inputs may be used to improve Google's products. Use fake data only.
 
 ## Dependencies & external services (disclosure)
-**External services:** MongoDB Atlas, Render, Vercel, Gemini API (or another OpenAI-compatible provider), Vapi (voice, planned),
+**External services:** MongoDB Atlas, Render, Vercel, UptimeRobot (pings `/health` every 5 min to keep the free Render server awake; it sees no user data), Gemini API (or another OpenAI-compatible provider), Vapi (voice, planned),
 browser Web Speech API and Notification API.
 
 **Backend (Python):** fastapi, starlette, uvicorn, pydantic, pydantic-settings, email-validator, pymongo, PyJWT, bcrypt,

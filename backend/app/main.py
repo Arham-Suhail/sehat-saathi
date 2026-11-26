@@ -162,7 +162,8 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
         return JSONResponse({"detail": "Kuch ghalat ho gaya", "request_id": rid}, status_code=500)
 
     # ---------- routes ----------
-    @app.get("/health", tags=["meta"])
+    # HEAD too: uptime monitors (UptimeRobot keep-alive) default to HEAD requests.
+    @app.api_route("/health", methods=["GET", "HEAD"], tags=["meta"])
     async def health(request: Request):
         try:
             await asyncio.wait_for(request.app.state.db.command("ping"), timeout=5)

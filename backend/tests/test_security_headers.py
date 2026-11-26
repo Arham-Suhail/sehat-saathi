@@ -75,3 +75,10 @@ async def test_rate_limit_register(client):
         )
         codes.append(r.status_code)
     assert codes == [201, 201, 201, 429]
+
+
+async def test_health_answers_head_for_uptime_monitors(client):
+    # UptimeRobot (and most uptime monitors) default to HEAD; a 405 shows the API as "down".
+    r = await client.head("/health")
+    assert r.status_code == 200
+    assert r.headers["cache-control"] == "no-store"
