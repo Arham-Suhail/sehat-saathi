@@ -69,3 +69,9 @@ eslint-plugin-react, eslint-plugin-react-hooks, globals.
 ## Demo data
 `cd backend && .venv/Scripts/python -m scripts.seed_demo` creates a linked demo elder, family member and doctor
 with 14 days of FAKE history (`--reset` recreates them). The password is printed once (or set `SEED_PASSWORD`).
+No demo password is stored in this repository: the seed script reads `SEED_PASSWORD` from the environment or
+generates one and prints it once.
+
+**Demo accounts for judges (fake data only):** `demo.elder@sehatsaathi.example`,
+`demo.family@sehatsaathi.example`, `demo.doctor@sehatsaathi.example`. The password is given in the submission
+form, not here.

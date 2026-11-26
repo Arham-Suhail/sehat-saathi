@@ -116,10 +116,18 @@ export default function Dashboard() {
             {d.medicines.map((m) => (
               <li key={m.id} className="stack" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
                 <div>
-                  <strong>{m.name}</strong> {m.strength ? <span className="muted">{m.strength}</span> : null}
+                  <strong>{m.name}</strong> {m.strength_text ? <span className="muted">{m.strength_text}</span> : null}
                   <p className="small muted" style={{ margin: 0 }}>
-                    {m.dose ? `${m.dose} · ` : ''}
-                    {m.timings.map(fmtHHMM).join(', ')}
+                    {[m.dose_text, m.frequency_label, m.route_kind !== 'unknown' ? m.route_label : null]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                  <p className="small" style={{ margin: 0 }}>
+                    {m.reminder_mode === 'hospital'
+                      ? 'Hospital wali dawai — reminders nahi'
+                      : m.reminder_mode === 'prn'
+                        ? `Zaroorat par${m.prn_condition ? `: ${m.prn_condition}` : ''}`
+                        : m.timings.map(fmtHHMM).join(', ')}
                   </p>
                 </div>
                 {m.needs_pharmacist ? <PharmacistBanner /> : null}

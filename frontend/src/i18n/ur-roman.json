@@ -57,7 +57,7 @@
   "confirm.title": "Dawaiyan check karein",
   "confirm.help": "Har dawai dhyan se dekhein. Ghalat ho to theek karein. Waqt zaroor set karein.",
   "confirm.name": "Dawai ka naam",
-  "confirm.strength": "Taqat (mg)",
+  "confirm.strength": "Taqat (strength)",
   "confirm.dose": "Kitni (dose)",
   "confirm.frequency": "Kitni baar",
   "confirm.instructions": "Hidayat (khane se pehle/baad)",
@@ -72,7 +72,7 @@
   "confirm.need_time": "Har dawai ka kam az kam ek waqt set karein.",
   "confirm.need_name": "Har dawai ka naam likhein.",
   "confirm.empty": "Koi dawai nahi. Neeche se dawai likhein.",
-  "confirm.suggested": "Yeh waqt sirf mashwara hai — apne hisaab se badlein.",
+  "confirm.suggested": "Ye waqt sirf mashwara hain — tasdeeq karein ya badlein.",
 
   "rem.title": "Aaj ki dawaiyan",
   "rem.none": "Abhi koi dawai nahi. Nuskhe ki tasveer se dawaiyan shamil karein.",
