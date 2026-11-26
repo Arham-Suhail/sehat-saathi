@@ -17,8 +17,8 @@ Plain, clean UI. Atkinson Hyperlegible only, neutral placeholder palette, mobile
 - [x] Extraction bug fix (Nov 26): verbatim fields, frequency/route normaliser, IV/PRN no reminders, D/c stopped + excluded from reminders/adherence, quantity limits kept — regression-tested on the textbook order sheet and re-checked live with Gemini
 - [x] All tap targets ≥ 48px (audited at 360/390/768/1280/1440)
 - [x] No demo password in the repo (seed reads SEED_PASSWORD or generates one)
-- [ ] Reminders generated; alerts + notifications while open; taken/skipped  _(API verified live; notification firing needs a real-device check)_
-- [ ] Text check-in with concern_flag (incl. keyword fallback); Web Speech check-in in Chrome  _(text verified live; Web Speech needs a real-device check)_
+- [x] Reminders generated; alerts + notifications while open; taken/skipped  _(verified by the user on a real phone, Nov 27)_
+- [x] Text check-in with concern_flag (incl. keyword fallback); Web Speech check-in in Chrome  _(text verified live; Web Speech (hi-IN → Roman Urdu) verified by the user on a real phone, Nov 27)_
 - [x] Dashboard: timeline, mood trend, taken vs missed, vitals list, alternatives ("needs doctor verification")
 - [x] Vapi plain button works; hidden when not configured  _(verified live Nov 26 by the user on a phone; fixed the CommonJS
   import bug + CSP for Daily; transcript shown in Roman Urdu)_
