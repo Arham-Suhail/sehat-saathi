@@ -47,7 +47,7 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | Carer access revocable, immediate | DONE | `POST /invites/revoke-all`; `test_f2_elder_revokes_all_carers_immediately` |
 | Invite code single-use, 24 h, CSPRNG | DONE | `secrets.randbelow`, TTL index, atomic claim; `test_f2_invite_code_is_single_use`, `test_invite_expired` |
 | Invite brute-force protection | DONE | per-IP + global + atomic per-account lock; `test_f3_*`, `test_f1_global_redeem_cap_*` |
-| Rate-limit client IP not spoofable via `X-Forwarded-For` | DONE in code / **live check pending** | `ratelimit.client_ip` (CF-Connecting-IP, else rightmost XFF); `test_f1_spoofed_leftmost_xff_does_not_reset_login_limit` |
+| Rate-limit client IP not spoofable via `X-Forwarded-For` | DONE (live-verified Nov 26: rotating spoofed XFF → 429 ×8) | `ratelimit.client_ip` (CF-Connecting-IP, else rightmost XFF); `test_f1_spoofed_leftmost_xff_does_not_reset_login_limit` |
 | Login brute force independent of IP | DONE | per-email throttle (HMAC-keyed, no emails stored); `test_f1_per_account_login_throttle_independent_of_ip` |
 | Generic login/register errors (no enumeration) | DONE | `test_login_errors_are_generic`, `test_duplicate_register_is_generic`, `test_f1_login_throttle_does_not_reveal_which_emails_exist` |
 | Global LLM quota protection | DONE | `test_f7_global_llm_cap_shared_across_users_and_routes` |
@@ -90,6 +90,6 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 
 ## Phase 4 (Saturday): still to do
 
-- [ ] Live attack checks against the Render/Vercel URLs after redeploy (see `docs/engineering-checklist.md`)
+- [x] Live attack checks against the Render/Vercel URLs after redeploy (results in `docs/engineering-checklist.md`)
 - [ ] Production log grep for passwords/tokens/emails (needs Render dashboard access)
 - [x] `pip-audit` + `npm audit` + gitleaks (full history) run in CI on every push
