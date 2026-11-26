@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import { BigButton, BottomBar, Disclaimer, ErrorText, Notice, TopBar } from '../../components/ui';
 import { useSpeech } from '../../hooks/useSpeech';
 import { useVapiCall } from '../../hooks/useVapiCall';
+import { toRoman } from '../../i18n/translit';
 
 const GREETING = 'Assalam o Alaikum! Aaj aap kaisa mehsoos kar rahe hain?';
 const AI_NOTE = 'Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein.';
@@ -81,13 +82,13 @@ export default function CheckIn() {
       </div>
 
       <div className="bubbles" aria-live="polite">
-        <div className="bubble bubble--ai">{vapi.live && vapi.assistantLine ? vapi.assistantLine : GREETING}</div>
+        <div className="bubble bubble--ai">{vapi.live && vapi.assistantLine ? toRoman(vapi.assistantLine) : GREETING}</div>
         {vapi.transcript
           .filter((x) => x.role === 'elder')
           .slice(-1)
           .map((x, i) => (
             <div key={i} className="bubble bubble--elder">
-              {x.text}
+              {toRoman(x.text)}
             </div>
           ))}
       </div>

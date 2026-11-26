@@ -50,6 +50,7 @@ jobs:
           npm ci
           npm run lint
           npm run build
+          npm test
           npm audit --audit-level=high --omit=dev
 
   secrets:

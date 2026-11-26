@@ -124,7 +124,7 @@ Also check DevTools → Console for **CSP errors** (blocked `daily.co`/`vapi.ai`
    - (a) a Hindi voice (e.g. `hi-IN-SwaraNeural`), which often reads Latin Hindustani better;
    - (b) an ElevenLabs multilingual voice;
    - (c) having the assistant reply in Urdu script. If you choose (c), tell Claude, because the backend keyword concern check is Roman Urdu/English and would need Urdu-script keywords added before (c) is safe.
-2. **Transcriber language.** Deepgram `hi` versus Azure/Google `ur-PK`: which one writes Latin or Roman text that our backend keyword check can read? If it writes Devanagari or Urdu script, the concern keywords won't match. Tell Claude, and Claude will add script-aware keywords.
+2. **Transcriber language: RESOLVED.** Deepgram `hi` writes Hindi script. The backend and frontend now turn Hindi script into Roman Urdu (`translit`), and concern keywords also match Hindi and Urdu script, so keep Deepgram `hi`. Original note: Deepgram `hi` versus Azure/Google `ur-PK`: which one writes Latin or Roman text that our backend keyword check can read? If it writes Devanagari or Urdu script, the concern keywords won't match. Tell Claude, and Claude will add script-aware keywords.
 3. **Silence timeout.** 30 s is a guess for elderly speakers.
 4. **Exact UI labels** in the Vapi dashboard (they change often), and whether public-key origin restriction is available on your plan.
 5. **Which cheap models** your Vapi account lists (`gpt-4o-mini` is usually there).

@@ -6,7 +6,10 @@
 3. Elders photograph a prescription; a vision LLM transcribes medicines, dose and timing with per-item confidence.
 4. The user reviews and edits the extraction before saving; reminders are generated from confirmed medicines.
 5. Reminders show as in-app alerts + browser notifications while the app is open; elder marks taken or skipped.
-6. A daily Roman Urdu check-in ("Aaj aap kaisa mehsoos kar rahe hain?") via text, Web Speech (ur-PK) or Vapi voice.
+6. A daily Roman Urdu check-in ("Aaj aap kaisa mehsoos kar rahe hain?") via text, Web Speech (hi-IN) or Vapi voice (Deepgram `hi`).
+   Speech-to-text returns Hindi script; `services/translit.py` / `src/i18n/translit.js` (shared vectors in
+   `shared/translit-vectors.json`) turn it into Roman Urdu. The app only ever shows Roman Urdu; concern keywords
+   also cover Hindi and Urdu script.
 7. AI replies briefly with one general wellness tip, logs mood (good/okay/low); symptoms → "doctor se baat karein" + flag.
 8. Family and doctors link to an elder with a 6-digit invite code and see a read-only dashboard.
 9. Dashboard: check-in timeline, mood trend, taken vs missed doses, manually entered vitals (BP, sugar, heart rate).

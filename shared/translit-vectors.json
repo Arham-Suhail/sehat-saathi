@@ -1,0 +1,21 @@
+{
+  "_doc": "Devanagari -> Roman Urdu test vectors shared by backend/app/services/translit.py and frontend/src/i18n/translit.js. Both must produce exactly these outputs.",
+  "cases": [
+    ["सीने में दर्द है", "seene mein dard hai"],
+    ["मुझे चक्कर आ रहे हैं", "mujhe chakkar aa rahe hain"],
+    ["बुखार और उल्टी", "bukhaar aur ulti"],
+    ["सांस लेने में तकलीफ़", "saans lene mein takleef"],
+    ["साँस फूल रही है", "saans phool rahi hai"],
+    ["कमज़ोरी महसूस हो रही है", "kamzori mehsoos ho rahi hai"],
+    ["आज मैं ठीक हूँ, नींद अच्छी आई।", "aaj main theek hoon, neend achhi aai."],
+    ["खून आया", "khoon aaya"],
+    ["मैं बेहोश हो गया था", "main behosh ho gaya tha"],
+    ["क्या हाल है?", "kya haal hai?"],
+    ["नहीं, सब ठीक है", "nahi, sab theek hai"],
+    ["मेरी दवाई 2 बजे है", "meri dawaai 2 baje hai"],
+    ["१२३", "123"],
+    ["Aaj theek hoon", "Aaj theek hoon"],
+    ["آج ٹھیک ہوں", "آج ٹھیک ہوں"],
+    ["", ""]
+  ]
+}

@@ -1,5 +1,8 @@
-/* Web Speech API (ur-PK) dictation. Feature-detected; the text box always works without it. */
+/* Web Speech API dictation. Feature-detected; the text box always works without it.
+   hi-IN, not ur-PK: spoken Urdu is recognised as well, and Hindi script can be turned into Roman
+   Urdu by fixed rules (Urdu script can't: short vowels aren't written). The app shows Roman only. */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toRoman } from '../i18n/translit';
 
 const SR = typeof window !== 'undefined' ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 
@@ -7,7 +10,7 @@ export function speechSupported() {
   return Boolean(SR);
 }
 
-export function useSpeech({ lang = 'ur-PK', onFinal } = {}) {
+export function useSpeech({ lang = 'hi-IN', onFinal } = {}) {
   const recRef = useRef(null);
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState('');
@@ -35,8 +38,8 @@ export function useSpeech({ lang = 'ur-PK', onFinal } = {}) {
         if (r.isFinal) finalText += r[0].transcript;
         else interimText += r[0].transcript;
       }
-      setInterim(interimText);
-      if (finalText) onFinalRef.current?.(finalText.trim());
+      setInterim(toRoman(interimText));
+      if (finalText) onFinalRef.current?.(toRoman(finalText).trim());
     };
     rec.onerror = (e) => {
       const map = {

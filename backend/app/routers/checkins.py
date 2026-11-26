@@ -9,6 +9,7 @@ from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import CheckinOut, CheckinTextIn, CheckinVoiceIn
 from app.security import get_current_user, require_role, resolve_elder_access
 from app.services.checkin import GREETING, analyse
+from app.services.translit import to_roman
 
 router = APIRouter(prefix="/checkins", tags=["checkins"])
 
@@ -62,7 +63,7 @@ async def text_checkin(
     result = await analyse(get_text(request), body.message)
     transcript = [
         {"role": "ai", "text": GREETING},
-        {"role": "elder", "text": body.message},
+        {"role": "elder", "text": to_roman(body.message)},  # the app shows Roman Urdu only
         {"role": "ai", "text": result["reply"]},
     ]
     doc = await _store(db, user["_id"], body.channel, transcript, result)
@@ -89,8 +90,9 @@ async def voice_checkin(
             break
         kept.append(t)
     elder_text = "\n".join(t["text"] for t in kept if t["role"] == "elder") or "(kuch nahi kaha)"
-    result = await analyse(get_text(request), elder_text)
-    doc = await _store(db, user["_id"], "vapi", kept, result, body.vapi_call_id)
+    result = await analyse(get_text(request), elder_text)  # original script: best for the LLM
+    stored = [{"role": t["role"], "text": to_roman(t["text"])} for t in kept]  # Roman Urdu for display
+    doc = await _store(db, user["_id"], "vapi", stored, result, body.vapi_call_id)
     return checkin_out(doc)
 
 

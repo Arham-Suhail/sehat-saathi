@@ -10,6 +10,7 @@ from app.llm import LLMError, LLMProvider
 from app.llm.prompts import CHECKIN_SYSTEM, wrap_user_message
 from app.llm.schemas import CheckinLLM
 from app.services.concern import detect_concern
+from app.services.translit import to_roman
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,8 @@ async def analyse(provider: LLMProvider, elder_text: str) -> dict:
         log.warning("checkin llm failed: %s", e)
         out, llm_ok = FALLBACK, False
 
-    keywords = detect_concern(elder_text)
+    # Keywords on the original script AND its Roman form, so a red flag is caught either way.
+    keywords = detect_concern(elder_text + "\n" + to_roman(elder_text))
     concern = out.concern or bool(keywords)
     reasons = [r for r in [", ".join(keywords) or None, out.concern_reason if out.concern else None] if r]
     reply = out.reply
@@ -48,7 +50,7 @@ async def analyse(provider: LLMProvider, elder_text: str) -> dict:
     if keywords and mood == "good":
         mood = "okay"
     return {
-        "reply": reply[:500],
+        "reply": to_roman(reply)[:500],
         "wellness_tip": out.wellness_tip,
         "mood": mood,
         "mood_score": MOOD_SCORE[mood],
