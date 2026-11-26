@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pymongo.errors import DuplicateKeyError
 
 from app.db import get_db
-from app.ratelimit import REDEEM_LIMIT, limiter
+from app.ratelimit import REDEEM_LIMIT, global_key, global_redeem_limit, limiter
 from app.schemas import ElderRef, InviteOut, RedeemIn
 from app.security import require_role
 
@@ -53,6 +53,7 @@ async def create_invite(user: dict = Depends(require_role("elder")), db: Any = D
 
 @router.post("/invites/redeem", response_model=ElderRef)
 @limiter.limit(REDEEM_LIMIT)
+@limiter.limit(global_redeem_limit, key_func=global_key)
 async def redeem_invite(
     request: Request,
     body: RedeemIn,

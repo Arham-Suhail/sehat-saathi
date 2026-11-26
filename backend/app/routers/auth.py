@@ -1,11 +1,14 @@
-from datetime import UTC, datetime
+import hashlib
+import hmac
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
 from app.db import get_db
-from app.ratelimit import LOGIN_LIMIT, REGISTER_LIMIT, limiter
+from app.ratelimit import LOGIN_LIMIT, REGISTER_LIMIT, global_key, global_register_limit, limiter
 from app.schemas import LoginIn, RegisterIn, TokenOut, UserOut
 from app.security import create_access_token, get_current_user, hash_password, verify_password
 
@@ -13,6 +16,23 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 GENERIC_LOGIN_ERROR = "Email ya password ghalat hai"
 GENERIC_REGISTER_ERROR = "Account nahi ban saka. Doosra email try karein ya login karein."
+LOCKED_LOGIN_ERROR = "Bohat zyada ghalat koshishen. 15 minute baad dobara koshish karein."
+
+# Per-email login throttle (audit F1): works no matter how many IPs an attacker rotates
+# through. Counted for EVERY email, registered or not, so it never reveals which exist.
+LOGIN_MAX_FAILS = 10
+LOGIN_LOCK = timedelta(minutes=15)
+
+
+def _throttle_id(email: str, secret: str) -> str:
+    # Keyed hash: the collection never stores email addresses.
+    return hmac.new(secret.encode(), email.encode(), hashlib.sha256).hexdigest()
+
+
+def _aware(dt: datetime | None) -> datetime | None:
+    if dt is None:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
 
 
 def user_out(user: dict) -> UserOut:
@@ -32,6 +52,7 @@ def _token_response(request: Request, user: dict) -> TokenOut:
 
 @router.post("/register", response_model=TokenOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit(REGISTER_LIMIT)
+@limiter.limit(global_register_limit, key_func=global_key)
 async def register(request: Request, body: RegisterIn, db: Any = Depends(get_db)) -> TokenOut:
     now = datetime.now(UTC)
     doc = {
@@ -56,10 +77,30 @@ async def register(request: Request, body: RegisterIn, db: Any = Depends(get_db)
 @router.post("/login", response_model=TokenOut)
 @limiter.limit(LOGIN_LIMIT)
 async def login(request: Request, body: LoginIn, db: Any = Depends(get_db)) -> TokenOut:
-    user = await db.users.find_one({"email": body.email.lower()})
+    email = body.email.lower()
+    tid = _throttle_id(email, request.app.state.settings.jwt_secret)
+    now = datetime.now(UTC)
+    throttle = await db.login_throttle.find_one({"_id": tid})
+    locked_until = _aware(throttle.get("locked_until")) if throttle else None
+    if locked_until and locked_until > now:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=LOCKED_LOGIN_ERROR)
+
+    user = await db.users.find_one({"email": email})
     ok = verify_password(body.password, user.get("password_hash") if user else None)
     if not user or not ok:
+        doc = await db.login_throttle.find_one_and_update(
+            {"_id": tid},
+            {"$inc": {"fails": 1}, "$set": {"expires_at": now + timedelta(days=1)}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+        if doc["fails"] >= LOGIN_MAX_FAILS:
+            await db.login_throttle.update_one(
+                {"_id": tid}, {"$set": {"fails": 0, "locked_until": now + LOGIN_LOCK}}
+            )
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=GENERIC_LOGIN_ERROR)
+    if throttle:
+        await db.login_throttle.delete_one({"_id": tid})
     return _token_response(request, user)
 
 
