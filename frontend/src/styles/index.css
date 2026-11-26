@@ -31,6 +31,12 @@
   --color-line: var(--border);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-warning-text: var(--warning-text);
+  --color-warning-bg: var(--warning-bg);
   --color-transparent: transparent;
   --font-body: var(--font-body);
   --font-serif: var(--font-serif);

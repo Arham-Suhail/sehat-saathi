@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import ChotuAgent from '../chotu/ChotuAgent';
 import ChotuBoundary from '../chotu/ChotuBoundary';
 import { BigButton } from '../ui';
-import Icon from './icons';
+import Icon from '../Icon';
 import { useReveal } from './motion';
 import { t } from '../../i18n/useT';
 

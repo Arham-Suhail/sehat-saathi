@@ -3,7 +3,7 @@
    plays once each time a tab opens (no endless motion, WCAG 2.2.2). Decorative visuals are aria-hidden. */
 import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { useRef, useState } from 'react';
-import Icon from './icons';
+import Icon from '../Icon';
 import SectionHeading from './SectionHeading';
 import { t } from '../../i18n/useT';
 

@@ -4,7 +4,7 @@
    Reduced motion: line shown full, every step shown lit, no movement. */
 import { motion, useInView, useReducedMotion, useScroll, useSpring } from 'motion/react';
 import { useRef } from 'react';
-import Icon from './icons';
+import Icon from '../Icon';
 import SectionHeading from './SectionHeading';
 import { t } from '../../i18n/useT';
 

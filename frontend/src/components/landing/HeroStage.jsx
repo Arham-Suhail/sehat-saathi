@@ -8,7 +8,7 @@ import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, u
 import { useEffect, useRef, useState } from 'react';
 import ChotuAgent from '../chotu/ChotuAgent';
 import ChotuBoundary from '../chotu/ChotuBoundary';
-import Icon from './icons';
+import Icon from '../Icon';
 import { t } from '../../i18n/useT';
 
 const SAY_COUNT = 5;

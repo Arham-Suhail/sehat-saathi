@@ -8,8 +8,10 @@ import CarerHome from './pages/carer/CarerHome';
 import CheckIn from './pages/elder/CheckIn';
 import ConfirmMeds from './pages/elder/ConfirmMeds';
 import ElderLayout from './pages/elder/ElderLayout';
+import Emergency from './pages/elder/Emergency';
 import ElderHome from './pages/elder/Home';
 import Invite from './pages/elder/Invite';
+import Progress from './pages/elder/Progress';
 import Reminders from './pages/elder/Reminders';
 import Upload from './pages/elder/Upload';
 import Vitals from './pages/elder/Vitals';
@@ -41,6 +43,8 @@ export default function App() {
           <Route path="checkin" element={<CheckIn />} />
           <Route path="vitals" element={<Vitals />} />
           <Route path="invite" element={<Invite />} />
+          <Route path="progress" element={<Progress />} />
+          <Route path="emergency" element={<Emergency />} />
         </Route>
 
         <Route
