@@ -46,13 +46,29 @@ All LLM calls go through `backend/app/llm/`. Change only env vars:
 - **Token lifetime:** elder tokens last 7 days so the in-app reminder engine keeps working without re-login;
   family/doctor tokens last 12 hours. No refresh tokens in this MVP. Tokens are kept in `localStorage`
   (frontend and API are on different domains); mitigated by a strict CSP and no raw-HTML rendering.
-- **Rate limits** are in-memory (single Render instance) and reset when the service restarts.
+- **Rate limits:** per-IP and per-user limits are in-memory (single Render instance) and reset when the service
+  restarts or redeploys. The per-email login lock (10 failures → 15 min) and the per-account invite lock live in
+  MongoDB and survive restarts. Global caps protect registration, invite redemption and the shared LLM quota.
+- **Invite codes** work once and expire after 24 h. An elder can remove every linked family member/doctor at any
+  time ("Sab ki ijazat khatam karein"); access ends on their next request.
+
+A full independent audit with every finding and its status is in `docs/security/audit-findings.md`
+(threat model: `docs/security/threat-model.md`; per-endpoint status: `docs/security-checklist.md`).
 
 ## Known limitations
 - Reminders and notifications only fire while the app is open in a browser tab.
 - Render free tier sleeps when idle; the first request can take ~50 seconds.
 - AI output can be wrong — every extraction is reviewed by a human, and low confidence shows
   "please confirm with a pharmacist".
+- **Safety flags come back from the browser.** Prescription images are never stored, so on "confirm" the server
+  re-checks the pharmacist flag and "D/c" (stopped) markers from the text the browser sends back. A modified client
+  (or the elder editing the line) could remove them. Re-activating a stopped order still creates home reminders.
+- **Check-in replies** are kept to general wellness by the AI prompt; there is no separate code filter yet.
+- **Voice check-in transcripts** are reported by the browser and not verified with Vapi.
+- **No logout on the server:** "logout" clears the browser; a copied token stays valid until it expires (7 days for elders).
+- **Data writes** (confirming medicines, vitals) have no rate limit; no account deletion, data export or retention policy.
+- **Data sent to AI providers:** prescription photos (re-encoded, metadata stripped) and check-in text are sent to the
+  Gemini API. On Google's free tier, inputs may be used to improve Google's products. Use fake data only.
 
 ## Dependencies & external services (disclosure)
 **External services:** MongoDB Atlas, Render, Vercel, Gemini API (or another OpenAI-compatible provider), Vapi (voice, planned),
