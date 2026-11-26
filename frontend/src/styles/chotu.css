@@ -35,11 +35,19 @@
 .chotu--listening .chotu__body {
   transform: rotate(-4deg);
 }
+/* Interactive Chotu (landing hero): eyes follow the pointer via CSS variables set by JS on a parent,
+   so pointer moves never re-render React. Declared after the state rules so it wins. */
+.chotu--gaze .chotu__eyes {
+  transform: translate(var(--gaze-x, 0px), var(--gaze-y, 0px));
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .chotu__eyes,
   .chotu__body {
     transition: transform 0.35s ease;
+  }
+  .chotu--gaze .chotu__eyes {
+    transition: transform 0.12s ease-out;
   }
   .chotu__float {
     animation: chotu-float 3.2s ease-in-out infinite alternate;

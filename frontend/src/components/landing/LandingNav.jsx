@@ -1,9 +1,11 @@
 /* Slim sticky top bar: wordmark + one quiet Login link (the primary action stays in the hero).
-   Respects the notch via safe-area inset. */
+   Respects the notch via safe-area inset. A thin line under it fills as the page scrolls. */
+import { motion, useScroll } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { t } from '../../i18n/useT';
 
 export default function LandingNav() {
+  const { scrollYProgress } = useScroll();
   return (
     <header
       className="sticky top-0 z-20 border-b border-glass-border bg-glass backdrop-blur-md"
@@ -29,6 +31,11 @@ export default function LandingNav() {
           {t('common.login')}
         </Link>
       </nav>
+      <motion.span
+        aria-hidden="true"
+        className="absolute bottom-[-1px] left-0 h-[3px] w-full origin-left rounded-r-full"
+        style={{ scaleX: scrollYProgress, background: 'linear-gradient(90deg, var(--accent), var(--gold))' }}
+      />
     </header>
   );
 }

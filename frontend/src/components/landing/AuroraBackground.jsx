@@ -4,7 +4,11 @@
    hero only. Purely decorative (aria-hidden). */
 export default function AuroraBackground() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[110svh] overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[110svh] overflow-hidden"
+      style={{ maskImage: 'linear-gradient(black 65%, transparent)', WebkitMaskImage: 'linear-gradient(black 65%, transparent)' }}
+    >
       <div
         className="absolute -left-1/3 -top-1/4 h-[60vmax] w-[60vmax] rounded-full animate-aurora-a sm:h-[80vmax] sm:w-[80vmax]"
         style={{ background: 'radial-gradient(closest-side, var(--glow-gold), transparent)' }}
