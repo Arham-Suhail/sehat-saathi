@@ -2,7 +2,7 @@
 
 Started **Thursday Nov 26, 2026**. Deadline **Saturday Nov 28, 11:59 PM**. Feature freeze **Saturday 6 PM**. Target submission **Saturday 9 PM**.
 
-## Stage A — stable core (now)
+## Stage A — stable core (DONE: "STABLE REACHED" confirmed Nov 27; tag `stage-a-stable`)
 Plain, clean UI. Atkinson Hyperlegible only, neutral placeholder palette, mobile-first.
 
 | Phase | Scope | Exit criterion |
@@ -24,7 +24,7 @@ Plain, clean UI. Atkinson Hyperlegible only, neutral placeholder palette, mobile
   import bug + CSP for Daily; transcript shown in Roman Urdu)_
 - [x] All security tests pass, CI green, Render + Vercel live, seed script works
 
-## Stage B — polish (only after the user confirms Stage A)
+## Stage B — polish (CURRENT since Nov 27)
 Driven by separate prompts: display-font landing hero, Gallery3D, Chotu mascot (ChotuAgent, ChotuBoundary) and animations, decorative gradients/grain.
 
 ## After Stage B

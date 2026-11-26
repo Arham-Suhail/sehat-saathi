@@ -18,9 +18,9 @@
 10. Cheaper generic alternatives are LLM-suggested and always labelled "needs doctor verification".
 
 ## Build stages (see docs/ROADMAP.md)
-- **Stage A (current): stable, deployed, plain-UI core app.** `/` = app name + one-line tagline + Login/Register. Atkinson Hyperlegible only. Neutral placeholder palette in `theme.css`. CheckIn screen has a plain text bubble area and a marked `CHOTU PLACEHOLDER` box. Vapi via a plain button (hidden if not configured).
+- **Stage A (DONE: user confirmed "STABLE REACHED" on Nov 27; git tag `stage-a-stable`): stable, deployed, plain-UI core app.** `/` = app name + one-line tagline + Login/Register. Atkinson Hyperlegible only. Neutral placeholder palette in `theme.css`. CheckIn screen has a plain text bubble area and a marked `CHOTU PLACEHOLDER` box. Vapi via a plain button (hidden if not configured).
 - **Do NOT build in Stage A:** display-font hero (Fraunces/Anton/Yellowtail), Gallery3D, Chotu mascot (ChotuAgent/ChotuBoundary) and animations, decorative gradients/grain/flourishes.
-- **Stage B (only after the user confirms "STABLE REACHED"):** the polish pass, driven by separate user prompts.
+- **Stage B (CURRENT since Nov 27; only after the user confirms "STABLE REACHED"):** the polish pass, driven by separate user prompts.
 - Then Phase 4 (audit) and Phase 5 (README, video, submission). Cut order: Gallery3D → hero Chotu → Chotu animations → Vapi → alternatives LLM polish → Web Speech (text check-in is never cut).
 
 ## Stack
