@@ -4,6 +4,7 @@
    /checkins/voice at call end. Stage B maps `state` onto the Chotu mascot. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
+import { resolveVapiClass } from './vapiClass';
 
 const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY || '';
 const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID || '';
@@ -67,7 +68,8 @@ export function useVapiCall({ onSaved } = {}) {
 
   const ensureClient = useCallback(async () => {
     if (vapiRef.current) return vapiRef.current;
-    const { default: Vapi } = await import('@vapi-ai/web');
+    // CommonJS package: through Vite the class is at default.default (see vapiClass.js).
+    const Vapi = resolveVapiClass(await import('@vapi-ai/web'));
     // avoidEval keeps the WebRTC layer compatible with our strict CSP (no 'unsafe-eval').
     const vapi = new Vapi(PUBLIC_KEY, undefined, { avoidEval: true });
     vapi.on('call-start', () => {
@@ -85,7 +87,9 @@ export function useVapiCall({ onSaved } = {}) {
       setTranscript(transcriptRef.current);
       if (role === 'elder') setState((s) => (s === 'speaking' ? s : 'thinking'));
     });
-    vapi.on('error', () => {
+    vapi.on('error', (e) => {
+      // Type/message only, for debugging; never keys or tokens.
+      console.error('vapi error:', e?.type || e?.error?.type || 'unknown', e?.error?.message || e?.message || '');
       setError('Awaaz ka rabta toot gaya. Dobara koshish karein ya likh kar bataein.');
       setState('error');
       setLive(false);
@@ -118,7 +122,8 @@ export function useVapiCall({ onSaved } = {}) {
       const vapi = await ensureClient();
       const call = await vapi.start(ASSISTANT_ID);
       callIdRef.current = call?.id ? String(call.id).slice(0, 100) : null;
-    } catch {
+    } catch (e) {
+      console.error('vapi start failed:', e?.name || 'Error', e?.message || '');
       setError('Awaaz wali baat shuru nahi ho saki. Likh kar bataein.');
       setState('error');
     }
