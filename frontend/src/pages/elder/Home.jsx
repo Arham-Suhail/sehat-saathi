@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { BigButton, fmtTime } from '../../components/ui';
 import { t } from '../../i18n/useT';
+import ChotuAgent from '../../components/chotu/ChotuAgent';
+import ChotuBoundary from '../../components/chotu/ChotuBoundary';
 import { useReminders } from './ElderLayout';
 
 export default function ElderHome() {
@@ -13,7 +15,7 @@ export default function ElderHome() {
   const tiles = [
     { to: '/elder/upload', title: t('home.upload'), sub: t('home.upload.sub'), icon: '📷' },
     { to: '/elder/reminders', title: t('home.reminders'), sub: t('home.reminders.sub'), icon: '💊' },
-    { to: '/elder/checkin', title: t('home.checkin'), sub: t('home.checkin.sub'), icon: '💬' },
+    { to: '/elder/checkin', title: t('home.checkin'), sub: t('home.checkin.sub'), icon: 'chotu' },
     { to: '/elder/vitals', title: t('home.vitals'), sub: t('home.vitals.sub'), icon: '❤️' },
     { to: '/elder/invite', title: t('home.invite'), sub: t('home.invite.sub'), icon: '👪' },
   ];
@@ -43,7 +45,13 @@ export default function ElderHome() {
         {tiles.map((x) => (
           <Link key={x.to} to={x.to} className="tile tile--icon">
             <span className="tile__icon" aria-hidden="true">
-              {x.icon}
+              {x.icon === 'chotu' ? (
+                <ChotuBoundary>
+                  <ChotuAgent size={40} />
+                </ChotuBoundary>
+              ) : (
+                x.icon
+              )}
             </span>
             <span className="tile__text">
               <span>{x.title}</span>

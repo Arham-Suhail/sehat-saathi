@@ -1,0 +1,157 @@
+/* Chotu (mascot) animation. transform/opacity ONLY (CLAUDE.md). Each state is a class on .chotu.
+   prefers-reduced-motion: no animation at all; the states still differ by eye position. */
+.chotu {
+  display: inline-block;
+  position: relative;
+  line-height: 0;
+}
+.chotu svg {
+  overflow: visible;
+}
+.chotu__body,
+.chotu__eyes,
+.chotu__eye,
+.chotu__ring,
+.chotu__dot,
+.chotu__shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.chotu__ring,
+.chotu__dot {
+  opacity: 0;
+}
+
+/* Eye direction per state (also used with reduced motion). */
+.chotu--listening .chotu__eyes {
+  transform: translate(-13px, -15px);
+}
+.chotu--thinking .chotu__eyes {
+  transform: translate(13px, -13px);
+}
+.chotu--error .chotu__eye {
+  transform: translateY(5px) scaleY(0.55);
+}
+.chotu--listening .chotu__body {
+  transform: rotate(-4deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chotu__eyes,
+  .chotu__body {
+    transition: transform 0.35s ease;
+  }
+  .chotu__float {
+    animation: chotu-float 3.2s ease-in-out infinite alternate;
+  }
+  .chotu__shadow {
+    animation: chotu-shadow 3.2s ease-in-out infinite alternate;
+  }
+  .chotu--idle .chotu__eye,
+  .chotu--listening .chotu__eye,
+  .chotu--speaking .chotu__eye {
+    animation: chotu-blink 5.5s ease-in-out infinite;
+  }
+  .chotu--listening .chotu__ring {
+    animation: chotu-ring 1.8s ease-out infinite;
+  }
+  .chotu--listening .chotu__ring--2 {
+    animation-delay: 0.6s;
+  }
+  .chotu--speaking .chotu__ring {
+    animation: chotu-ring 1s ease-out infinite;
+  }
+  .chotu--speaking .chotu__ring--2 {
+    animation-delay: 0.33s;
+  }
+  .chotu--speaking .chotu__body {
+    animation: chotu-talk 0.36s ease-in-out infinite alternate;
+  }
+  .chotu--thinking .chotu__dot {
+    animation: chotu-dot 1.1s ease-in-out infinite;
+  }
+  .chotu--thinking .chotu__dot--2 {
+    animation-delay: 0.15s;
+  }
+  .chotu--thinking .chotu__dot--3 {
+    animation-delay: 0.3s;
+  }
+  .chotu--error .chotu__float {
+    animation: chotu-shake 0.5s ease-in-out 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chotu--thinking .chotu__dot {
+    opacity: 1;
+  }
+}
+
+@keyframes chotu-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-7px);
+  }
+}
+@keyframes chotu-shadow {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.86);
+    opacity: 0.7;
+  }
+}
+@keyframes chotu-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes chotu-ring {
+  from {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+@keyframes chotu-talk {
+  from {
+    transform: scale(1, 1);
+  }
+  to {
+    transform: scale(0.97, 1.04);
+  }
+}
+@keyframes chotu-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-7px);
+    opacity: 1;
+  }
+}
+@keyframes chotu-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}

@@ -3,6 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { homeFor, useAuth } from '../auth/AuthContext';
 import AuroraBackground from '../components/landing/AuroraBackground';
 import BentoFeatures from '../components/landing/BentoFeatures';
+import ChotuAgent from '../components/chotu/ChotuAgent';
+import ChotuBoundary from '../components/chotu/ChotuBoundary';
 import FlipWords from '../components/landing/FlipWords';
 import RevealText from '../components/landing/RevealText';
 import { BigButton } from '../components/ui';
@@ -24,6 +26,12 @@ export default function Landing() {
       <AuroraBackground />
 
       <section className="mx-auto flex w-full max-w-5xl flex-col items-center px-5 pb-12 pt-12 text-center sm:pt-20">
+        <motion.div {...fadeUp(0)} className="mb-2">
+          <ChotuBoundary>
+            <ChotuAgent state="idle" size={118} />
+          </ChotuBoundary>
+        </motion.div>
+
         <motion.p
           {...fadeUp(0)}
           className="m-0 mb-6 inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-[1rem] font-bold text-accent shadow-soft backdrop-blur-md"
@@ -72,7 +80,8 @@ export default function Landing() {
       <BentoFeatures />
 
       <footer className="mx-auto max-w-5xl px-5 pb-10 text-center">
-        <p className="m-0 text-[1rem] leading-relaxed text-muted">{t('landing.disclaimer')}</p>
+        <p className="m-0 text-[1rem] leading-relaxed text-muted">{t('landing.chotu.note')}</p>
+        <p className="m-0 mt-2 text-[1rem] leading-relaxed text-muted">{t('landing.disclaimer')}</p>
       </footer>
     </main>
   );

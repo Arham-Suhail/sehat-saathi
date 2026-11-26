@@ -524,3 +524,13 @@
 .chip {
   border-color: var(--surface-alt);
 }
+
+/* Chotu's spot on the check-in screen (replaces the Stage A placeholder) */
+.chotu-stage {
+  display: grid;
+  place-items: center;
+  padding: 8px 0 0;
+  min-height: 190px;
+  border-radius: 28px;
+  background: radial-gradient(closest-side, var(--accent-soft), transparent);
+}

@@ -3,6 +3,8 @@ import { api } from '../../api/client';
 import { BigButton, BottomBar, Disclaimer, ErrorText, Notice, TopBar } from '../../components/ui';
 import { useSpeech } from '../../hooks/useSpeech';
 import { useVapiCall } from '../../hooks/useVapiCall';
+import ChotuAgent from '../../components/chotu/ChotuAgent';
+import ChotuBoundary from '../../components/chotu/ChotuBoundary';
 import { toRoman } from '../../i18n/translit';
 
 const GREETING = 'Assalam o Alaikum! Aaj aap kaisa mehsoos kar rahe hain?';
@@ -70,15 +72,25 @@ export default function CheckIn() {
   };
 
   const vapiBusy = vapi.live || vapi.state === 'connecting' || vapi.state === 'saving';
+  // Chotu mirrors what is happening: the voice call state first, then the typed check-in.
+  const chotuState =
+    vapi.state === 'error'
+      ? 'error'
+      : vapi.state === 'listening' || vapi.state === 'speaking'
+        ? vapi.state
+        : ['connecting', 'thinking', 'saving'].includes(vapi.state) || busy
+          ? 'thinking'
+          : 'idle';
 
   return (
     <main className="page page--with-bar stack">
       <TopBar back="/elder" title="Hal-chaal" />
       <h1>Aaj ka hal-chaal</h1>
 
-      {/* CHOTU PLACEHOLDER — Stage B: <ChotuAgent state={...} /> goes here */}
-      <div className="chotu-placeholder" aria-hidden="true">
-        Chotu (jald)
+      <div className="chotu-stage">
+        <ChotuBoundary>
+          <ChotuAgent state={chotuState} size={150} />
+        </ChotuBoundary>
       </div>
 
       <div className="bubbles" aria-live="polite">

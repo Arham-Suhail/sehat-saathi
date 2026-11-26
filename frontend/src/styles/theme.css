@@ -45,6 +45,16 @@
   --glass-border: rgb(255 255 255 / 0.75);
   --dot: rgb(31 27 22 / 0.09);
 
+  /* Chotu (mascot): pastel iridescent ghost, from the user's reference images. Decoration only. */
+  --chotu-body: #f6f7f2;
+  --chotu-green: #8fdfb0;
+  --chotu-blue: #93c6ea;
+  --chotu-pink: #f0b6cf;
+  --chotu-yellow: #f2e58a;
+  --chotu-eye: #141414;
+  --chotu-shadow: rgb(31 27 22 / 0.14);
+  --chotu-ring: rgb(14 91 86 / 0.35);
+
   --font-body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Display/script fonts: ONLY the landing hero and section headings (never medical info or buttons). */
   --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
