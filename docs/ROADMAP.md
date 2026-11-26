@@ -20,7 +20,8 @@ Plain, clean UI. Atkinson Hyperlegible only, neutral placeholder palette, mobile
 - [ ] Reminders generated; alerts + notifications while open; taken/skipped  _(API verified live; notification firing needs a real-device check)_
 - [ ] Text check-in with concern_flag (incl. keyword fallback); Web Speech check-in in Chrome  _(text verified live; Web Speech needs a real-device check)_
 - [x] Dashboard: timeline, mood trend, taken vs missed, vitals list, alternatives ("needs doctor verification")
-- [ ] Vapi plain button works; hidden when not configured  _(hidden-when-unconfigured verified; needs Vapi assistant + keys)_
+- [x] Vapi plain button works; hidden when not configured  _(verified live Nov 26 by the user on a phone; fixed the CommonJS
+  import bug + CSP for Daily; transcript shown in Roman Urdu)_
 - [x] All security tests pass, CI green, Render + Vercel live, seed script works
 
 ## Stage B — polish (only after the user confirms Stage A)
