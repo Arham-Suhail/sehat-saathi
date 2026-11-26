@@ -85,7 +85,7 @@ openai (used only as an OpenAI-compatible HTTP client), httpx, slowapi, pillow, 
 pywebpush + py-vapid + http_ece + cryptography + aiohttp + requests (Web Push encryption, VAPID signing, delivery).
 Dev: pytest, pytest-asyncio, mongomock-motor, ruff, pip-audit. CI: GitHub Actions, gitleaks.
 
-**Frontend (npm):** react, react-dom, react-router-dom, recharts, @vapi-ai/web (Vapi Web SDK; uses Daily.co WebRTC),
+**Frontend (npm):** react, react-dom, react-router-dom, recharts, @vapi-ai/web (Vapi Web SDK; uses Daily.co WebRTC, which also contacts Daily's region service prod-ks.pluot.blue),
 @fontsource/atkinson-hyperlegible (self-hosted font). Dev: vite, @vitejs/plugin-react, eslint, @eslint/js,
 eslint-plugin-react, eslint-plugin-react-hooks, globals.
 

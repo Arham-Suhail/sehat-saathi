@@ -64,7 +64,7 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | Errors never leak internals; validation never echoes values | DONE | `test_unhandled_error_hides_internals`, `test_validation_error_never_echoes_password` |
 | Logs: no bodies, query strings, tokens, prescription text or transcripts | DONE (code) | `logging_setup.py` redaction + path-only access log; production log grep: see Phase 4 below |
 | API security headers + `Cache-Control: no-store`; CORS exact allowlist | DONE | `test_health_and_security_headers`, `test_cors_allowlist`; live `curl -I` |
-| Web headers (CSP, HSTS, nosniff, DENY, Permissions-Policy) | DONE | `frontend/vercel.json`; live `curl -I` |
+| Web headers (CSP, HSTS, nosniff, DENY, Permissions-Policy) | DONE | `frontend/vercel.json`; live `curl -I`. For Vapi voice calls the CSP allows exactly: `script-src https://c.daily.co 'wasm-unsafe-eval'` (Daily's call machine + Krisp noise filter are WebAssembly; JS `eval` stays blocked) and `connect-src https://prod-ks.pluot.blue` (Daily's region lookup), found by reading Daily's call-machine bundle 0.94.0 |
 | No raw HTML rendering | DONE | ESLint `react/no-danger`; `npm run lint` |
 | CSRF protection | NOT NEEDED | no cookies; bearer header only; CORS `allow_credentials=False` |
 | SSRF protection | NOT NEEDED | the server never fetches user-supplied URLs; LLM base URLs are env-only |
