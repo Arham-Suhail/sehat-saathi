@@ -14,6 +14,9 @@ Plain, clean UI. Atkinson Hyperlegible only, neutral placeholder palette, mobile
 ### "STABLE REACHED" checklist (all on live URLs)
 - [x] Register/login for elder, family, doctor; invite code flow works
 - [x] Fake prescription → extract → edit → confirm; pharmacist banner on low confidence
+- [x] Extraction bug fix (Nov 26): verbatim fields, frequency/route normaliser, IV/PRN no reminders, D/c stopped + excluded from reminders/adherence, quantity limits kept — regression-tested on the textbook order sheet and re-checked live with Gemini
+- [x] All tap targets ≥ 48px (audited at 360/390/768/1280/1440)
+- [x] No demo password in the repo (seed reads SEED_PASSWORD or generates one)
 - [ ] Reminders generated; alerts + notifications while open; taken/skipped  _(API verified live; notification firing needs a real-device check)_
 - [ ] Text check-in with concern_flag (incl. keyword fallback); Web Speech check-in in Chrome  _(text verified live; Web Speech needs a real-device check)_
 - [x] Dashboard: timeline, mood trend, taken vs missed, vitals list, alternatives ("needs doctor verification")

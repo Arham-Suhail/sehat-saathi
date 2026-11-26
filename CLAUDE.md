@@ -35,8 +35,11 @@
 - All LLM calls go through `app/llm` (`get_vision()`, `get_text()`). No provider names, URLs, model IDs or SDK imports anywhere else.
 - Every LLM response is parsed into a Pydantic model; on failure retry once, then return a friendly error.
 - Prompts live in `app/llm/prompts.py`. Safety rules are stated in the prompt AND enforced in code.
-- Extraction: transcribe only what is written; never add, infer or correct a dose/timing/medicine.
-  Low confidence or missing fields → `needs_pharmacist=true` → UI shows "please confirm with a pharmacist".
+- Extraction: the model transcribes VERBATIM only (original_text + raw fields); it never decides a schedule.
+  `services/frequency.py` (pure, tested) translates bid/q6h/1+0+1/PO/IV/prn; code decides reminders:
+  IV/IM/SC/infusion → hospital note (no reminders), PRN → none, D/c/discontinue/stop → status stopped
+  (never reminders, active lists or adherence). `needs_pharmacist` is enforced in code (low confidence,
+  missing name/strength/frequency, "..."/not-verbatim text, D/c, unknown abbreviations) and never auto-cleared.
 - Any screen showing medical info renders `<Disclaimer />` ("verify with your doctor").
 - Check-in tips are general wellness only — never condition-, symptom- or medicine-specific.
 - `concern_flag` = LLM flag OR deterministic keyword match (`services/concern.py`, Roman Urdu + English). Never rely on the LLM alone.
