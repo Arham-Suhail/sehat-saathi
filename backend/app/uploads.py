@@ -10,7 +10,11 @@ from fastapi import HTTPException, Request, status
 from PIL import Image, UnidentifiedImageError
 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
-MAX_PIXELS = 40_000_000  # decompression-bomb guard
+MAX_PIXELS = 40_000_000  # Pillow's own guard (it only *raises* above 2x this)
+# Audit F6: our own hard limit, checked from the header BEFORE any decode. The web app
+# shrinks photos to 1600 px before upload, so 20 MP is generous for any honest client
+# and caps the worst-case decode at ~80 MB (RGBA) on the 512 MB instance.
+MAX_DECODE_PIXELS = 20_000_000
 MAX_SIDE = 1600
 
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
@@ -62,8 +66,12 @@ def normalize_image(data: bytes) -> bytes:
         with Image.open(io.BytesIO(data)) as img:
             if img.format not in {"JPEG", "PNG", "WEBP"}:
                 raise _reject(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Yeh sahi tasveer nahi hai")
+            if img.width * img.height > MAX_DECODE_PIXELS:
+                raise _reject(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Tasveer bohat bari hai")
+            if img.format == "JPEG":
+                img.draft("RGB", (MAX_SIDE, MAX_SIDE))  # decode at 1/2..1/8 scale when possible
+            img.thumbnail((MAX_SIDE, MAX_SIDE))  # shrink before the RGB copy, not after
             img = img.convert("RGB")
-            img.thumbnail((MAX_SIDE, MAX_SIDE))
             out = io.BytesIO()
             img.save(out, format="JPEG", quality=85, optimize=True)
             return out.getvalue()

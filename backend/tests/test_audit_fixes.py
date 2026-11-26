@@ -218,3 +218,40 @@ async def test_f3_parallel_wrong_codes_cannot_exceed_lockout(client, db, monkeyp
     assert set(codes) <= {400, 429}, codes
     user = await db.users.find_one({"_id": ObjectId(carer["user"]["id"])})
     assert user["invite_locked_until"] is not None
+
+
+# ---------- F6: decompression bombs are rejected before full decode ----------
+def _img_bytes(size, fmt, mode="L"):
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new(mode, size, 255).save(buf, format=fmt)
+    return buf.getvalue()
+
+
+async def _extract(client, token, data, ctype):
+    return await client.post(
+        "/prescriptions/extract", content=data, headers={**auth(token), "Content-Type": ctype}
+    )
+
+
+async def test_f6_png_pixel_bomb_rejected(client):
+    elder = await register(client, "elder")
+    bomb = _img_bytes((7800, 7800), "PNG")  # ~61 MP but only ~70 KB on the wire
+    assert len(bomb) < 200_000
+    r = await _extract(client, elder["token"], bomb, "image/png")
+    assert r.status_code == 415
+
+
+async def test_f6_huge_jpeg_rejected(client):
+    elder = await register(client, "elder")
+    r = await _extract(client, elder["token"], _img_bytes((7000, 6000), "JPEG"), "image/jpeg")
+    assert r.status_code == 415
+
+
+async def test_f6_normal_phone_photo_still_accepted(client):
+    elder = await register(client, "elder")
+    r = await _extract(client, elder["token"], _img_bytes((4000, 3000), "JPEG", "RGB"), "image/jpeg")
+    assert r.status_code == 200
