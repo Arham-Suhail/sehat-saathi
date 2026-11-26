@@ -27,7 +27,7 @@ export default function ElderHome() {
         </BigButton>
       </header>
 
-      <section className="card" aria-labelledby="next-title">
+      <section className="card card--feature" aria-labelledby="next-title">
         <h2 id="next-title">{t('home.next')}</h2>
         {next ? (
           <p className="big">
@@ -41,12 +41,14 @@ export default function ElderHome() {
 
       <nav className="tiles" aria-label="Menu">
         {tiles.map((x) => (
-          <Link key={x.to} to={x.to} className="tile">
-            <span>
-              <span aria-hidden="true">{x.icon} </span>
-              {x.title}
+          <Link key={x.to} to={x.to} className="tile tile--icon">
+            <span className="tile__icon" aria-hidden="true">
+              {x.icon}
             </span>
-            <small>{x.sub}</small>
+            <span className="tile__text">
+              <span>{x.title}</span>
+              <small>{x.sub}</small>
+            </span>
           </Link>
         ))}
       </nav>

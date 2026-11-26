@@ -391,3 +391,136 @@
   cursor: pointer;
   font-weight: 700;
 }
+
+/* ================================================================
+   Stage B skin: same components, softer and more modern look.
+   Calm on purpose for elders: no moving backgrounds here, same big type
+   and 48px+ targets; only a small press effect. Colours: theme.css only.
+   ================================================================ */
+.card {
+  border-radius: 22px;
+  border-color: var(--surface-alt);
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+}
+.card--feature {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 70%);
+  border-color: var(--accent-soft);
+}
+.card--feature::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--glow-gold), transparent);
+  pointer-events: none;
+}
+
+.btn {
+  border-radius: 18px;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn--primary {
+  box-shadow: 0 6px 18px var(--glow-teal);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+@media (hover: hover) {
+  .btn--primary:hover:not(:disabled) {
+    box-shadow: 0 10px 26px var(--glow-teal);
+  }
+  .tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.input,
+.textarea,
+.select {
+  border-radius: 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible {
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.notice {
+  border-radius: 18px;
+  border-width: 1.5px;
+}
+
+.disclaimer {
+  border-left: 0;
+  border-radius: 14px;
+  background: var(--surface-alt);
+  padding: 10px 14px;
+}
+
+.tile {
+  border-radius: 22px;
+  border: 1px solid var(--surface-alt);
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.tile:active {
+  transform: scale(0.99);
+}
+.tile--icon {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+}
+.tile__icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: var(--accent-soft);
+  font-size: 1.5rem;
+}
+.tile__text {
+  display: grid;
+  gap: 2px;
+}
+
+.bottom-bar {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--glass-border);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 24px rgb(31 27 22 / 0.06);
+}
+
+.bubble {
+  border-radius: 20px;
+}
+.bubble--ai {
+  border-color: var(--surface-alt);
+  border-bottom-left-radius: 6px;
+  box-shadow: var(--shadow);
+}
+.bubble--elder {
+  border-bottom-right-radius: 6px;
+}
+
+.modal {
+  border-radius: 26px;
+  box-shadow: var(--shadow-lg);
+}
+
+.chip {
+  border-color: var(--surface-alt);
+}
