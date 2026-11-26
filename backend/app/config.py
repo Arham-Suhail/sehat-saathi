@@ -52,6 +52,32 @@ class Settings(BaseSettings):
     text_json_mode: Literal["json_schema", "json_object", "prompt"] = "json_object"
     llm_timeout_seconds: float = 45.0
 
+    # Fallback providers, tried in order when the primary fails (rate limit, quota, outage...).
+    # Each slot needs BASE_URL + API_KEY + MODEL; PROVIDER is only a label for logs.
+    vision_fallback_1_provider: str | None = None
+    vision_fallback_1_base_url: str | None = None
+    vision_fallback_1_api_key: str | None = None
+    vision_fallback_1_model: str | None = None
+    vision_fallback_1_json_mode: Literal["json_schema", "json_object", "prompt"] = "json_object"
+    vision_fallback_2_provider: str | None = None
+    vision_fallback_2_base_url: str | None = None
+    vision_fallback_2_api_key: str | None = None
+    vision_fallback_2_model: str | None = None
+    vision_fallback_2_json_mode: Literal["json_schema", "json_object", "prompt"] = "json_object"
+    text_fallback_1_provider: str | None = None
+    text_fallback_1_base_url: str | None = None
+    text_fallback_1_api_key: str | None = None
+    text_fallback_1_model: str | None = None
+    text_fallback_1_json_mode: Literal["json_schema", "json_object", "prompt"] = "json_object"
+    text_fallback_2_provider: str | None = None
+    text_fallback_2_base_url: str | None = None
+    text_fallback_2_api_key: str | None = None
+    text_fallback_2_model: str | None = None
+    text_fallback_2_json_mode: Literal["json_schema", "json_object", "prompt"] = "json_object"
+    # Whole-chain time budget, kept under the frontend timeouts (60 s text, 120 s upload).
+    llm_text_budget_seconds: float = 50.0
+    llm_vision_budget_seconds: float = 100.0
+
     @property
     def origins(self) -> list[str]:
         return [o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip()]
@@ -63,6 +89,23 @@ class Settings(BaseSettings):
     @property
     def resolved_text_provider(self) -> str:
         return (self.text_provider or self.provider).strip().lower()
+
+    def fallbacks(self, cap: str) -> list[dict]:
+        """Fully configured fallback slots for 'vision' or 'text', in order."""
+        out = []
+        for n in (1, 2):
+            pre = f"{cap}_fallback_{n}"
+            if (getattr(self, f"{pre}_base_url") or "").strip():
+                out.append(
+                    {
+                        "provider": (getattr(self, f"{pre}_provider") or f"fallback-{n}").strip().lower(),
+                        "base_url": getattr(self, f"{pre}_base_url").strip(),
+                        "api_key": getattr(self, f"{pre}_api_key").strip(),
+                        "model": getattr(self, f"{pre}_model").strip(),
+                        "json_mode": getattr(self, f"{pre}_json_mode"),
+                    }
+                )
+        return out
 
     @model_validator(mode="after")
     def _fail_fast(self) -> "Settings":
@@ -89,6 +132,14 @@ class Settings(BaseSettings):
             for field in ("base_url", "api_key", "model"):
                 if not (getattr(self, f"{cap}_{field}") or "").strip():
                     problems.append(f"{cap.upper()}_{field.upper()} is required for provider '{prov}'")
+        for cap in ("vision", "text"):
+            for n in (1, 2):
+                pre = f"{cap}_fallback_{n}"
+                parts = [
+                    (getattr(self, f"{pre}_{f}") or "").strip() for f in ("base_url", "api_key", "model")
+                ]
+                if any(parts) and not all(parts):
+                    problems.append(f"{pre.upper()} needs BASE_URL, API_KEY and MODEL (or none of them)")
         if self.resolved_vision_provider != "fake" and not self.vision_supports_images:
             problems.append("VISION_SUPPORTS_IMAGES=false: the vision model must accept images")
 

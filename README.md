@@ -68,10 +68,11 @@ A full independent audit with every finding and its status is in `docs/security/
 - **No logout on the server:** "logout" clears the browser; a copied token stays valid until it expires (7 days for elders).
 - **Data writes** (confirming medicines, vitals) have no rate limit; no account deletion, data export or retention policy.
 - **Data sent to AI providers:** prescription photos (re-encoded, metadata stripped) and check-in text are sent to the
-  Gemini API. On Google's free tier, inputs may be used to improve Google's products. Use fake data only.
+  Gemini API, and to Groq or OpenRouter only when Gemini fails. Free tiers may log or use inputs to improve their
+  products (OpenRouter's free models in particular). Use fake data only.
 
 ## Dependencies & external services (disclosure)
-**External services:** MongoDB Atlas, Render, Vercel, UptimeRobot (pings `/health` every 5 min to keep the free Render server awake; it sees no user data), Gemini API (or another OpenAI-compatible provider), Vapi (voice, planned),
+**External services:** MongoDB Atlas, Render, Vercel, UptimeRobot (pings `/health` every 5 min to keep the free Render server awake; it sees no user data), Gemini API (primary), Groq and OpenRouter (optional fallback LLM providers, used only when Gemini is rate-limited or down), Vapi (voice, planned),
 browser Web Speech API and Notification API.
 
 **Backend (Python):** fastapi, starlette, uvicorn, pydantic, pydantic-settings, email-validator, pymongo, PyJWT, bcrypt,

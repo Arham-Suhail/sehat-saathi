@@ -6,6 +6,7 @@ import base64
 import json
 import logging
 import re
+import time
 from typing import Any
 
 import openai
@@ -52,7 +53,7 @@ class OpenAICompatProvider:
             base_url=cfg.base_url,
             api_key=cfg.api_key,
             timeout=cfg.timeout_seconds,
-            max_retries=1,
+            max_retries=cfg.max_retries,
         )
 
     def _response_format(self, schema: type[T]) -> dict | None:
@@ -73,6 +74,7 @@ class OpenAICompatProvider:
         schema: type[T],
         images: list[bytes] | None = None,
         max_tokens: int = 1500,
+        deadline: float | None = None,
     ) -> T:
         if images and not self.cfg.supports_images:
             raise LLMError("configured model does not accept images")
@@ -100,8 +102,13 @@ class OpenAICompatProvider:
 
         last_err = "unknown"
         for attempt in range(2):
+            timeout = self.cfg.timeout_seconds
+            if deadline is not None:
+                timeout = min(timeout, deadline - time.monotonic())
+                if timeout < 1:
+                    raise LLMError("time budget exhausted")
             try:
-                resp = await self.client.chat.completions.create(**kwargs)
+                resp = await self.client.chat.completions.create(**kwargs, timeout=timeout)
             except openai.RateLimitError as e:
                 raise LLMError("provider rate limit / quota") from e
             except openai.AuthenticationError as e:

@@ -40,3 +40,5 @@ services:
         value: gemini-3.5-flash-lite
       - key: TEXT_JSON_MODE
         value: json_schema
+      # Optional LLM fallbacks ({TEXT,VISION}_FALLBACK_{1,2}_*): set ALL of them (incl. the API key) in the
+      # Render dashboard at once. Listing them here without keys would fail startup. See backend/.env.example.

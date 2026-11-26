@@ -113,6 +113,7 @@ class FakeProvider:
         schema: type[T],
         images: list[bytes] | None = None,
         max_tokens: int = 1500,
+        deadline: float | None = None,
     ) -> T:
         self.calls.append({"schema": schema.__name__, "user_text": user_text, "images": len(images or [])})
 
