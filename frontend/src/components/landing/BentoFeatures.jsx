@@ -1,73 +1,93 @@
-/* Inspired by Aceternity "Bento Grid" + glass cards: four features, revealed once on scroll.
-   Card text uses the body font (display fonts are for headings only). Icons are simple inline SVG
-   strokes in currentColor, so they follow theme.css. Hover lift is decoration only (no hover-only UI). */
-import { motion, useReducedMotion } from 'motion/react';
+/* Bento grid of four features, revealed once on scroll. Solid surface cards (not glass) for calm,
+   readable text; each card has a small decorative CSS mini-visual (aria-hidden). Body font only.
+   Hover lift is decoration only (no hover-only UI). */
+import { motion } from 'motion/react';
+import Icon from './icons';
+import SectionHeading from './SectionHeading';
+import { useReveal } from './motion';
 import { t } from '../../i18n/useT';
 
-const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+function ScanVisual() {
+  return (
+    <div className="relative mx-auto h-28 w-24 rounded-xl border border-line bg-bg p-3">
+      {[90, 70, 80, 55].map((w, i) => (
+        <span key={i} className="mb-2 block h-2 rounded-full bg-line" style={{ width: `${w}%` }} />
+      ))}
+      <span className="absolute inset-x-1 top-1/2 h-[3px] rounded-full bg-accent opacity-70" />
+      {['left-0 top-0 border-l-4 border-t-4 rounded-tl-lg', 'right-0 top-0 border-r-4 border-t-4 rounded-tr-lg', 'left-0 bottom-0 border-b-4 border-l-4 rounded-bl-lg', 'right-0 bottom-0 border-b-4 border-r-4 rounded-br-lg'].map((c) => (
+        <span key={c} className={`absolute -m-1.5 h-5 w-5 border-accent ${c}`} />
+      ))}
+    </div>
+  );
+}
 
-const ICONS = {
-  camera: (
-    <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" {...stroke}>
-      <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.3-2h5.2l1.3 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" />
-      <circle cx="12" cy="12.5" r="3.4" />
-    </svg>
-  ),
-  alarm: (
-    <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" {...stroke}>
-      <circle cx="12" cy="13" r="7" />
-      <path d="M12 9.5V13l2.4 1.6M4.5 5.5 7 3.5M19.5 5.5 17 3.5" />
-    </svg>
-  ),
-  chat: (
-    <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" {...stroke}>
-      <path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17h-7.5L7 20.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5z" />
-      <path d="M8.5 10.5h7M8.5 13.5h4.5" />
-    </svg>
-  ),
-  family: (
-    <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" {...stroke}>
-      <circle cx="8" cy="8" r="2.6" />
-      <circle cx="16.5" cy="9" r="2.2" />
-      <path d="M3.5 19c.4-3.2 2.2-5 4.5-5s4.1 1.8 4.5 5M12.8 19c.3-2.6 1.7-4 3.7-4s3.4 1.4 3.7 4" />
-    </svg>
-  ),
-};
+function AlarmVisual() {
+  return (
+    <div className="relative mx-auto flex h-28 w-28 items-center justify-center">
+      <span className="absolute inset-0 rounded-full border-2 border-gold-soft" />
+      <span className="absolute inset-3 rounded-full border-2 border-gold" />
+      <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-full bg-gold text-ink">
+        <Icon name="bell" size={28} />
+      </span>
+    </div>
+  );
+}
+
+function ChatVisual() {
+  return (
+    <div className="mx-auto flex w-full max-w-[14rem] flex-col gap-2">
+      <span className="h-8 w-4/5 self-start rounded-2xl rounded-bl-md bg-accent-soft" />
+      <span className="h-8 w-3/5 self-end rounded-2xl rounded-br-md bg-gold-soft" />
+      <span className="h-8 w-2/3 self-start rounded-2xl rounded-bl-md bg-accent-soft" />
+    </div>
+  );
+}
+
+function FamilyVisual() {
+  return (
+    <div className="mx-auto flex items-center">
+      {['bg-accent text-accent-text', 'bg-gold text-ink', 'bg-accent-soft text-accent'].map((c, i) => (
+        <span key={c} className={`-ml-3 inline-flex h-16 w-16 items-center justify-center rounded-full border-4 border-surface first:ml-0 ${c}`}>
+          <Icon name={i === 1 ? 'heart' : 'family'} size={26} />
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const FEATURES = [
-  { key: 'scan', icon: 'camera', wide: true },
-  { key: 'alarm', icon: 'alarm' },
-  { key: 'chotu', icon: 'chat' },
-  { key: 'family', icon: 'family', wide: true },
+  { key: 'scan', icon: 'camera', wide: true, tint: 'accent', Visual: ScanVisual },
+  { key: 'alarm', icon: 'alarm', tint: 'gold', Visual: AlarmVisual },
+  { key: 'chotu', icon: 'chat', tint: 'gold', Visual: ChatVisual },
+  { key: 'family', icon: 'family', wide: true, tint: 'accent', Visual: FamilyVisual },
 ];
 
+const TINT = { accent: 'bg-accent-soft text-accent', gold: 'bg-gold-soft text-gold-text' };
+
 export default function BentoFeatures() {
-  const reduce = useReducedMotion();
+  const { inView } = useReveal();
   return (
-    <section aria-labelledby="features-title" className="mx-auto w-full max-w-5xl px-5 pb-14">
-      <h2 id="features-title" className="mb-6 text-center font-serif text-[clamp(1.75rem,5vw,2.5rem)] font-semibold text-ink">
-        {t('landing.features.title')}
-      </h2>
-      <ul className="grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-3">
-        {FEATURES.map((f, i) => (
+    <section aria-labelledby="features-title" className="mx-auto w-full max-w-6xl px-5 py-14">
+      <SectionHeading id="features-title" eyebrow={t('landing.features.eyebrow')} title={t('landing.features.title')} />
+      <ul className="m-0 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-3">
+        {FEATURES.map(({ key, icon, wide, tint, Visual }, i) => (
           <motion.li
-            key={f.key}
-            className={`group relative overflow-hidden rounded-3xl border border-glass-border bg-glass p-6 shadow-soft backdrop-blur-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lift ${f.wide ? 'sm:col-span-2' : ''}`}
-            initial={reduce ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.55, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            key={key}
+            {...inView(i * 0.08)}
+            className={`flex flex-col gap-6 rounded-3xl border border-line bg-surface p-6 shadow-soft transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-lift ${
+              wide ? 'sm:col-span-2 sm:flex-row sm:items-center' : ''
+            }`}
           >
-            <span
-              aria-hidden="true"
-              className="absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-60"
-              style={{ background: 'radial-gradient(closest-side, var(--glow-gold), transparent)' }}
-            />
-            <span className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-              {ICONS[f.icon]}
-            </span>
-            <h3 className="m-0 mb-2 text-[1.3rem] font-bold leading-snug text-ink">{t(`landing.f.${f.key}.title`)}</h3>
-            <p className="m-0 text-[1.08rem] leading-relaxed text-muted">{t(`landing.f.${f.key}.text`)}</p>
+            <div className="flex-1">
+              <span className={`mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl ${TINT[tint]}`}>
+                <Icon name={icon} size={30} />
+              </span>
+              <h3 className="m-0 mb-2 text-[1.4rem] font-bold leading-snug text-ink [text-wrap:balance]">{t(`landing.f.${key}.title`)}</h3>
+              <p className="m-0 text-[1.25rem] leading-relaxed text-muted [text-wrap:pretty]">{t(`landing.f.${key}.text`)}</p>
+            </div>
+            <div aria-hidden="true" className={`flex items-center justify-center rounded-2xl bg-surface-alt p-5 ${wide ? 'sm:w-56 sm:shrink-0' : ''}`}>
+              <Visual />
+            </div>
           </motion.li>
         ))}
       </ul>

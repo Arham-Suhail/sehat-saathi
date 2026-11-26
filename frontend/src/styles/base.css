@@ -9,6 +9,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-x: clip;
+  scroll-padding-top: 6rem; /* sticky landing nav must not cover focused elements (WCAG 2.4.11) */
 }
 
 body {
@@ -93,6 +94,7 @@ textarea {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

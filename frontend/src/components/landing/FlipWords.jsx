@@ -1,5 +1,6 @@
 /* Inspired by Aceternity "Flip Words": the phrase changes every few seconds. Screen readers get the
-   whole list once, so nothing is announced on a loop. Reduced motion: first phrase, no cycling. */
+   whole list once, so nothing is announced on a loop. Reduced motion: first phrase, no cycling.
+   Stops after one pass and holds the first phrase again (WCAG 2.2.2: no endless motion). */
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
 
@@ -8,7 +9,12 @@ export default function FlipWords({ words, interval = 2800, className = '' }) {
   const [i, setI] = useState(0);
   useEffect(() => {
     if (reduce) return undefined;
-    const id = setInterval(() => setI((n) => (n + 1) % words.length), interval);
+    let steps = 0;
+    const id = setInterval(() => {
+      steps += 1;
+      setI(steps % words.length);
+      if (steps >= words.length) clearInterval(id);
+    }, interval);
     return () => clearInterval(id);
   }, [reduce, interval, words.length]);
   return (
