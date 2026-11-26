@@ -380,3 +380,38 @@ def _oid(s: str):
     from bson import ObjectId
 
     return ObjectId(s)
+
+
+async def test_quantity_limit_recovered_from_line_when_model_omits_it():
+    """Live Gemini once put 'x 1 liter' only in instructions_raw; code copies it from the line."""
+    line = ORDER_SHEET_LINES[KCL]
+    res = ExtractionResult.model_validate(
+        {
+            "page_lines": [line],
+            "medicines": [
+                {
+                    "original_text": line,
+                    "name": "KCl",
+                    "strength_text": "20 mEq",
+                    "route_raw": "IV",
+                    "instructions_raw": "in 1 L 0.9%NS IV at 100 ml/hr x 1 liter",
+                    "confidence": 0.9,
+                }
+            ],
+        }
+    )
+
+    class Replay:
+        async def chat_json(self, **_):
+            return res
+
+    m = (await extract_prescription(Replay(), b"img")).medicines[0]
+    assert m.quantity_limit_raw == "x 1 liter"
+    assert m.duration_days is None
+
+
+def test_quantity_in_text_never_takes_a_duration():
+    from app.services.frequency import quantity_in_text
+
+    assert quantity_in_text(ORDER_SHEET_LINES[CIPRO]) == "Disp: 14 tabs"
+    assert quantity_in_text("Vancomycin 1,500 mg IV q12 hours x 3 days") is None

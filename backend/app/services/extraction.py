@@ -25,6 +25,7 @@ from app.services.frequency import (
     mentions_discontinue,
     normalize_frequency,
     normalize_route,
+    quantity_in_text,
     reminder_mode,
     route_in_text,
 )
@@ -174,7 +175,7 @@ def to_draft(med: ExtractedMedicine, page_lines: list[str]) -> DraftMedicine:
         prn_condition=med.prn_condition,
         duration_raw=med.duration_raw,
         duration_days=parse_duration_days(med.duration_raw),
-        quantity_limit_raw=med.quantity_limit_raw,
+        quantity_limit_raw=med.quantity_limit_raw or quantity_in_text(med.original_text),
         instructions_raw=med.instructions_raw,
         discontinue_mentioned=r.discontinued,
         frequency=FrequencyOut(

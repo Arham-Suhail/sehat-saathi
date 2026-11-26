@@ -250,6 +250,20 @@ def normalize_route(raw: str | None) -> RouteResult:
     return RouteResult(kind, ROUTE_LABEL[kind], written=True)
 
 
+_QUANTITY = re.compile(
+    r"(?i)(disp(?:ense)?\s*[:#]?\s*\d+(?:[.,]\d+)?\s*[a-z]+"
+    r"|\bx\s*\d+(?:[.,]\d+)?\s*(?:l|liters?|litres?|ml|bags?|bottles?|tabs?|tablets?|caps?|doses?)\b)"
+)
+
+
+def quantity_in_text(text: str | None) -> str | None:
+    """'Disp: 14 tabs' / 'x 1 liter' copied verbatim from the line. Never a duration ('x 7 days')."""
+    if not text:
+        return None
+    m = _QUANTITY.search(text)
+    return " ".join(m.group(1).split()) if m else None
+
+
 def is_infusion(text: str | None) -> bool:
     """'at 100 ml/hr', 'infusion', 'drip' -> a hospital infusion, never a home reminder."""
     return bool(_INFUSION.search(_clean(text)))
