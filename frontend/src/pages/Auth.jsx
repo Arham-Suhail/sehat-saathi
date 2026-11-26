@@ -2,8 +2,27 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { wakeServer } from '../api/client';
 import { homeFor, useAuth } from '../auth/AuthContext';
+import ChotuAgent from '../components/chotu/ChotuAgent';
+import ChotuBoundary from '../components/chotu/ChotuBoundary';
+import AuroraBackground from '../components/landing/AuroraBackground';
 import { BigButton, ErrorText, Field, TopBar } from '../components/ui';
 import { t } from '../i18n/useT';
+
+/* Stage B: both auth screens share the landing's aurora, a small Chotu and a glass card. */
+function AuthShell({ children }) {
+  return (
+    <main className="page auth">
+      <AuroraBackground />
+      <TopBar back="/" />
+      <div className="auth__chotu">
+        <ChotuBoundary>
+          <ChotuAgent size={84} />
+        </ChotuBoundary>
+      </div>
+      {children}
+    </main>
+  );
+}
 
 function useWake() {
   useEffect(() => {
@@ -39,9 +58,8 @@ export function Login() {
   };
 
   return (
-    <main className="page">
-      <TopBar back="/" />
-      <form className="stack" onSubmit={submit} noValidate>
+    <AuthShell>
+      <form className="glass-card stack" onSubmit={submit} noValidate>
         <h1>{t('common.login')}</h1>
         <Field id="email" label={t('auth.email')}>
           <input id="email" className="input" type="email" autoComplete="email" inputMode="email" required
@@ -59,9 +77,11 @@ export function Login() {
           <Link to="/register">{t('auth.no_account')}</Link>
         </p>
       </form>
-    </main>
+    </AuthShell>
   );
 }
+
+const ROLE_ICON = { elder: '🧓', family: '👪', doctor: '🩺' };
 
 export function Register() {
   const { user, register } = useAuth();
@@ -93,16 +113,17 @@ export function Register() {
   };
 
   return (
-    <main className="page">
-      <TopBar back="/" />
-      <form className="stack" onSubmit={submit} noValidate>
+    <AuthShell>
+      <form className="glass-card stack" onSubmit={submit} noValidate>
         <h1>{t('common.register')}</h1>
-        <fieldset className="card stack" style={{ border: '2px solid var(--border)' }}>
+        <fieldset className="role-options">
           <legend className="big">{t('auth.role')}</legend>
           {['elder', 'family', 'doctor'].map((r) => (
-            <label key={r} className="row" style={{ minHeight: 48 }}>
-              <input type="radio" name="role" value={r} checked={form.role === r} onChange={set('role')}
-                style={{ width: 28, height: 28 }} />
+            <label key={r} className="role-option">
+              <input type="radio" name="role" value={r} checked={form.role === r} onChange={set('role')} />
+              <span className="role-option__icon" aria-hidden="true">
+                {ROLE_ICON[r]}
+              </span>
               {t(`auth.role.${r}`)}
             </label>
           ))}
@@ -127,6 +148,6 @@ export function Register() {
           <Link to="/login">{t('auth.have_account')}</Link>
         </p>
       </form>
-    </main>
+    </AuthShell>
   );
 }

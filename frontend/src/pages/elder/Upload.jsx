@@ -90,11 +90,18 @@ export default function Upload() {
       />
 
       {preview ? (
-        <img src={preview} alt="Chuni hui nuskhe ki tasveer" className="card" style={{ padding: 0, width: '100%' }} />
+        <img src={preview} alt="Chuni hui nuskhe ki tasveer" className="preview-img" />
       ) : (
-        <BigButton variant="secondary" onClick={() => inputRef.current?.click()}>
-          📷 {t('upload.pick')}
-        </BigButton>
+        <button type="button" className="dropzone" onClick={() => inputRef.current?.click()}>
+          <span className="dropzone__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.3-2h5.2l1.3 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" />
+              <circle cx="12" cy="12.5" r="3.4" />
+            </svg>
+          </span>
+          <span className="dropzone__title">{t('upload.pick')}</span>
+          <span className="dropzone__hint">{t('upload.dropzone.hint')}</span>
+        </button>
       )}
 
       {busy ? <Notice>{t('upload.reading')}</Notice> : null}

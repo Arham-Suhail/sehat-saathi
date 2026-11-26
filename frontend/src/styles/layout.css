@@ -534,3 +534,367 @@
   border-radius: 28px;
   background: radial-gradient(closest-side, var(--accent-soft), transparent);
 }
+
+/* ================================================================
+   Stage B polish, part 2: screen-level patterns (calm versions of
+   Aceternity / 21st.dev ideas). transform/opacity motion only; the
+   legacy reduced-motion rule in base.css switches all of it off.
+   ================================================================ */
+
+/* Gentle entrance for every screen */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page {
+  animation: page-in 0.32s ease-out both;
+}
+
+/* Top bar: back button as a soft pill, title centred */
+.topbar .btn--small {
+  border-radius: 999px;
+  background: var(--glass);
+  border-color: var(--glass-border);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.topbar__title {
+  color: var(--text-muted);
+}
+
+/* Auth: glass card on the aurora background */
+.auth {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+}
+.glass-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.auth__chotu {
+  display: grid;
+  place-items: center;
+  margin: 4px 0 -6px;
+}
+
+/* Role picker: selectable cards (whole card is the tap target) */
+.role-options {
+  display: grid;
+  gap: 10px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.role-options legend {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 2px solid var(--surface-alt);
+  border-radius: 18px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+.role-option:active {
+  transform: scale(0.99);
+}
+.role-option:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.role-option:has(input:focus-visible) {
+  outline: 4px solid var(--focus);
+  outline-offset: 3px;
+}
+.role-option input {
+  width: 26px;
+  height: 26px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.role-option__icon {
+  font-size: 1.6rem;
+  flex: none;
+}
+
+/* Upload drop zone */
+.dropzone {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 220px;
+  padding: 28px 20px;
+  border: 2.5px dashed var(--accent);
+  border-radius: 28px;
+  background: radial-gradient(closest-side, var(--accent-soft), var(--surface));
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+.dropzone:active {
+  transform: scale(0.99);
+}
+.dropzone__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 10px 24px var(--glow-teal);
+}
+.dropzone__title {
+  font-weight: 700;
+  font-size: 1.15em;
+}
+.dropzone__hint {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+.preview-img {
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  display: block;
+}
+
+/* Dose cards (reminders list) */
+.dose {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.dose__time {
+  display: grid;
+  place-items: center;
+  min-width: 92px;
+  padding: 10px 8px;
+  border-radius: 18px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-align: center;
+  line-height: 1.15;
+}
+.dose__time strong {
+  font-size: 1.15em;
+}
+.dose__time small {
+  color: var(--text-muted);
+  font-size: 0.75em;
+}
+.dose__name {
+  font-weight: 700;
+  font-size: 1.1em;
+  margin: 0;
+}
+.dose--done .dose__time {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.dose--missed .dose__time {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* Reminder alert: entrance + ringing bell */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ring-out {
+  from {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+.modal {
+  animation: modal-in 0.28s ease-out both;
+}
+.alarm-badge {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  font-size: 2rem;
+}
+.alarm-badge::before,
+.alarm-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  animation: ring-out 1.6s ease-out infinite;
+}
+.alarm-badge::after {
+  animation-delay: 0.8s;
+}
+.alarm-time {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Carer: avatar with initials */
+.avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--gold-text));
+  color: var(--accent-text);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+/* Dashboard: adherence ring + stat chips */
+.stat-ring {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.stat-ring__svg circle {
+  fill: none;
+  stroke-width: 12;
+}
+.stat-ring__track {
+  stroke: var(--surface-alt);
+}
+.stat-ring__value {
+  stroke: var(--accent);
+  stroke-linecap: round;
+}
+.stat-ring__num {
+  font-weight: 700;
+  font-size: 1.6rem;
+  fill: var(--text);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+.chip-stat--ok {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.chip-stat--skip {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.chip-stat--miss {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* Timeline: vertical line with a dot per check-in */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 26px;
+  position: relative;
+  display: grid;
+  gap: 18px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(var(--accent), var(--gold-soft));
+}
+.timeline__item {
+  position: relative;
+}
+.timeline__item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 8px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--accent);
+}
+.timeline__item--concern::before {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+.timeline__quote {
+  margin: 4px 0 0;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--surface-alt);
+}
+
+/* Medicine rows inside the dashboard */
+.med-row {
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--surface-alt);
+}
+
+/* Invite code */
+.code-display {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 12vw, 3.25rem);
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin: 0;
+}

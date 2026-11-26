@@ -6,6 +6,13 @@ import { BigButton, ErrorText, Field, Notice } from '../../components/ui';
 import { usePush } from '../../hooks/usePush';
 import { t } from '../../i18n/useT';
 
+// Up to two letters; names without letters fall back to a neutral dot.
+const initials = (name) =>
+  (name.match(/\p{L}+/gu) || [])
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('') || '•';
+
 export default function CarerHome() {
   const { user, logout, refresh } = useAuth();
   const push = usePush();
@@ -69,9 +76,14 @@ export default function CarerHome() {
         {elders?.length === 0 ? <p className="muted">Abhi koi buzurg nahi jura. Neeche code daalein.</p> : null}
         <div className="stack">
           {elders?.map((e) => (
-            <Link key={e.id} to={`/carer/elder/${e.id}`} className="tile">
-              {e.name}
-              <small>Dashboard dekhein →</small>
+            <Link key={e.id} to={`/carer/elder/${e.id}`} className="tile tile--icon">
+              <span className="avatar" aria-hidden="true">
+                {initials(e.name)}
+              </span>
+              <span className="tile__text">
+                <span>{e.name}</span>
+                <small>Dashboard dekhein →</small>
+              </span>
             </Link>
           ))}
         </div>

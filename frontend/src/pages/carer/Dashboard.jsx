@@ -13,9 +13,9 @@ const CHANNEL = { text: 'likh kar', speech: 'bol kar', vapi: 'call' };
 function Timeline({ checkins }) {
   if (!checkins.length) return <p className="muted">Abhi koi hal-chaal nahi.</p>;
   return (
-    <ul className="list">
+    <ul className="timeline">
       {checkins.map((c) => (
-        <li key={c.id} className="stack" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
+        <li key={c.id} className={`timeline__item stack${c.concern_flag ? ' timeline__item--concern' : ''}`}>
           <div className="spaced">
             <strong>{MOOD[c.mood]}</strong>
             <span className="muted small">
@@ -31,13 +31,30 @@ function Timeline({ checkins }) {
           {c.transcript
             .filter((x) => x.role === 'elder')
             .map((x, i) => (
-              <p key={i} style={{ margin: 0 }}>
+              <p key={i} className="timeline__quote">
                 “{x.text}”
               </p>
             ))}
         </li>
       ))}
     </ul>
+  );
+}
+
+function AdherenceRing({ pct }) {
+  const r = 44;
+  const c = 2 * Math.PI * r;
+  const value = pct == null ? 0 : Math.max(0, Math.min(100, pct));
+  return (
+    <svg className="stat-ring__svg" viewBox="0 0 110 110" width="110" height="110" role="img"
+      aria-label={pct == null ? 'Abhi data nahi' : `${pct}% dawai waqt par`}>
+      <circle className="stat-ring__track" cx="55" cy="55" r={r} />
+      <circle className="stat-ring__value" cx="55" cy="55" r={r} strokeDasharray={c}
+        strokeDashoffset={c * (1 - value / 100)} transform="rotate(-90 55 55)" />
+      <text className="stat-ring__num" x="55" y="62" textAnchor="middle">
+        {pct == null ? '—' : `${pct}%`}
+      </text>
+    </svg>
   );
 }
 
@@ -83,10 +100,19 @@ export default function Dashboard() {
       <div className="dash-grid">
         <section className="card" aria-label="Khulasa">
           <h2>Khulasa</h2>
-          <p className="big" style={{ margin: 0 }}>{t.adherence_pct != null ? `${t.adherence_pct}% dawai waqt par` : 'Abhi data nahi'}</p>
-          <p className="muted" style={{ margin: 0 }}>
-            {t.taken} li · {t.skipped} nahi li · {t.missed} reh gayin
-          </p>
+          <div className="stat-ring">
+            <AdherenceRing pct={t.adherence_pct} />
+            <div className="stack" style={{ gap: 8 }}>
+              <p className="big" style={{ margin: 0 }}>
+                {t.adherence_pct != null ? 'Dawai waqt par' : 'Abhi data nahi'}
+              </p>
+              <div className="chips">
+                <span className="chip-stat chip-stat--ok">✓ {t.taken} li</span>
+                <span className="chip-stat chip-stat--skip">{t.skipped} nahi li</span>
+                <span className="chip-stat chip-stat--miss">{t.missed} reh gayin</span>
+              </div>
+            </div>
+          </div>
           {d.concerns ? (
             <Notice kind="warning">⚠ {d.concerns} hal-chaal mein tawajjo ki baat</Notice>
           ) : (
@@ -114,7 +140,7 @@ export default function Dashboard() {
           {d.medicines.length === 0 ? <p className="muted">Koi dawai nahi.</p> : null}
           <ul className="list">
             {d.medicines.map((m) => (
-              <li key={m.id} className="stack" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
+              <li key={m.id} className="med-row stack">
                 <div>
                   <strong>{m.name}</strong> {m.strength_text ? <span className="muted">{m.strength_text}</span> : null}
                   <p className="small muted" style={{ margin: 0 }}>

@@ -109,5 +109,6 @@
   "landing.f.family.title": "Ghar wale aur doctor saath",
   "landing.f.family.text": "Ek code se jur kar woh dawaiyan, hal-chaal aur BP/sugar dekhte hain, aur takleef par fori itlaa paate hain.",
   "landing.disclaimer": "Prototype — asli mareezon ka data istemal na karein. Yeh doctor ka mutabadil nahi.",
-  "landing.chotu.note": "Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein."
+  "landing.chotu.note": "Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein.",
+  "upload.dropzone.hint": "Camera khulega. Puri parchi frame mein, achi roshni mein."
 }

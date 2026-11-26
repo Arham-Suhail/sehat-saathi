@@ -45,9 +45,11 @@ export default function Invite() {
         aur hal-chaal dekh sakenge. Woh kuch badal nahi sakte. Har code sirf ek shakhs ke liye hai.
       </p>
       {invite ? (
-        <section className="card stack center" aria-live="polite">
-          <p className="muted">Aap ka code</p>
-          <p style={{ fontSize: '2.75rem', fontWeight: 700, letterSpacing: '0.2em', margin: 0 }}>
+        <section className="glass-card card--feature stack center" aria-live="polite">
+          <p className="muted" style={{ margin: 0 }}>
+            Aap ka code
+          </p>
+          <p className="code-display">
             {invite.code.slice(0, 3)} {invite.code.slice(3)}
           </p>
           <p className="muted small">

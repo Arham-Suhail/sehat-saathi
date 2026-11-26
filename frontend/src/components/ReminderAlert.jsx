@@ -34,12 +34,21 @@ export default function ReminderAlert({ reminder, onTaken, onSkip, onSnooze }) {
   return (
     <div className="modal-backdrop">
       <div className="modal stack" role="alertdialog" aria-modal="true" aria-labelledby="rem-title" aria-describedby="rem-body">
-        <h2 id="rem-title">⏰ {t('rem.alert.title')}</h2>
-        <div id="rem-body">
-          <p className="big">{reminder.medicine_name}</p>
-          {reminder.dose ? <p>{reminder.dose}</p> : null}
+        <div className="center">
+          <span className="alarm-badge" aria-hidden="true">
+            ⏰
+          </span>
+        </div>
+        <h2 id="rem-title" className="center">
+          {t('rem.alert.title')}
+        </h2>
+        <div id="rem-body" className="center">
+          <p className="big" style={{ marginBottom: 4 }}>
+            {reminder.medicine_name}
+          </p>
+          {reminder.dose ? <p style={{ marginBottom: 4 }}>{reminder.dose}</p> : null}
           {reminder.instructions ? <p className="muted">{reminder.instructions}</p> : null}
-          <p className="muted small">{fmtTime(reminder.scheduled_at)}</p>
+          <span className="alarm-time">{fmtTime(reminder.scheduled_at)}</span>
         </div>
         <ErrorText>{err}</ErrorText>
         <BigButton ref={firstBtn} variant="success" disabled={busy} onClick={() => run(() => onTaken(reminder.id))}>
