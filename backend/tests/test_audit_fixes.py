@@ -185,3 +185,36 @@ async def test_f2_only_elders_can_revoke(client):
         u = await register(client, role)
         assert (await client.post("/invites/revoke-all", headers=auth(u["token"]))).status_code == 403
     assert (await client.post("/invites/revoke-all")).status_code == 401
+
+
+# ---------- F3: the invite lockout counter must hold under parallel guesses ----------
+async def test_f3_parallel_wrong_codes_cannot_exceed_lockout(client, db, monkeypatch):
+    import asyncio
+
+    from bson import ObjectId
+
+    carer = await register(client, "family")
+    # Simulate network latency so every request reads the user document before any write lands.
+    coll_cls = type(db.users)
+    original = coll_cls.find_one
+
+    async def slow_find_one(self, *a, **k):
+        doc = await original(self, *a, **k)
+        await asyncio.sleep(0.02)
+        return doc
+
+    monkeypatch.setattr(coll_cls, "find_one", slow_find_one)
+
+    async def guess(i):
+        r = await client.post(
+            "/invites/redeem",
+            json={"code": f"{900000 + i}"},
+            headers={**auth(carer["token"]), "CF-Connecting-IP": f"198.51.100.{i}"},
+        )
+        return r.status_code
+
+    codes = await asyncio.gather(*(guess(i) for i in range(10)))
+    assert codes.count(400) <= 5, codes  # at most MAX_FAILS real guesses
+    assert set(codes) <= {400, 429}, codes
+    user = await db.users.find_one({"_id": ObjectId(carer["user"]["id"])})
+    assert user["invite_locked_until"] is not None

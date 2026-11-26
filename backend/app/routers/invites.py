@@ -13,6 +13,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
 from app.db import get_db
@@ -26,12 +27,6 @@ CODE_TTL = timedelta(hours=24)
 MAX_FAILS = 5
 LOCKOUT = timedelta(minutes=30)
 GENERIC_BAD_CODE = "Code ghalat hai ya purana ho gaya. Buzurg se naya code mangwayein."
-
-
-def _aware(dt: datetime | None) -> datetime | None:
-    if dt is None:
-        return None
-    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
 
 
 @router.post("/invites", response_model=InviteOut, status_code=status.HTTP_201_CREATED)
@@ -65,21 +60,40 @@ async def redeem_invite(
     db: Any = Depends(get_db),
 ) -> ElderRef:
     now = datetime.now(UTC)
-    locked_until = _aware(user.get("invite_locked_until"))
-    if locked_until and locked_until > now:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Bohat ghalat koshishen. 30 minute baad dobara koshish karein.",
+    locked = HTTPException(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        detail="Bohat ghalat koshishen. 30 minute baad dobara koshish karein.",
+        headers={"Retry-After": str(int(LOCKOUT.total_seconds()))},
+    )
+
+    async def lock() -> None:
+        await db.users.update_one(
+            {"_id": user["_id"]}, {"$set": {"invite_fail_count": 0, "invite_locked_until": now + LOCKOUT}}
         )
+
+    # Audit F3: reserve this attempt atomically BEFORE looking at the code, in the database
+    # (never from the user document loaded at auth time), so parallel guesses can't race
+    # past MAX_FAILS. The filter also refuses while the account is locked.
+    reserved = await db.users.find_one_and_update(
+        {
+            "_id": user["_id"],
+            "$or": [{"invite_locked_until": None}, {"invite_locked_until": {"$lte": now}}],
+        },
+        {"$inc": {"invite_fail_count": 1}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if reserved is None:
+        raise locked
+    attempt = int(reserved.get("invite_fail_count") or 0)
+    if attempt > MAX_FAILS:  # parallel requests beyond the allowance
+        await lock()
+        raise locked
 
     # Atomic claim: the first successful redeem deletes the code, so it can never be reused.
     invite = await db.invites.find_one_and_delete({"code": body.code, "expires_at": {"$gt": now}})
     if not invite:
-        fails = int(user.get("invite_fail_count") or 0) + 1
-        update: dict = {"invite_fail_count": fails}
-        if fails >= MAX_FAILS:
-            update = {"invite_fail_count": 0, "invite_locked_until": now + LOCKOUT}
-        await db.users.update_one({"_id": user["_id"]}, {"$set": update})
+        if attempt >= MAX_FAILS:
+            await lock()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=GENERIC_BAD_CODE)
 
     elder = await db.users.find_one({"_id": invite["elder_id"], "role": "elder"})
