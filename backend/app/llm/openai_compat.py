@@ -6,6 +6,7 @@ import base64
 import json
 import logging
 import re
+from typing import Any
 
 import openai
 from openai import AsyncOpenAI
@@ -27,6 +28,23 @@ def _extract_json_text(text: str) -> str:
     return text
 
 
+_DROP = {"description", "title", "default", "maxItems", "minItems", "maxLength", "minLength"}
+
+
+def slim_schema(node: Any, *, is_properties: bool = False) -> Any:
+    """Strip annotations that make constrained decoding blow up (Gemini: "too many states").
+    Pydantic still enforces every limit on the response; the prompt explains each field."""
+    if isinstance(node, dict):
+        return {
+            k: slim_schema(v, is_properties=(k == "properties" and not is_properties))
+            for k, v in node.items()
+            if is_properties or k not in _DROP
+        }
+    if isinstance(node, list):
+        return [slim_schema(v) for v in node]
+    return node
+
+
 class OpenAICompatProvider:
     def __init__(self, cfg: LLMConfig):
         self.cfg = cfg
@@ -41,7 +59,7 @@ class OpenAICompatProvider:
         if self.cfg.json_mode == "json_schema":
             return {
                 "type": "json_schema",
-                "json_schema": {"name": schema.__name__, "schema": schema.model_json_schema()},
+                "json_schema": {"name": schema.__name__, "schema": slim_schema(schema.model_json_schema())},
             }
         if self.cfg.json_mode == "json_object":
             return {"type": "json_object"}

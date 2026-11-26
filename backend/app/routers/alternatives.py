@@ -31,14 +31,15 @@ async def alternatives(
     if not med:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
 
-    key = f"{med['name'].strip().lower()}|{(med.get('strength') or '').strip().lower()}"
+    strength = (med.get("strength_text") or med.get("strength") or "").strip()
+    key = f"{med['name'].strip().lower()}|{strength.lower()}"
     cached = alternatives_cache.get(key)
     if cached is None:
         try:
             cached = await get_text(request).chat_json(
                 system=ALTERNATIVES_SYSTEM,
                 user_text=wrap_user_message(
-                    f"Medicine: {med['name']}\nStrength: {med.get('strength') or 'not written'}"
+                    f"Medicine: {med['name']}\nStrength: {strength or 'not written'}"
                 ),
                 schema=AlternativesLLM,
                 max_tokens=400,

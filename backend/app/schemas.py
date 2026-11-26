@@ -73,20 +73,52 @@ class TokenOut(BaseModel):
 
 
 # ---------- prescriptions / medicines ----------
+MealTiming = Literal["before", "after", "with", "none", "unknown"]
+ReminderMode = Literal["fixed", "manual", "prn", "hospital", "stopped"]
+FrequencyChoice = Literal["asis", "d1", "d2", "d3", "d4", "h6", "h8", "h12", "hs", "prn", "custom"]
+
+
+class FrequencyOut(BaseModel):
+    kind: str
+    count_or_interval: int | None
+    label: str
+    confidence: float
+    note: str = ""
+
+
+class RouteOut(BaseModel):
+    kind: str
+    label: str
+
+
 class DraftMedicine(BaseModel):
+    """What the confirm screen shows. Raw fields are verbatim transcription; everything else
+    (frequency, route, reminder_mode, suggested_times, needs_pharmacist) is decided by code."""
+
+    original_text: str | None
     name: str | None
-    strength: str | None
-    form: str | None
-    dose: str | None
-    frequency: str | None
-    timing_text: str | None
-    duration: str | None
-    instructions: str | None
+    strength_text: str | None
+    dose_text: str | None
+    frequency_raw: str | None
+    route_raw: str | None
+    meal_timing: MealTiming
+    prn: bool
+    prn_condition: str | None
+    duration_raw: str | None
+    duration_days: int | None
+    quantity_limit_raw: str | None
+    instructions_raw: str | None
+    discontinue_mentioned: bool
+    frequency: FrequencyOut
+    frequency_choice: FrequencyChoice
+    route: RouteOut
+    reminder_mode: ReminderMode
+    status: Literal["active", "stopped"]
+    suggested_times: list[str]
     confidence: float
     needs_pharmacist: bool
+    pharmacist_reasons: list[str]
     illegible_fields: list[str]
-    suggested_times: list[str]
-    suggested_duration_days: int | None
 
 
 class ExtractOut(BaseModel):
@@ -99,18 +131,27 @@ class ExtractOut(BaseModel):
 
 class MedicineIn(Strict):
     name: Text(120, 1)
-    strength: OptText(60) = None
-    form: OptText(40) = None
-    dose: OptText(80) = None
-    frequency: OptText(80) = None
-    timing_text: OptText(120) = None
-    duration: OptText(60) = None
-    instructions: OptText(200) = None
-    timings: Annotated[list[HHMM], Field(min_length=1, max_length=6)]
+    strength_text: OptText(60) = None
+    dose_text: OptText(80) = None
+    frequency_raw: OptText(80) = None
+    route_raw: OptText(40) = None
+    meal_timing: MealTiming = "unknown"
+    prn: bool = False
+    prn_condition: OptText(120) = None
+    duration_raw: OptText(60) = None
+    quantity_limit_raw: OptText(80) = None
+    instructions_raw: OptText(300) = None
+    original_text: OptText(400) = None
+    discontinue_mentioned: bool = False
+    frequency_choice: FrequencyChoice = "asis"
+    timings: Annotated[list[HHMM], Field(max_length=6)] = []
     duration_days: Annotated[int, Field(ge=1, le=365)] | None = None
     confidence: Annotated[float, Field(ge=0, le=1)] = 1.0
     needs_pharmacist: bool = False
     edited_by_user: bool = False
+    # A discontinued (D/c) order stays stopped unless the user explicitly re-activates it.
+    status: Literal["active", "stopped"] = "active"
+    reactivate_confirmed: bool = False
 
 
 class ConfirmIn(Strict):
@@ -120,13 +161,22 @@ class ConfirmIn(Strict):
 class MedicineOut(BaseModel):
     id: str
     name: str
-    strength: str | None
-    form: str | None
-    dose: str | None
-    frequency: str | None
-    timing_text: str | None
-    duration: str | None
-    instructions: str | None
+    original_text: str | None
+    strength_text: str | None
+    dose_text: str | None
+    frequency_raw: str | None
+    frequency_label: str | None
+    route_raw: str | None
+    route_kind: str
+    route_label: str
+    meal_timing: MealTiming
+    prn: bool
+    prn_condition: str | None
+    duration_raw: str | None
+    quantity_limit_raw: str | None
+    instructions_raw: str | None
+    discontinued: bool
+    reminder_mode: ReminderMode
     timings: list[str]
     duration_days: int | None
     confidence: float

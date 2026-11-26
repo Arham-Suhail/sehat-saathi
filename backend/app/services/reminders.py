@@ -34,6 +34,9 @@ async def top_up(db: Any, elder_id: ObjectId, now: datetime) -> None:
     """Keep a 7-day window of reminders for every confirmed medicine."""
     meds = await db.medicines.find({"elder_id": elder_id, "status": "confirmed"}).to_list(length=50)
     for med in meds:
+        # Only fixed-schedule medicines get home reminders (never IV/hospital, PRN or stopped).
+        if med.get("reminder_mode", "fixed") != "fixed" or not med.get("timings"):
+            continue
         end_at = med.get("end_at")
         if end_at is not None and _aware(end_at) <= now:
             continue

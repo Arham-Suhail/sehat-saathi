@@ -7,6 +7,7 @@ from app.db import get_db
 from app.ids import parse_object_id
 from app.schemas import ReminderOut
 from app.security import require_role
+from app.services.medplan import meal_label
 from app.services.reminders import mark_missed, top_up
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
@@ -23,8 +24,8 @@ async def _out(db: Any, docs: list[dict]) -> list[ReminderOut]:
                 id=str(d["_id"]),
                 medicine_id=str(d["medicine_id"]),
                 medicine_name=m.get("name", "Dawai"),
-                dose=m.get("dose"),
-                instructions=m.get("instructions"),
+                dose=m.get("dose_text") or m.get("dose"),
+                instructions=meal_label(m.get("meal_timing")) or m.get("instructions") or None,
                 scheduled_at=d["scheduled_at"],
                 status=d["status"],
                 acted_at=d.get("acted_at"),
@@ -41,10 +42,12 @@ async def upcoming(
     now = datetime.now(UTC)
     await top_up(db, user["_id"], now)
     await mark_missed(db, user["_id"], now)
+    stopped = await db.medicines.distinct("_id", {"elder_id": user["_id"], "status": "stopped"})
     docs = (
         await db.reminders.find(
             {
                 "elder_id": user["_id"],
+                "medicine_id": {"$nin": stopped},
                 "scheduled_at": {"$gte": now - timedelta(hours=12), "$lte": now + timedelta(hours=24)},
             }
         )

@@ -6,9 +6,9 @@ from tests.conftest import auth, register
 
 MED = {
     "name": "Panadol",
-    "strength": "500 mg",
-    "dose": "1 tablet",
-    "frequency": "1+0+1",
+    "strength_text": "500 mg",
+    "dose_text": "1 tablet",
+    "frequency_raw": "1+0+1",
     "timings": ["08:00", "21:00"],
     "duration_days": 5,
 }

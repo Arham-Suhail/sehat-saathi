@@ -9,7 +9,7 @@ from app.cache import alternatives_cache
 from app.llm import LLMError
 from tests.conftest import auth, register
 
-MED = {"name": "Panadol", "strength": "500 mg", "dose": "1 tablet", "timings": ["08:00", "21:00"]}
+MED = {"name": "Panadol", "strength_text": "500 mg", "dose_text": "1 tablet", "timings": ["08:00", "21:00"]}
 
 
 async def _invite_link(client, elder, carer) -> None:

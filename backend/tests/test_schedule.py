@@ -7,31 +7,8 @@ from app.services.schedule import (
     course_end,
     generate_reminder_times,
     parse_duration_days,
-    suggest_times,
     window_end,
 )
-
-
-@pytest.mark.parametrize(
-    ("freq", "timing", "expected"),
-    [
-        ("1+0+1", None, ["08:00", "21:00"]),
-        ("1-1-1", None, ["08:00", "14:00", "21:00"]),
-        ("0+0+1", None, ["21:00"]),
-        ("½+0+½", None, ["08:00", "21:00"]),
-        ("BD", None, ["08:00", "21:00"]),
-        ("TDS", None, ["08:00", "14:00", "21:00"]),
-        ("once daily", None, ["08:00"]),
-        (None, "subah sham", ["08:00", "18:00"]),
-        (None, "raat ko sone se pehle", ["21:00"]),
-        (None, "8 am and 8:30 pm", ["08:00", "20:30"]),
-        ("1+0+0+1", None, ["08:00", "21:00"]),
-        ("jab zaroorat ho", None, []),
-        (None, None, []),
-    ],
-)
-def test_suggest_times(freq, timing, expected):
-    assert suggest_times(freq, timing) == expected
 
 
 def test_generate_skips_past_times_today():

@@ -52,8 +52,14 @@ async def dashboard(
     ]
 
     # Adherence: reminders due so far in the window, grouped by local day.
+    # Discontinued (D/c) orders never count towards adherence.
+    discontinued = await db.medicines.distinct("_id", {"elder_id": target, "discontinued": True})
     rems = await db.reminders.find(
-        {"elder_id": target, "scheduled_at": {"$gte": since, "$lte": now}}
+        {
+            "elder_id": target,
+            "medicine_id": {"$nin": discontinued},
+            "scheduled_at": {"$gte": since, "$lte": now},
+        }
     ).to_list(length=2000)
     adherence: dict[str, dict[str, int]] = defaultdict(
         lambda: {"taken": 0, "skipped": 0, "missed": 0, "pending": 0}

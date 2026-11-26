@@ -58,25 +58,56 @@ class _LLMModel(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+def _meal(v: Any) -> str:
+    s = str(v).strip().lower() if v is not None else ""
+    return s if s in {"before", "after", "with", "none", "unknown"} else "unknown"
+
+
+def _bool(v: Any) -> bool:
+    if isinstance(v, str):
+        return v.strip().lower() in {"true", "yes", "1"}
+    return bool(v)
+
+
+Flag = Annotated[bool, BeforeValidator(_bool)]
+
+
 class ExtractedMedicine(_LLMModel):
+    """One prescription line, transcribed verbatim. The model never decides the schedule:
+    services/frequency.py translates the abbreviations and code decides reminders."""
+
+    original_text: Short(400) = Field(None, description="The FULL line exactly as written on the page")
     name: Short(120) = Field(None, description="Medicine name exactly as written")
-    strength: Short(60) = Field(None, description="Strength as written, e.g. '500 mg'")
-    form: Short(40) = Field(None, description="tablet/capsule/syrup/... as written")
-    dose: Short(80) = Field(None, description="Dose as written, e.g. '1 tablet'")
-    frequency: Short(80) = Field(None, description="Frequency as written, e.g. '1+0+1', 'BD'")
-    timing_text: Short(120) = Field(None, description="Timing words as written, e.g. 'subah sham'")
-    duration: Short(60) = Field(None, description="Duration as written, e.g. '5 din'")
-    instructions: Short(200) = Field(None, description="Instructions as written, e.g. 'khane ke baad'")
+    strength_text: Short(60) = Field(None, description="Strength with its unit as written, e.g. '20 mEq'")
+    dose_text: Short(80) = Field(None, description="Amount per dose as written, e.g. '1 tab'")
+    frequency_raw: Short(80) = Field(
+        None, description="Frequency as written, e.g. 'bid', 'q6 hours', '1+0+1'"
+    )
+    route_raw: Short(40) = Field(None, description="Route as written, e.g. 'po', 'IV'")
+    meal_timing: Annotated[str, BeforeValidator(_meal)] = Field(
+        "unknown", description="before|after|with|none|unknown — only if written"
+    )
+    prn: Flag = Field(False, description="True if written as needed (prn, SOS, zaroorat par)")
+    prn_condition: Short(120) = Field(None, description="Condition for prn exactly as written")
+    duration_raw: Short(60) = Field(None, description="Duration as written, e.g. 'x 7 days'")
+    quantity_limit_raw: Short(80) = Field(
+        None, description="Quantity/limit as written, e.g. 'x 1 liter', 'Disp: 14 tabs'"
+    )
+    instructions_raw: Short(300) = Field(None, description="Any other text on the line, as written")
+    discontinue_mentioned: Flag = Field(False, description="True if D/c, dc, discontinue or stop is written")
     confidence: Annotated[float, BeforeValidator(_confidence)] = Field(
         0.0, description="0-1: how sure you are that this item was read correctly"
     )
     illegible_fields: Annotated[list[str], BeforeValidator(_str_list(10, 40))] = Field(
-        default_factory=list, description="Names of fields that were unreadable"
+        default_factory=list, description="Names of fields that are written but unreadable"
     )
 
 
 class ExtractionResult(_LLMModel):
     is_prescription: bool = Field(True, description="False if the image is not a prescription")
+    page_lines: Annotated[list[str], BeforeValidator(_str_list(40, 400))] = Field(
+        default_factory=list, description="Every medicine-related line on the page, verbatim"
+    )
     medicines: Annotated[list[ExtractedMedicine], Field(max_length=15)] = Field(default_factory=list)
 
 

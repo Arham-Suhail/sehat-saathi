@@ -23,7 +23,9 @@ async def test_valid_png_extracts_with_pharmacist_flag(client, elder):
     assert len(body["medicines"]) == 2
     clear, unclear = body["medicines"]
     assert clear["needs_pharmacist"] is False
-    assert clear["suggested_times"] == ["08:00", "21:00"]
+    assert clear["suggested_times"] == ["08:00", "20:00"]
+    assert clear["frequency"]["label"] == "Subah aur raat"
+    assert clear["reminder_mode"] == "fixed"
     assert unclear["needs_pharmacist"] is True
     assert body["needs_pharmacist"] is True
     assert "doctor" in body["disclaimer"].lower()
