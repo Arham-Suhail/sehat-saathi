@@ -6,6 +6,7 @@ export default function Invite() {
   const [invite, setInvite] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [removed, setRemoved] = useState(null);
 
   const make = async () => {
     setBusy(true);
@@ -19,13 +20,29 @@ export default function Invite() {
     }
   };
 
+  // Audit F2: the elder can take back access at any time; it ends on the carer's next request.
+  const revokeAll = async () => {
+    if (!window.confirm('Kya aap sab ghar walon aur doctors ki ijazat khatam karna chahte hain? Dobara jurne ke liye unhein naya code chahiye hoga.')) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await api('/invites/revoke-all', { method: 'POST' });
+      setInvite(null);
+      setRemoved(res.removed);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <main className="page stack">
       <TopBar back="/elder" title="Ghar walon ko jorein" />
       <h1>Ghar walon / doctor ko jorein</h1>
       <p>
         Code banayein aur apne ghar wale ya doctor ko batayein. Woh apne account mein yeh code daal kar aap ki dawaiyan
-        aur hal-chaal dekh sakenge. Woh kuch badal nahi sakte.
+        aur hal-chaal dekh sakenge. Woh kuch badal nahi sakte. Har code sirf ek shakhs ke liye hai.
       </p>
       {invite ? (
         <section className="card stack center" aria-live="polite">
@@ -39,9 +56,15 @@ export default function Invite() {
         </section>
       ) : null}
       <Notice kind="warning">Yeh code sirf apne bharosay ke logon ko dein.</Notice>
+      {removed !== null ? (
+        <Notice kind="success">{removed} logon ki ijazat khatam ho gayi. Ab koi aap ki maloomat nahi dekh sakta.</Notice>
+      ) : null}
       <ErrorText>{err}</ErrorText>
       <BigButton onClick={make} disabled={busy}>
         {busy ? 'Ban raha hai…' : invite ? 'Naya code banayein' : 'Code banayein'}
+      </BigButton>
+      <BigButton variant="secondary" onClick={revokeAll} disabled={busy}>
+        Sab ki ijazat khatam karein
       </BigButton>
     </main>
   );

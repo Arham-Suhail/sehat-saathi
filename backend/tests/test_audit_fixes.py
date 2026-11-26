@@ -125,3 +125,63 @@ async def test_f1_global_redeem_cap_across_accounts_and_ips(client, monkeypatch)
         for i, c in enumerate(carers)
     ]
     assert codes == [400, 400, 429]
+
+
+# ---------- F2: single-use invite codes; the elder can revoke carer access ----------
+async def _code(client, elder):
+    return (await client.post("/invites", headers=auth(elder["token"]))).json()["code"]
+
+
+async def _redeem(client, code, carer):
+    return await client.post("/invites/redeem", json={"code": code}, headers=auth(carer["token"]))
+
+
+async def _get(client, path, user):
+    return (await client.get(path, headers=auth(user["token"]))).status_code
+
+
+async def test_f2_invite_code_is_single_use(client):
+    elder = await register(client, "elder")
+    code = await _code(client, elder)
+    first, second = await register(client, "family"), await register(client, "doctor")
+    assert (await _redeem(client, code, first)).status_code == 200
+    r = await client.post("/invites/redeem", json={"code": code}, headers=auth(second["token"]))
+    assert r.status_code == 400
+    assert await _get(client, f"/dashboard/{elder['user']['id']}", second) == 403
+
+
+async def test_f2_new_code_does_not_cut_existing_carers(client):
+    elder = await register(client, "elder")
+    fam, doc = await register(client, "family"), await register(client, "doctor")
+    await _redeem(client, await _code(client, elder), fam)
+    await _redeem(client, await _code(client, elder), doc)
+    for c in (fam, doc):
+        assert await _get(client, f"/dashboard/{elder['user']['id']}", c) == 200
+
+
+async def test_f2_elder_revokes_all_carers_immediately(client):
+    elder, other_elder = await register(client, "elder"), await register(client, "elder")
+    fam = await register(client, "family")
+    for e in (elder, other_elder):
+        await _redeem(client, await _code(client, e), fam)
+    pending = await _code(client, elder)  # an unused code must die too
+
+    r = await client.post("/invites/revoke-all", headers=auth(elder["token"]))
+    assert r.status_code == 200 and r.json() == {"removed": 1}
+    # Same (still valid) carer token: access is gone on the very next request.
+    assert await _get(client, f"/dashboard/{elder['user']['id']}", fam) == 403
+    assert await _get(client, f"/vitals?elder_id={elder['user']['id']}", fam) == 403
+    # Only this elder's link is removed.
+    left = (await client.get("/carer/elders", headers=auth(fam["token"]))).json()
+    assert [x["id"] for x in left] == [other_elder["user"]["id"]]
+    ratelimit.limiter.reset()  # 4th registration from the test IP; not what this test is about
+    newcomer = await register(client, "doctor")
+    r = await client.post("/invites/redeem", json={"code": pending}, headers=auth(newcomer["token"]))
+    assert r.status_code == 400
+
+
+async def test_f2_only_elders_can_revoke(client):
+    for role in ("family", "doctor"):
+        u = await register(client, role)
+        assert (await client.post("/invites/revoke-all", headers=auth(u["token"]))).status_code == 403
+    assert (await client.post("/invites/revoke-all")).status_code == 401

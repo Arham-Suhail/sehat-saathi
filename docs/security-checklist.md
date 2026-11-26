@@ -25,6 +25,7 @@ Ownership is enforced **in the Mongo query itself** (`elder_id` filter), so anot
 | `GET /vitals?elder_id=` | elder (self) / linked carer | `resolve_elder_access(read)` | — | `test_features.py::test_vitals_permissions` |
 | `POST /invites` | elder | caller's own code (regenerates) | — | `test_features.py::test_invite_roles` |
 | `POST /invites/redeem` | family / doctor | links caller only | 5/15 min per IP + per-account lockout (5 wrong → 30 min) | `test_features.py::test_invite_lockout_after_wrong_codes`, `test_redeem_ip_rate_limit` |
+| `POST /invites/revoke-all` | elder | `$pull` of the caller's own id from every carer; deletes the caller's codes | — | `test_audit_fixes.py::test_f2_elder_revokes_all_carers_immediately`, `test_f2_only_elders_can_revoke` |
 | `GET /carer/elders` | family / doctor | caller's links only | — | `test_features.py` |
 | `GET /dashboard/{elder_id}` | elder (self) / linked carer | `resolve_elder_access(read)` | — | `test_features.py::test_dashboard_shape_and_access` (unlinked 403, bad id 404) |
 | `GET /health` | public | no data | — | `test_security_headers.py` |

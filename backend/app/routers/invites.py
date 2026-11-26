@@ -2,6 +2,10 @@
 
 Brute-force protection: IP rate limit (5 / 15 min) + per-account lockout after 5 wrong codes
 (30 min). Codes expire after 24 h (TTL index) and regenerating replaces the old code.
+
+Audit F2: a code works ONCE (claimed atomically on redeem), and the elder can revoke every
+carer link at any time (POST /invites/revoke-all). Revocation is immediate because
+get_current_user reloads the carer's links from the database on every request.
 """
 
 import secrets
@@ -68,8 +72,9 @@ async def redeem_invite(
             detail="Bohat ghalat koshishen. 30 minute baad dobara koshish karein.",
         )
 
-    invite = await db.invites.find_one({"code": body.code})
-    if not invite or _aware(invite["expires_at"]) <= now:
+    # Atomic claim: the first successful redeem deletes the code, so it can never be reused.
+    invite = await db.invites.find_one_and_delete({"code": body.code, "expires_at": {"$gt": now}})
+    if not invite:
         fails = int(user.get("invite_fail_count") or 0) + 1
         update: dict = {"invite_fail_count": fails}
         if fails >= MAX_FAILS:
@@ -88,8 +93,18 @@ async def redeem_invite(
             "$set": {"invite_fail_count": 0, "invite_locked_until": None, "updated_at": now},
         },
     )
-    await db.invites.update_one({"_id": invite["_id"]}, {"$addToSet": {"used_by": user["_id"]}})
     return ElderRef(id=str(elder["_id"]), name=elder["name"])
+
+
+@router.post("/invites/revoke-all")
+async def revoke_all_carers(user: dict = Depends(require_role("elder")), db: Any = Depends(get_db)) -> dict:
+    """Remove this elder from every carer's links and kill any unused code."""
+    res = await db.users.update_many(
+        {"linked_elder_ids": user["_id"]},
+        {"$pull": {"linked_elder_ids": user["_id"]}, "$set": {"updated_at": datetime.now(UTC)}},
+    )
+    await db.invites.delete_many({"elder_id": user["_id"]})
+    return {"removed": res.modified_count}
 
 
 @router.get("/carer/elders", response_model=list[ElderRef])
