@@ -86,7 +86,9 @@ pywebpush + py-vapid + http_ece + cryptography + aiohttp + requests (Web Push en
 Dev: pytest, pytest-asyncio, mongomock-motor, ruff, pip-audit. CI: GitHub Actions, gitleaks.
 
 **Frontend (npm):** react, react-dom, react-router-dom, recharts, @vapi-ai/web (Vapi Web SDK; uses Daily.co WebRTC, which also contacts Daily's region service prod-ks.pluot.blue),
-@fontsource/atkinson-hyperlegible (self-hosted font). Dev: vite, @vitejs/plugin-react, eslint, @eslint/js,
+@fontsource/atkinson-hyperlegible, @fontsource/fraunces, @fontsource/anton, @fontsource/yellowtail (self-hosted fonts),
+tailwindcss + @tailwindcss/vite (utility CSS, no preflight), motion (animations; design inspired by Aceternity UI /
+21st.dev, rebuilt in-house, no copied components). Dev: vite, @vitejs/plugin-react, eslint, @eslint/js,
 eslint-plugin-react, eslint-plugin-react-hooks, globals.
 
 ## Demo data

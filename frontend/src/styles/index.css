@@ -1,0 +1,60 @@
+/* Style entry point. Order of precedence (low -> high): legacy, theme, base, components, utilities.
+   - legacy: the Stage A plain CSS (base.css, layout.css). Every existing screen keeps working as before.
+   - Tailwind is loaded WITHOUT preflight (its CSS reset), so it can't change existing screens;
+     its utilities win only where a Tailwind class is actually used (Stage B components).
+   - Tailwind's default colour palette is removed and replaced by theme.css variables. */
+@layer legacy, theme, base, components, utilities;
+
+@import './theme.css';
+@import './base.css' layer(legacy);
+@import './layout.css' layer(legacy);
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  --color-*: initial;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-ink: var(--text);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-text: var(--gold-text);
+  --color-line: var(--border);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+  --color-transparent: transparent;
+  --font-body: var(--font-body);
+  --font-serif: var(--font-serif);
+  --font-display: var(--font-display);
+  --font-script: var(--font-script);
+  --shadow-soft: var(--shadow);
+  --shadow-lift: var(--shadow-lg);
+}
+
+/* Stage B motion: transform/opacity only. The legacy reduced-motion rule (base.css) stops these too. */
+@theme {
+  --animate-aurora-a: aurora-a 22s ease-in-out infinite alternate;
+  --animate-aurora-b: aurora-b 26s ease-in-out infinite alternate;
+  --animate-aurora-c: aurora-c 30s ease-in-out infinite alternate;
+
+  @keyframes aurora-a {
+    from { transform: translate3d(-12%, -8%, 0) scale(1); }
+    to { transform: translate3d(10%, 6%, 0) scale(1.18); }
+  }
+  @keyframes aurora-b {
+    from { transform: translate3d(10%, -4%, 0) scale(1.1); }
+    to { transform: translate3d(-8%, 10%, 0) scale(0.95); }
+  }
+  @keyframes aurora-c {
+    from { transform: translate3d(0, 12%, 0) scale(0.9); }
+    to { transform: translate3d(6%, -10%, 0) scale(1.15); }
+  }
+}

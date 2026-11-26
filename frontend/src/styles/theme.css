@@ -1,24 +1,28 @@
 /* ============================================================
    THEME — the ONLY file that defines colours and fonts.
-   Stage A: neutral placeholder palette. Re-palette by editing this file only.
+   Stage B: warm, calm palette (cream, deep teal, soft gold). Tailwind's colours are mapped
+   to these variables in index.css, so a Tailwind class can never introduce a new colour.
 
-   Contrast (WCAG 2.x, checked):
-     --text      on --bg / --surface   ≈ 15.6 / 16.5 : 1  (AAA)
-     --text-muted on --surface          ≈ 7.7 : 1          (AAA)
-     --accent-text on --accent          ≈ 6.7 : 1          (AA)
-     --accent    on --surface (links)   ≈ 6.7 : 1          (AA)
-     --success / --danger on --surface  ≥ 6.4 : 1          (AA)
-     --warning-text on --warning-bg     ≈ 7.0 : 1          (AA)
+   Contrast (WCAG 2.x, computed):
+     --text       on --bg / --surface        15.9 / 17.1 : 1  (AAA)
+     --text-muted on --surface / --bg         8.2 / 7.6  : 1  (AAA)
+     --accent-text on --accent                7.9 : 1         (AAA)
+     --accent     on --surface / --bg         7.9 / 7.4  : 1  (AAA)
+     --accent     on --accent-soft            6.7 : 1         (AA)
+     --success / --danger on --surface        6.5 / 7.5  : 1  (AA / AAA)
+     --warning-text on --warning-bg           7.4 : 1         (AAA)
+     --gold-text  on --bg                     5.5 : 1         (AA)
+   Glow colours are decoration only (never text).
    ============================================================ */
 :root {
-  --bg: #f7f5f0;
+  --bg: #fbf6ec;
   --surface: #ffffff;
-  --surface-alt: #efece5;
-  --text: #1b1f24;
-  --text-muted: #4a5260;
-  --accent: #0b5fa5;
+  --surface-alt: #f4ecdd;
+  --text: #1f1b16;
+  --text-muted: #574e43;
+  --accent: #0e5b56;
   --accent-text: #ffffff;
-  --accent-soft: #e3eef8;
+  --accent-soft: #ddefec;
   --success: #1e6b3a;
   --success-bg: #e4f3e8;
   --warning-text: #6e4600;
@@ -26,13 +30,29 @@
   --warning-border: #c98a00;
   --danger: #a61b1b;
   --danger-bg: #fbe5e5;
-  --border: #c9c3b8;
-  --focus: #0b5fa5;
-  --overlay: rgb(27 31 36 / 0.55);
+  --border: #d8cbb5;
+  --focus: #0e5b56;
+  --overlay: rgb(31 27 22 / 0.55);
+
+  /* Stage B decoration (landing hero / section headings only) */
+  --gold: #e3a93c;
+  --gold-soft: #f6e3b8;
+  --gold-text: #8a5a00;
+  --glow-gold: rgb(227 169 60 / 0.38);
+  --glow-teal: rgb(14 91 86 / 0.22);
+  --glow-peach: rgb(240 150 110 / 0.28);
+  --glass: rgb(255 255 255 / 0.62);
+  --glass-border: rgb(255 255 255 / 0.75);
+  --dot: rgb(31 27 22 / 0.09);
 
   --font-body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Display/script fonts: ONLY the landing hero and section headings (never medical info or buttons). */
+  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --font-script: 'Yellowtail', 'Brush Script MT', cursive;
 
   --radius: 14px;
   --radius-sm: 10px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 14px rgb(0 0 0 / 0.06);
+  --shadow: 0 1px 2px rgb(31 27 22 / 0.06), 0 4px 14px rgb(31 27 22 / 0.06);
+  --shadow-lg: 0 2px 6px rgb(31 27 22 / 0.06), 0 18px 40px rgb(31 27 22 / 0.10);
 }

@@ -24,7 +24,10 @@
 - Then Phase 4 (audit) and Phase 5 (README, video, submission). Cut order: Gallery3D → hero Chotu → Chotu animations → Vapi → alternatives LLM polish → Web Speech (text check-in is never cut).
 
 ## Stack
-- Frontend: React + Vite, react-router-dom, Recharts, plain CSS, @vapi-ai/web → Vercel.
+- Frontend: React + Vite, react-router-dom, Recharts, plain CSS + (Stage B, user decision Nov 27) Tailwind CSS v4 and
+  Motion, @vapi-ai/web → Vercel. Tailwind is loaded WITHOUT preflight via `src/styles/index.css` (cascade layers:
+  legacy plain CSS < Tailwind utilities), its default colours are removed and mapped to theme.css variables, so
+  colours still live only in theme.css. Stage A screens use the legacy classes; new UI may use utilities.
 - Backend: FastAPI (Python 3.12 on Render), Pydantic v2 (pinned 2.12.5: newer pydantic-core DLL is blocked by Windows App Control on the dev machine), PyMongo async client (Motor is deprecated), PyJWT + `bcrypt` package directly (no passlib) → Render free tier.
 - DB: MongoDB Atlas M0.
 - LLM: provider-agnostic module `backend/app/llm/`, OpenAI-compatible chat API. Default Gemini (free tier).
