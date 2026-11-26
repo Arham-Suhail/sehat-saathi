@@ -55,5 +55,6 @@ async def alternatives(
         medicine_id=str(med["_id"]),
         medicine_name=med["name"],
         generic_name=cached.generic_name,
-        alternatives=cached.alternatives,
+        # Never "suggest" the same brand the elder already takes.
+        alternatives=[a for a in cached.alternatives if med["name"].strip().lower() not in a.lower()],
     )

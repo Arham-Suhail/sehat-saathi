@@ -253,6 +253,7 @@ async def test_alternatives_labelled_and_owned(client):
     assert body["needs_doctor_verification"] is True
     assert "doctor" in body["label"].lower()
     assert body["generic_name"] == "Paracetamol"
+    assert all("panadol" not in a.lower() for a in body["alternatives"])
 
     assert (
         await client.get(f"/medicines/{med['id']}/alternatives", headers=auth(other["token"]))

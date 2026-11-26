@@ -68,7 +68,7 @@ class FakeProvider:
                 "concern_reason": None,
             }
         elif schema is AlternativesLLM:
-            known = {"panadol": ("Paracetamol", ["Paracetamol 500 mg (generic)"])}
+            known = {"panadol": ("Paracetamol", ["Paracetamol 500 mg (generic)", "Panadol 500 mg"])}
             hit = next((v for k, v in known.items() if k in user_text.lower()), None)
             data = (
                 {"generic_name": hit[0], "alternatives": hit[1]}
