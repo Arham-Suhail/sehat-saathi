@@ -20,10 +20,10 @@ function Step({ n, icon, reduce }) {
   const seen = useInView(ref, { once: true, margin: '0px 0px -45% 0px' });
   const on = reduce || seen;
   return (
-    <li ref={ref} className="relative pl-14">
+    <li ref={ref} className="relative ps-14">
       <span
         aria-hidden="true"
-        className={`absolute left-[0.45rem] top-6 h-7 w-7 rounded-full border-4 transition-[transform,background-color,border-color] duration-300 ${
+        className={`absolute start-[0.45rem] top-6 h-7 w-7 rounded-full border-4 transition-[transform,background-color,border-color] duration-300 ${
           on ? 'scale-110 border-accent-soft bg-accent' : 'border-line bg-surface'
         }`}
       />
@@ -58,10 +58,10 @@ export default function DayWithChotu() {
     <section aria-labelledby="day-title" data-chotu="thinking" className="mx-auto w-full max-w-3xl px-5 py-16">
       <SectionHeading id="day-title" eyebrow={t('landing.day.eyebrow')} title={t('landing.day.title')} />
       <ol ref={listRef} className="relative m-0 flex list-none flex-col gap-6 p-0">
-        <span aria-hidden="true" className="absolute bottom-6 left-[1.2rem] top-6 w-[3px] rounded-full bg-line" />
+        <span aria-hidden="true" className="absolute bottom-6 start-[1.2rem] top-6 w-[3px] rounded-full bg-line" />
         <motion.span
           aria-hidden="true"
-          className="absolute bottom-6 left-[1.2rem] top-6 w-[3px] origin-top rounded-full"
+          className="absolute bottom-6 start-[1.2rem] top-6 w-[3px] origin-top rounded-full"
           style={{ scaleY: reduce ? 1 : draw, background: 'linear-gradient(var(--accent), var(--gold))' }}
         />
         {ITEMS.map((it) => (

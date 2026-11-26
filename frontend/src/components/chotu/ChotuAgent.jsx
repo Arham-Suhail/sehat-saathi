@@ -4,15 +4,10 @@
    (styles/chotu.css). Labelled for screen readers; never shows medical content.
    Always render it inside <ChotuBoundary> so a failure can't break the check-in. */
 import { useId } from 'react';
+import { t } from '../../i18n/useT';
 
 const STATES = new Set(['idle', 'listening', 'thinking', 'speaking', 'error']);
-const LABEL = {
-  idle: 'Chotu',
-  listening: 'Chotu sun raha hai',
-  thinking: 'Chotu soch raha hai',
-  speaking: 'Chotu bol raha hai',
-  error: 'Chotu se rabta nahi ho saka',
-};
+const label = (s) => t(`chotu.state.${s}`);
 
 // Egg-shaped body (narrow top, widest just below the middle) with four pointed, dripping hem tips.
 const BODY =
@@ -33,7 +28,7 @@ export default function ChotuAgent({ state = 'idle', size = 140, className = '' 
   const g = (name) => `chotu-${name}-${uid}`;
   const ring = { fill: 'none', stroke: 'var(--chotu-ring)', strokeWidth: 3 };
   return (
-    <span className={`chotu chotu--${s} ${className}`.trim()} role="img" aria-label={LABEL[s]}>
+    <span className={`chotu chotu--${s} ${className}`.trim()} role="img" aria-label={label(s)}>
       <svg viewBox="-20 -30 240 270" width={size} height={Math.round(size * 1.125)} aria-hidden="true" focusable="false">
         <defs>
           <clipPath id={g('clip')}>

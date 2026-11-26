@@ -4,6 +4,8 @@
    /checkins/voice at call end. Stage B maps `state` onto the Chotu mascot. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
+import { toUrdu } from '../i18n/toUrdu';
+import { getLang, t } from '../i18n/useT';
 import { resolveVapiClass } from './vapiClass';
 
 const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY || '';
@@ -13,11 +15,7 @@ const MAX_CHARS = 6000;
 
 export const vapiConfigured = Boolean(PUBLIC_KEY && ASSISTANT_ID);
 
-const MIC_ERRORS = {
-  NotAllowedError: 'Mic ki ijazat nahi mili. Browser settings mein mic allow karein, ya neeche likh kar bataein.',
-  NotFoundError: 'Mic nahi mila — likh kar bataein.',
-  NotReadableError: 'Mic kisi aur app mein istemal ho raha hai. Likh kar bataein.',
-};
+const MIC_ERRORS = { NotAllowedError: 'mic.denied', NotFoundError: 'mic.missing', NotReadableError: 'mic.busy' };
 
 function capTranscript(turns) {
   const out = [];
@@ -55,7 +53,12 @@ export function useVapiCall({ onSaved } = {}) {
     try {
       const saved = await api('/checkins/voice', {
         method: 'POST',
-        json: { transcript: turns, vapi_call_id: callIdRef.current },
+        // Urdu UI: Vapi's Hindi-script transcript is converted before it is stored and shown back.
+        json: {
+          transcript: getLang() === 'ur' ? turns.map((x) => ({ ...x, text: toUrdu(x.text) })) : turns,
+          vapi_call_id: callIdRef.current,
+          lang: getLang(),
+        },
         timeoutMs: 60000,
       });
       onSavedRef.current?.(saved);
@@ -90,7 +93,7 @@ export function useVapiCall({ onSaved } = {}) {
     vapi.on('error', (e) => {
       // Type/message only, for debugging; never keys or tokens.
       console.error('vapi error:', e?.type || e?.error?.type || 'unknown', e?.error?.message || e?.message || '');
-      setError('Awaaz ka rabta toot gaya. Dobara koshish karein ya likh kar bataein.');
+      setError(t('vapi.dropped'));
       setState('error');
       setLive(false);
     });
@@ -114,7 +117,7 @@ export function useVapiCall({ onSaved } = {}) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((t) => t.stop());
     } catch (e) {
-      setError(MIC_ERRORS[e?.name] || 'Mic shuru nahi ho saka. Likh kar bataein.');
+      setError(t(MIC_ERRORS[e?.name] || 'mic.failed'));
       setState('error');
       return;
     }
@@ -124,7 +127,7 @@ export function useVapiCall({ onSaved } = {}) {
       callIdRef.current = call?.id ? String(call.id).slice(0, 100) : null;
     } catch (e) {
       console.error('vapi start failed:', e?.name || 'Error', e?.message || '');
-      setError('Awaaz wali baat shuru nahi ho saki. Likh kar bataein.');
+      setError(t('vapi.failed'));
       setState('error');
     }
   }, [ensureClient]);

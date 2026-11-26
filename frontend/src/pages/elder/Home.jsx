@@ -9,13 +9,17 @@ import ChotuBoundary from '../../components/chotu/ChotuBoundary';
 import Icon from '../../components/Icon';
 import { Disclaimer, fmtTime } from '../../components/ui';
 import { useEmergencyContact, useProgress, useWater } from '../../hooks/useElderData';
-import { t } from '../../i18n/useT';
+import { LangToggle } from '../../i18n/LangProvider';
+import { st } from '../../i18n/server';
+import { getLang, t } from '../../i18n/useT';
 import { BADGES } from '../../lib/streaks';
 import { WATER_GOAL } from '../../lib/water';
 import { useReminders } from './ElderLayout';
 
 const TIP_COUNT = 20;
-const PK_DATE = new Intl.DateTimeFormat('en-PK', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Karachi' });
+// Date in the UI language (ur-PK gives Urdu month and weekday names).
+const pkDate = (d) =>
+  new Intl.DateTimeFormat(getLang() === 'ur' ? 'ur-PK' : 'en-PK', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Karachi' }).format(d);
 
 const list = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 const item = {
@@ -154,7 +158,7 @@ function StreakCard({ progress }) {
         </span>
         <span className="inline-flex items-center gap-1 text-[1.25rem] font-bold text-accent">
           {t('home.streak.badges', { n: progress?.earned ?? 0, total: BADGES.length })}
-          <Icon name="chevron" size={20} />
+          <Icon name="chevron" size={20} className="rtl:-scale-x-100" />
         </span>
       </div>
     </Link>
@@ -176,7 +180,10 @@ export default function ElderHome() {
       <motion.main className="page flex flex-col gap-5" variants={list} initial="hidden" animate="show">
         <motion.header variants={item} className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="m-0 text-[1.25rem] font-bold text-muted">{PK_DATE.format(new Date())}</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="m-0 text-[1.25rem] font-bold text-muted">{pkDate(new Date())}</p>
+              <LangToggle />
+            </div>
             <h1 className="m-0 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: user.name.split(' ')[0] })}</h1>
           </div>
           <Link to="/elder/checkin" aria-label={t('home.checkin')} className="shrink-0 rounded-full">
@@ -204,7 +211,7 @@ export default function ElderHome() {
             <>
               <p className="m-0 mt-3 text-[2.4rem] font-bold leading-none [font-variant-numeric:tabular-nums]">{fmtTime(next.scheduled_at)}</p>
               <p className="m-0 mt-2 text-[1.4rem] font-bold leading-snug">
-                {next.medicine_name}
+                {st(next.medicine_name)}
                 {next.dose ? <span className="font-normal"> ({next.dose})</span> : null}
               </p>
             </>
@@ -216,7 +223,7 @@ export default function ElderHome() {
             className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-surface px-5 text-[1.25rem] font-bold text-accent no-underline transition-transform duration-150 active:scale-[0.97]"
           >
             {t('home.next.cta')}
-            <Icon name="chevron" size={20} />
+            <Icon name="chevron" size={20} className="rtl:-scale-x-100" />
           </Link>
         </motion.section>
 

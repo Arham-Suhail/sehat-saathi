@@ -2,21 +2,16 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { BigButton, BottomBar, Disclaimer, ErrorText, Field, Notice, PharmacistBanner, TopBar } from '../../components/ui';
+import { st } from '../../i18n/server';
 import { t } from '../../i18n/useT';
 import { useReminders } from './ElderLayout';
 
 /* The model only transcribes. Labels, route, reminder mode and suggested times come from the
-   server's normaliser; the server re-checks all of it on save. */
+   server's normaliser; the server re-checks all of it on save. Server labels are Roman Urdu and go
+   through st() into the UI language; what was written on the prescription is shown verbatim. */
 
 const HHMM = /^\d\d:\d\d$/;
-const MEAL_OPTS = [
-  ['before', 'Khane se pehle'],
-  ['after', 'Khane ke baad'],
-  ['with', 'Khane ke saath'],
-  ['none', 'Koi hidayat nahi'],
-];
-const HOSPITAL_NOTE = 'Ye hospital wali (IV/injection) dawai hai. Is app mein iske reminders nahi bante.';
-const DC_NOTE = "Is order mein 'D/c' (band karna) likha hai. Ye dawai chalu nahi hai.";
+const MEAL_OPTS = ['before', 'after', 'with', 'none'];
 
 let uid = 0;
 const blank = () => ({
@@ -76,10 +71,10 @@ function viewMode(med) {
 function RawNote({ med }) {
   return (
     <>
-      {med.quantity_limit_raw ? <p className="small muted" style={{ margin: 0 }}>Note: {med.quantity_limit_raw}</p> : null}
+      {med.quantity_limit_raw ? <p className="small muted" style={{ margin: 0 }}>{t('confirm.note')} <span dir="auto">{med.quantity_limit_raw}</span></p> : null}
       {med.original_text ? (
         <p className="small muted" style={{ margin: 0 }}>
-          Parche mein likha tha: “{med.original_text}”
+          {t('confirm.original')} “<span dir="auto">{med.original_text}</span>”
         </p>
       ) : null}
     </>
@@ -89,7 +84,7 @@ function RawNote({ med }) {
 function FrequencyControl({ med, options, onChange, id }) {
   const opts = [
     ...(med.frequency_choice === 'asis' || med.frequency.kind === 'pattern'
-      ? [{ value: 'asis', label: `${med.frequency.label} (jaise likha hai)`, times: med.suggested_times || [] }]
+      ? [{ value: 'asis', label: `${st(med.frequency.label)} (${t('confirm.as_written')})`, times: med.suggested_times || [] }]
       : []),
     ...options,
   ];
@@ -99,16 +94,16 @@ function FrequencyControl({ med, options, onChange, id }) {
     onChange({ ...med, frequency_choice: e.target.value, timings: times, edited_by_user: true });
   };
   return (
-    <Field id={id} label="Kitni baar">
+    <Field id={id} label={t('confirm.frequency')}>
       <select id={id} className="select" value={med.frequency_choice} onChange={pick}>
         {opts.map((o) => (
           <option key={o.value} value={o.value}>
-            {o.value === 'custom' ? 'Waqt khud set karein' : o.label}
+            {o.value === 'custom' ? t('confirm.custom') : st(o.label)}
           </option>
         ))}
       </select>
-      {med.frequency_raw ? <small>Parche par: {med.frequency_raw}</small> : null}
-      {med.frequency.note && med.frequency_choice !== 'custom' ? <small>{med.frequency.note}</small> : null}
+      {med.frequency_raw ? <small>{t('confirm.on_rx')} <span dir="auto">{med.frequency_raw}</span></small> : null}
+      {med.frequency.note && med.frequency_choice !== 'custom' ? <small>{st(med.frequency.note)}</small> : null}
     </Field>
   );
 }
@@ -124,7 +119,7 @@ function TimesEditor({ med, onChange, id }) {
     <fieldset className="stack" style={{ border: 0, padding: 0, margin: 0 }}>
       <legend className="big">{t('confirm.times')}</legend>
       <p className="muted small" style={{ margin: 0 }}>
-        {custom ? 'Waqt khud set karein.' : 'Ye waqt sirf mashwara hain — tasdeeq karein ya badlein.'}
+        {custom ? t('confirm.custom') : t('confirm.suggested')}
       </p>
       {med.timings.map((tm, i) => (
         <div className="row" key={i}>
@@ -162,30 +157,30 @@ function MedicineCard({ med, index, options, onChange, onRemove, showErrors }) {
       {med.pharmacist_reasons?.length ? (
         <ul className="small" style={{ margin: 0 }}>
           {med.pharmacist_reasons.map((r) => (
-            <li key={r}>{r}</li>
+            <li key={r}>{st(r)}</li>
           ))}
         </ul>
       ) : null}
-      {mode === 'hospital' ? <Notice kind="warning">{HOSPITAL_NOTE} Ye sirf note ke taur par mehfooz hogi.</Notice> : null}
+      {mode === 'hospital' ? <Notice kind="warning">{t('confirm.hospital')}</Notice> : null}
 
       <Field id={id('name')} label={t('confirm.name')}>
-        <input id={id('name')} className="input" maxLength={120} value={med.name} onChange={set('name')}
+        <input id={id('name')} dir="auto" className="input" maxLength={120} value={med.name} onChange={set('name')}
           aria-invalid={showErrors && !med.name.trim()} />
       </Field>
       <div className="grid-2">
         <Field id={id('strength')} label={t('confirm.strength')}>
-          <input id={id('strength')} className="input" maxLength={60} value={med.strength_text}
-            onChange={set('strength_text')} placeholder="jaise 500 mg" />
+          <input id={id('strength')} dir="auto" className="input" maxLength={60} value={med.strength_text}
+            onChange={set('strength_text')} placeholder={t('confirm.strength.ph')} />
         </Field>
         <Field id={id('dose')} label={t('confirm.dose')}>
-          <input id={id('dose')} className="input" maxLength={80} value={med.dose_text} onChange={set('dose_text')}
-            placeholder="jaise 1 tab ya 5 ml" />
+          <input id={id('dose')} dir="auto" className="input" maxLength={80} value={med.dose_text} onChange={set('dose_text')}
+            placeholder={t('confirm.dose.ph')} />
         </Field>
-        <Field id={id('meal')} label="Khane ke hisaab se">
+        <Field id={id('meal')} label={t('confirm.meal')}>
           <select id={id('meal')} className="select" value={med.meal_timing} onChange={set('meal_timing')}>
-            {MEAL_OPTS.map(([v, l]) => (
+            {MEAL_OPTS.map((v) => (
               <option key={v} value={v}>
-                {l}
+                {t(`confirm.meal.${v}`)}
               </option>
             ))}
           </select>
@@ -199,17 +194,17 @@ function MedicineCard({ med, index, options, onChange, onRemove, showErrors }) {
       </div>
 
       <p className="chip" style={{ margin: 0 }}>
-        Kaise lein: {med.route.label || 'Likha nahi'}
-        {med.route_raw ? <span className="muted"> ({med.route_raw})</span> : null}
+        {t('confirm.route')} {med.route.label ? st(med.route.label) : t('confirm.not_written')}
+        {med.route_raw ? <span className="muted" dir="auto"> ({med.route_raw})</span> : null}
       </p>
 
       {mode === 'prn' ? (
         <Notice>
-          <strong>Zaroorat par</strong>
-          {med.prn_condition ? <> — parche par shart: “{med.prn_condition}”</> : null}
+          <strong>{t('confirm.prn')}</strong>
+          {med.prn_condition ? <> — {t('confirm.prn.condition')} “<span dir="auto">{med.prn_condition}</span>”</> : null}
           <br />
-          Iske fixed reminders nahi bante.
-          {med.frequency_raw ? <> Parche par: {med.frequency_raw}</> : null}
+          {t('confirm.prn.none')}
+          {med.frequency_raw ? <> {t('confirm.on_rx')} <span dir="auto">{med.frequency_raw}</span></> : null}
         </Notice>
       ) : null}
       {mode === 'times' ? (
@@ -220,7 +215,7 @@ function MedicineCard({ med, index, options, onChange, onRemove, showErrors }) {
       ) : null}
       {mode === 'hospital' && med.frequency_raw ? (
         <p className="small muted" style={{ margin: 0 }}>
-          {med.frequency.label} (parche par: {med.frequency_raw})
+          {st(med.frequency.label)} ({t('confirm.on_rx')} <span dir="auto">{med.frequency_raw}</span>)
         </p>
       ) : null}
 
@@ -246,25 +241,25 @@ function StoppedCard({ med, options, onChange, onRemove }) {
     });
   };
   return (
-    <section className="card stack" aria-label={med.name || 'Band dawai'}>
+    <section className="card stack" aria-label={med.name || t('confirm.stopped.one')}>
       <h3 style={{ margin: 0 }}>{med.name || '—'}</h3>
-      <Notice kind="warning">{DC_NOTE}</Notice>
+      <Notice kind="warning">{t('confirm.dc')}</Notice>
       <RawNote med={med} />
       {asking ? (
         <div className="stack">
           <PharmacistBanner />
-          <p>Pakka? Ise sirf pharmacist ya doctor se poochne ke baad chalu karein.</p>
+          <p>{t('confirm.react.sure')}</p>
           <BigButton variant="danger" onClick={reactivate}>
-            Haan, chalu karein
+            {t('confirm.react.yes')}
           </BigButton>
           <BigButton variant="secondary" onClick={() => setAsking(false)}>
-            Nahi, band rehne dein
+            {t('confirm.react.no')}
           </BigButton>
         </div>
       ) : (
         <div className="row">
           <BigButton variant="secondary" small block={false} onClick={() => setAsking(true)}>
-            Dobara chalu karein
+            {t('confirm.react')}
           </BigButton>
           <BigButton variant="danger" small block={false} onClick={onRemove}>
             {t('confirm.remove')}
@@ -361,7 +356,7 @@ export default function ConfirmMeds() {
 
       {stopped.length ? (
         <details className="card stack">
-          <summary className="big summary">Band ki gayi dawaiyan ({stopped.length})</summary>
+          <summary className="big summary">{t('confirm.stopped', { n: stopped.length })}</summary>
           {stopped.map((m) => (
             <StoppedCard key={m.key} med={m} options={options} onChange={update(m.key)} onRemove={remove(m.key)} />
           ))}

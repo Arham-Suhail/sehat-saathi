@@ -2,6 +2,7 @@
    Respects the notch via safe-area inset. A thin line under it fills as the page scrolls. */
 import { motion, useScroll } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { LangToggle } from '../../i18n/LangProvider';
 import { t } from '../../i18n/useT';
 
 export default function LandingNav() {
@@ -24,16 +25,19 @@ export default function LandingNav() {
           </span>
           <span className="whitespace-nowrap max-[379px]:sr-only">{t('app.name')}</span>
         </Link>
+        <div className="flex items-center gap-2">
+        <LangToggle />
         <Link
           to="/login"
-          className="inline-flex min-h-12 items-center whitespace-nowrap rounded-full border border-line bg-surface px-5 text-[1.25rem] font-bold text-accent no-underline shadow-soft transition-[transform,box-shadow] duration-150 active:scale-[0.97]"
+          className="hidden min-h-12 sm:inline-flex items-center whitespace-nowrap rounded-full border border-line bg-surface px-5 text-[1.25rem] font-bold text-accent no-underline shadow-soft transition-[transform,box-shadow] duration-150 active:scale-[0.97]"
         >
           {t('common.login')}
         </Link>
+        </div>
       </nav>
       <motion.span
         aria-hidden="true"
-        className="absolute bottom-[-1px] left-0 h-[3px] w-full origin-left rounded-r-full"
+        className="absolute bottom-[-1px] start-0 h-[3px] w-full origin-left rounded-e-full rtl:origin-right"
         style={{ scaleX: scrollYProgress, background: 'linear-gradient(90deg, var(--accent), var(--gold))' }}
       />
     </header>

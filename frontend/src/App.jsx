@@ -15,6 +15,7 @@ import Progress from './pages/elder/Progress';
 import Reminders from './pages/elder/Reminders';
 import Upload from './pages/elder/Upload';
 import Vitals from './pages/elder/Vitals';
+import { t } from './i18n/useT';
 
 // Charts (Recharts) only load for carers.
 const Dashboard = lazy(() => import('./pages/carer/Dashboard'));
@@ -59,7 +60,7 @@ export default function App() {
           path="/carer/elder/:elderId"
           element={
             <RequireRole roles={['family', 'doctor']}>
-              <Suspense fallback={<p className="page muted">Load ho raha hai…</p>}>
+              <Suspense fallback={<p className="page muted">{t('common.loading')}</p>}>
                 <Dashboard />
               </Suspense>
             </RequireRole>

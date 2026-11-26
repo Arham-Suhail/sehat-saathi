@@ -55,11 +55,12 @@
   --chotu-shadow: rgb(31 27 22 / 0.14);
   --chotu-ring: rgb(14 91 86 / 0.35);
 
-  --font-body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Latin glyphs come from Atkinson; Urdu glyphs fall through to Noto Nastaliq Urdu (the iOS Urdu font). */
+  --font-body: 'Atkinson Hyperlegible', 'Noto Nastaliq Urdu', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Display/script fonts: ONLY the landing hero and section headings (never medical info or buttons). */
-  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-display: 'Anton', Impact, 'Arial Narrow', sans-serif;
-  --font-script: 'Yellowtail', 'Brush Script MT', cursive;
+  --font-serif: 'Fraunces', 'Noto Nastaliq Urdu', Georgia, 'Times New Roman', serif;
+  --font-display: 'Anton', 'Noto Nastaliq Urdu', Impact, 'Arial Narrow', sans-serif;
+  --font-script: 'Yellowtail', 'Noto Nastaliq Urdu', 'Brush Script MT', cursive;
 
   --radius: 14px;
   --radius-sm: 10px;

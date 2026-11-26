@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../i18n/useT';
 import { BigButton, ErrorText, fmtTime } from './ui';
+import { st } from '../i18n/server';
 
 /** Large, focused modal shown when a dose is due (in-app alert). */
 export default function ReminderAlert({ reminder, onTaken, onSkip, onSnooze }) {
@@ -44,7 +45,7 @@ export default function ReminderAlert({ reminder, onTaken, onSkip, onSnooze }) {
         </h2>
         <div id="rem-body" className="center">
           <p className="big" style={{ marginBottom: 4 }}>
-            {reminder.medicine_name}
+            {st(reminder.medicine_name)}
           </p>
           {reminder.dose ? <p style={{ marginBottom: 4 }}>{reminder.dose}</p> : null}
           {reminder.instructions ? <p className="muted">{reminder.instructions}</p> : null}

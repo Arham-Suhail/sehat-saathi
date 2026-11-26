@@ -6,16 +6,12 @@ import { useVapiCall } from '../../hooks/useVapiCall';
 import ChotuAgent from '../../components/chotu/ChotuAgent';
 import ChotuBoundary from '../../components/chotu/ChotuBoundary';
 import { toRoman } from '../../i18n/translit';
+import { toUrdu } from '../../i18n/toUrdu';
+import { getLang, t } from '../../i18n/useT';
 
-const GREETING = 'Assalam o Alaikum! Aaj aap kaisa mehsoos kar rahe hain?';
-const AI_NOTE = 'Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein.';
-const VAPI_STATE = {
-  connecting: 'Jor raha hoon…',
-  listening: 'Main sun raha hoon — boliye',
-  thinking: 'Soch raha hoon…',
-  speaking: 'Chotu bol raha hai…',
-  saving: 'Baat mehfooz ho rahi hai…',
-};
+const VAPI_STATES = new Set(['connecting', 'listening', 'thinking', 'speaking', 'saving']);
+// Vapi's transcriber returns Hindi script: show it in the UI's script.
+const script = (s) => (getLang() === 'ur' ? toUrdu(s) : toRoman(s));
 
 function ResultCard({ result }) {
   return (
@@ -23,13 +19,13 @@ function ResultCard({ result }) {
       <p className="big">{result.reply}</p>
       {result.wellness_tip ? (
         <p>
-          <strong>Aaj ka mashwara: </strong>
+          <strong>{t('checkin.tip')} </strong>
           {result.wellness_tip}
         </p>
       ) : null}
       {result.concern_flag ? (
         <Notice kind="warning">
-          Aap ki baat ghar walon ke dashboard par nazar aayegi. Zaroorat ho to foran doctor se rabta karein.
+          {t('checkin.concern')}
         </Notice>
       ) : null}
     </section>
@@ -58,7 +54,7 @@ export default function CheckIn() {
     try {
       const out = await api('/checkins/text', {
         method: 'POST',
-        json: { message, channel: usedSpeech ? 'speech' : 'text' },
+        json: { message, channel: usedSpeech ? 'speech' : 'text', lang: getLang() },
         timeoutMs: 60000,
       });
       setResult(out);
@@ -84,8 +80,8 @@ export default function CheckIn() {
 
   return (
     <main className="page page--with-bar stack">
-      <TopBar back="/elder" title="Hal-chaal" />
-      <h1>Aaj ka hal-chaal</h1>
+      <TopBar back="/elder" title={t('checkin.short')} />
+      <h1>{t('checkin.title')}</h1>
 
       <div className="chotu-stage">
         <ChotuBoundary>
@@ -94,27 +90,27 @@ export default function CheckIn() {
       </div>
 
       <div className="bubbles" aria-live="polite">
-        <div className="bubble bubble--ai">{vapi.live && vapi.assistantLine ? toRoman(vapi.assistantLine) : GREETING}</div>
+        <div className="bubble bubble--ai">{vapi.live && vapi.assistantLine ? script(vapi.assistantLine) : t('checkin.greeting')}</div>
         {vapi.transcript
           .filter((x) => x.role === 'elder')
           .slice(-1)
           .map((x, i) => (
             <div key={i} className="bubble bubble--elder">
-              {toRoman(x.text)}
+              {script(x.text)}
             </div>
           ))}
       </div>
-      <Disclaimer text={AI_NOTE} />
+      <Disclaimer text={t('landing.chotu.note')} />
 
-      {vapi.configured && vapi.state !== 'idle' && VAPI_STATE[vapi.state] ? <Notice>{VAPI_STATE[vapi.state]}</Notice> : null}
+      {vapi.configured && VAPI_STATES.has(vapi.state) ? <Notice>{t(`checkin.vapi.${vapi.state}`)}</Notice> : null}
       <ErrorText>{vapi.error}</ErrorText>
 
       {result ? <ResultCard result={result} /> : null}
 
       <section className="stack" aria-labelledby="write-h">
-        <h2 id="write-h">Likh kar bataein</h2>
+        <h2 id="write-h">{t('checkin.write')}</h2>
         <label htmlFor="checkin-text" className="visually-hidden">
-          Aaj aap kaisa mehsoos kar rahe hain?
+          {t('home.checkin')}
         </label>
         <textarea
           id="checkin-text"
@@ -122,14 +118,14 @@ export default function CheckIn() {
           maxLength={1000}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Masalan: Aaj theek hoon, thori thakan hai…"
+          placeholder={t('checkin.placeholder')}
           disabled={vapiBusy}
         />
         {speech.listening && speech.interim ? <p className="muted">🎤 {speech.interim}</p> : null}
         <ErrorText>{speech.error}</ErrorText>
         {speech.supported ? (
           <BigButton variant="secondary" disabled={vapiBusy || busy} onClick={speech.listening ? speech.stop : speech.start}>
-            {speech.listening ? '■ Bas, ruk jayein' : '🎤 Bol kar likhwayein'}
+            {speech.listening ? `■ ${t('checkin.speech.stop')}` : `🎤 ${t('checkin.speech.start')}`}
           </BigButton>
         ) : null}
         <ErrorText>{err}</ErrorText>
@@ -139,16 +135,16 @@ export default function CheckIn() {
         {vapi.configured ? (
           vapi.live ? (
             <BigButton variant="danger" onClick={vapi.stop}>
-              ■ Khatam karein
+              ■ {t('checkin.vapi.end')}
             </BigButton>
           ) : (
             <BigButton variant="secondary" disabled={vapiBusy || busy} onClick={vapi.start}>
-              📞 Chotu se baat karein
+              📞 {t('checkin.vapi.start')}
             </BigButton>
           )
         ) : null}
         <BigButton onClick={send} disabled={busy || vapiBusy || !text.trim()}>
-          {busy ? 'Bhej raha hoon…' : 'Bhejein'}
+          {busy ? t('checkin.sending') : t('checkin.send')}
         </BigButton>
       </BottomBar>
     </main>

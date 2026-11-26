@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api/client';
+import { st } from '../i18n/server';
+import { t } from '../i18n/useT';
 import { BigButton, Disclaimer, ErrorText } from './ui';
 
 /** Cheaper generic options — always labelled "needs doctor verification". */
@@ -24,17 +26,17 @@ export default function Alternatives({ medicine }) {
     return (
       <>
         <BigButton variant="secondary" small disabled={busy} onClick={load}>
-          {busy ? 'Dhoond raha hoon…' : 'Sasti generic dawai?'}
+          {busy ? t('alt.searching') : t('alt.ask')}
         </BigButton>
         <ErrorText>{err}</ErrorText>
       </>
     );
 
   return (
-    <div className="notice notice--warning stack" role="region" aria-label={`${medicine.name} alternatives`}>
-      <strong>⚠ {data.label}</strong>
+    <div className="notice notice--warning stack" role="region" aria-label={t('alt.region', { name: medicine.name })}>
+      <strong>⚠ {st(data.label)}</strong>
       <p style={{ margin: 0 }}>
-        Generic naam: <strong>{data.generic_name === 'unknown' ? 'Maloom nahi' : data.generic_name}</strong>
+        {t('alt.generic')} <strong>{data.generic_name === 'unknown' ? t('alt.unknown') : data.generic_name}</strong>
       </p>
       {data.alternatives.length ? (
         <ul style={{ margin: 0 }}>
@@ -43,9 +45,9 @@ export default function Alternatives({ medicine }) {
           ))}
         </ul>
       ) : (
-        <p style={{ margin: 0 }}>Koi pakka mashwara nahi mila — pharmacist ya doctor se poochein.</p>
+        <p style={{ margin: 0 }}>{t('alt.none')}</p>
       )}
-      <Disclaimer text={data.disclaimer} />
+      <Disclaimer text={st(data.disclaimer)} />
     </div>
   );
 }

@@ -4,8 +4,9 @@
 > Hackathon entry (Capital Youth Expo, Healthcare track). Started Thursday Nov 26, 2026 · submitted Saturday Nov 28, 2026.
 
 A mobile-first web companion for elderly people in Pakistan. Elders photograph a prescription; an AI reads it,
-the elder confirms it, and the app reminds them to take each dose. A daily Roman Urdu check-in logs how they feel,
-and family members or doctors see a read-only dashboard.
+the elder confirms it, and the app reminds them to take each dose. A daily check-in logs how they feel,
+and family members or doctors see a read-only dashboard. The app is in Urdu (Nastaliq script, right-to-left)
+by default, with an English switch on every screen.
 
 *(Full README — problem, features, architecture, screenshots and demo — is completed in Phase 5. See `docs/ROADMAP.md`.)*
 
@@ -86,7 +87,8 @@ pywebpush + py-vapid + http_ece + cryptography + aiohttp + requests (Web Push en
 Dev: pytest, pytest-asyncio, mongomock-motor, ruff, pip-audit. CI: GitHub Actions, gitleaks.
 
 **Frontend (npm):** react, react-dom, react-router-dom, recharts, @vapi-ai/web (Vapi Web SDK; uses Daily.co WebRTC, which also contacts Daily's region service prod-ks.pluot.blue),
-@fontsource/atkinson-hyperlegible, @fontsource/fraunces, @fontsource/anton, @fontsource/yellowtail (self-hosted fonts),
+@fontsource/atkinson-hyperlegible, @fontsource/fraunces, @fontsource/anton, @fontsource/yellowtail,
+@fontsource/noto-nastaliq-urdu (Noto Nastaliq Urdu, the iOS Urdu font; OFL-1.1) (all self-hosted fonts),
 tailwindcss + @tailwindcss/vite (utility CSS, no preflight), motion (animations; design inspired by Aceternity UI /
 21st.dev, rebuilt in-house, no copied components). Dev: vite, @vitejs/plugin-react, eslint, @eslint/js,
 eslint-plugin-react, eslint-plugin-react-hooks, globals.

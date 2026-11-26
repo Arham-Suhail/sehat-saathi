@@ -3,6 +3,7 @@
    'disabled' / 'unsupported' and the screens fall back to in-app notifications. */
 import { useCallback, useEffect, useState } from 'react';
 import { API_URL, api, getToken } from '../api/client';
+import { getLang, t } from '../i18n/useT';
 import { registerServiceWorker } from './useReminderEngine';
 
 export function pushSupported() {
@@ -24,7 +25,7 @@ function keyBytes(b64url) {
 
 async function sendToServer(sub) {
   const j = sub.toJSON();
-  await api('/push/subscribe', { method: 'POST', json: { endpoint: j.endpoint, keys: { p256dh: j.keys.p256dh, auth: j.keys.auth } } });
+  await api('/push/subscribe', { method: 'POST', json: { endpoint: j.endpoint, keys: { p256dh: j.keys.p256dh, auth: j.keys.auth }, lang: getLang() } });
 }
 
 /** Explicit logout: stop this browser's alerts so a shared phone doesn't get someone else's. */
@@ -97,7 +98,7 @@ export function usePush() {
       await sendToServer(sub);
       setState('on');
     } catch (e) {
-      setError(e?.message || 'Alarm on nahi ho saka. Dobara koshish karein.');
+      setError(e?.message || t('push.failed'));
     }
   }, [publicKey]);
 

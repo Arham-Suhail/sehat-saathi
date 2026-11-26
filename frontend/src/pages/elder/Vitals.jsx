@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import { Disclaimer, ErrorText, TopBar } from '../../components/ui';
 import VitalsForm from '../../components/VitalsForm';
 import VitalsList from '../../components/VitalsList';
+import { t } from '../../i18n/useT';
 
 export default function Vitals() {
   const [vitals, setVitals] = useState([]);
@@ -20,12 +21,12 @@ export default function Vitals() {
 
   return (
     <main className="page stack">
-      <TopBar back="/elder" title="BP / Sugar" />
-      <h1>BP / Sugar likhein</h1>
-      <p className="muted">Machine se reading le kar yahan likhein. Ghar wale aur doctor dashboard par dekh sakenge.</p>
+      <TopBar back="/elder" title={t('vitals.short')} />
+      <h1>{t('home.vitals')}</h1>
+      <p className="muted">{t('vitals.intro')}</p>
       <VitalsForm onSaved={(v) => setVitals((l) => [v, ...l])} />
       <section className="card">
-        <h2>Pichli readings</h2>
+        <h2>{t('vitals.previous')}</h2>
         <ErrorText>{err}</ErrorText>
         <VitalsList vitals={vitals} />
       </section>

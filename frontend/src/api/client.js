@@ -1,5 +1,6 @@
 /* API client: bearer token, timeouts, friendly errors, Render cold-start awareness.
    Never logs tokens or request bodies. */
+import { st } from '../i18n/server';
 import { t } from '../i18n/useT';
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
@@ -115,7 +116,8 @@ export async function api(path, opts = {}) {
   }
   if (!res.ok) {
     if (res.status === 401 && auth) onUnauthorized();
-    const msg = typeof data?.detail === 'string' ? data.detail : t('common.error');
+    // Server messages are Roman Urdu; show them in the active UI language (i18n/server.js).
+    const msg = typeof data?.detail === 'string' ? st(data.detail) : t('common.error');
     throw new ApiError(res.status, msg);
   }
   return data;

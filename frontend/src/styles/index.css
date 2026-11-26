@@ -72,3 +72,22 @@
     to { transform: translate3d(6%, -10%, 0) scale(1.15); }
   }
 }
+
+/* ---------- Urdu (Nastaliq) ----------
+   Nastaliq is tall and sits small for its size: give it more line height and a slightly larger base.
+   These win over Tailwind's leading-* utilities (same layer, higher specificity). */
+@layer utilities {
+  html[lang='ur'] {
+    font-size: 106.25%;
+  }
+  html[lang='ur'] body {
+    line-height: 2;
+  }
+  html[lang='ur'] :is(h1, h2, h3, .leading-none, .leading-tight, .leading-snug, .leading-relaxed) {
+    line-height: 1.9;
+  }
+  /* Uppercase tracking means nothing in Urdu. */
+  html[lang='ur'] .uppercase {
+    letter-spacing: 0;
+  }
+}

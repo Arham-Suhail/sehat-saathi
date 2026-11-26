@@ -5,6 +5,7 @@ import { isIosNotInstalled, usePush } from '../../hooks/usePush';
 import { notificationsSupported } from '../../hooks/useReminderEngine';
 import { t } from '../../i18n/useT';
 import { useReminders } from './ElderLayout';
+import { st } from '../../i18n/server';
 
 function NotificationToggle() {
   const [perm, setPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'unsupported'));
@@ -86,9 +87,9 @@ export default function Reminders() {
                     <small>{fmtDay(r.scheduled_at)}</small>
                   </div>
                   <div className="stack" style={{ gap: 6 }}>
-                    <p className="dose__name">{r.medicine_name}</p>
+                    <p className="dose__name">{st(r.medicine_name)}</p>
                     {r.dose ? <p className="muted" style={{ margin: 0 }}>{r.dose}</p> : null}
-                    {r.instructions ? <p className="muted small" style={{ margin: 0 }}>{r.instructions}</p> : null}
+                    {r.instructions ? <p className="muted small" style={{ margin: 0 }}>{st(r.instructions)}</p> : null}
                     <span className={`tag tag--${r.status === 'skipped' ? 'missed' : r.status}`} style={{ justifySelf: 'start' }}>
                       {t(`rem.status.${r.status}`)}
                     </span>

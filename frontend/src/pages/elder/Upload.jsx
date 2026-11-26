@@ -90,7 +90,7 @@ export default function Upload() {
       />
 
       {preview ? (
-        <img src={preview} alt="Chuni hui nuskhe ki tasveer" className="preview-img" />
+        <img src={preview} alt={t('upload.preview_alt')} className="preview-img" />
       ) : (
         <button type="button" className="dropzone" onClick={() => inputRef.current?.click()}>
           <span className="dropzone__icon" aria-hidden="true">

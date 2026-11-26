@@ -1,0 +1,276 @@
+{
+  "_comment": "Roman Urdu text the API sends (errors, medicine labels, pharmacist reasons) -> [English, Urdu]. Used by frontend/src/i18n/server.js. backend/tests/test_server_strings.py fails if a backend string is missing here.",
+  "exact": {
+    "Nahi mila": [
+      "Not found",
+      "نہیں ملا"
+    ],
+    "Ijazat nahi": [
+      "Not allowed",
+      "اجازت نہیں"
+    ],
+    "Dobara login karein": [
+      "Please log in again",
+      "دوبارہ لاگ اِن کریں"
+    ],
+    "Request mein masla hai": [
+      "There is a problem with the request",
+      "درخواست میں مسئلہ ہے"
+    ],
+    "Maloomat sahi nahi hai": [
+      "Some details are not right",
+      "معلومات صحیح نہیں ہیں"
+    ],
+    "Bohat zyada koshishen. Thori dair baad dobara koshish karein.": [
+      "Too many tries. Please try again in a little while.",
+      "بہت زیادہ کوششیں۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔"
+    ],
+    "Request bohat bari hai": [
+      "The request is too large",
+      "درخواست بہت بڑی ہے"
+    ],
+    "Yeh maloomat doctor ki tasdeeq ke baghair istemal na karein. Apne doctor se zaroor poochein.": [
+      "Do not use this information without your doctor's confirmation. Always ask your doctor.",
+      "یہ معلومات ڈاکٹر کی تصدیق کے بغیر استعمال نہ کریں۔ اپنے ڈاکٹر سے ضرور پوچھیں۔"
+    ],
+    "Please confirm with a pharmacist / pharmacist se tasdeeq karein.": [
+      "Please confirm with a pharmacist.",
+      "فارماسسٹ سے تصدیق کریں۔"
+    ],
+    "Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein.": [
+      "Chotu is an AI helper, not a doctor. Ask your doctor about medicines.",
+      "چھوٹو ایک اے آئی مددگار ہے، ڈاکٹر نہیں۔ دوا کے بارے میں اپنے ڈاکٹر سے پوچھیں۔"
+    ],
+    "Needs doctor verification / doctor se tasdeeq zaroori": [
+      "Needs doctor verification",
+      "ڈاکٹر سے تصدیق ضروری"
+    ],
+    "Tasveer 5 MB se choti honi chahiye": [
+      "The photo must be smaller than 5 MB",
+      "تصویر ۵ ایم بی سے چھوٹی ہونی چاہیے"
+    ],
+    "Tasveer khaali hai": [
+      "The photo is empty",
+      "تصویر خالی ہے"
+    ],
+    "Yeh sahi tasveer nahi hai": [
+      "This is not a valid photo",
+      "یہ صحیح تصویر نہیں ہے"
+    ],
+    "Tasveer bohat bari hai": [
+      "The photo is too large",
+      "تصویر بہت بڑی ہے"
+    ],
+    "Abhi mashwara nahi mil saka. Baad mein koshish karein.": [
+      "Could not get a suggestion right now. Try again later.",
+      "ابھی مشورہ نہیں مل سکا۔ بعد میں کوشش کریں۔"
+    ],
+    "Email ya password ghalat hai": [
+      "Email or password is wrong",
+      "ای میل یا پاس ورڈ غلط ہے"
+    ],
+    "Account nahi ban saka. Doosra email try karein ya login karein.": [
+      "Could not create the account. Try another email or log in.",
+      "اکاؤنٹ نہیں بن سکا۔ دوسرا ای میل آزمائیں یا لاگ اِن کریں۔"
+    ],
+    "Bohat zyada ghalat koshishen. 15 minute baad dobara koshish karein.": [
+      "Too many wrong tries. Try again in 15 minutes.",
+      "بہت زیادہ غلط کوششیں۔ ۱۵ منٹ بعد دوبارہ کوشش کریں۔"
+    ],
+    "Phone number theek nahi": [
+      "The phone number is not valid",
+      "فون نمبر ٹھیک نہیں"
+    ],
+    "Code ghalat hai ya purana ho gaya. Buzurg se naya code mangwayein.": [
+      "The code is wrong or has expired. Ask the elder for a new code.",
+      "کوڈ غلط ہے یا پرانا ہو گیا۔ بزرگ سے نیا کوڈ منگوائیں۔"
+    ],
+    "Code nahi ban saka, dobara koshish karein": [
+      "Could not create a code, please try again",
+      "کوڈ نہیں بن سکا، دوبارہ کوشش کریں"
+    ],
+    "Bohat ghalat koshishen. 30 minute baad dobara koshish karein.": [
+      "Too many wrong tries. Try again in 30 minutes.",
+      "بہت غلط کوششیں۔ ۳۰ منٹ بعد دوبارہ کوشش کریں۔"
+    ],
+    "Har dawai ka kam az kam ek waqt set karein.": [
+      "Set at least one time for every medicine.",
+      "ہر دوا کا کم از کم ایک وقت سیٹ کریں۔"
+    ],
+    "Abhi tasveer parh nahi saka. Thori dair baad koshish karein ya khud likh dein.": [
+      "Could not read the photo right now. Try again shortly or type the medicines in.",
+      "ابھی تصویر نہیں پڑھ سکا۔ تھوڑی دیر بعد کوشش کریں یا خود لکھ دیں۔"
+    ],
+    "Dawai": [
+      "Medicine",
+      "دوا"
+    ],
+    "Waqt sahi nahi hai": [
+      "The time is not valid",
+      "وقت صحیح نہیں ہے"
+    ],
+    "BP ke liye upar aur neeche wali reading likhein": [
+      "For BP, write both the top and bottom numbers",
+      "بی پی کے لیے اوپر اور نیچے والی ریڈنگ لکھیں"
+    ],
+    "Neeche wali reading upar wali se kam honi chahiye": [
+      "The bottom number must be lower than the top number",
+      "نیچے والی ریڈنگ اوپر والی سے کم ہونی چاہیے"
+    ],
+    "Reading likhein": [
+      "Write a reading",
+      "ریڈنگ لکھیں"
+    ],
+    "Dil ki dhadkan 20 aur 250 ke darmiyan honi chahiye": [
+      "Heart rate must be between 20 and 250",
+      "دل کی دھڑکن ۲۰ اور ۲۵۰ کے درمیان ہونی چاہیے"
+    ],
+    "Parhne mein yaqeen kam hai.": [
+      "Not sure this was read correctly.",
+      "پڑھنے میں یقین کم ہے۔"
+    ],
+    "Dawai ka naam saaf nahi.": [
+      "The medicine name is not clear.",
+      "دوا کا نام صاف نہیں۔"
+    ],
+    "Taqat (strength) likhi nahi ya saaf nahi.": [
+      "The strength is missing or not clear.",
+      "طاقت (strength) لکھی نہیں یا صاف نہیں۔"
+    ],
+    "Kitni baar leni hai, likha nahi.": [
+      "How often to take it is not written.",
+      "کتنی بار لینی ہے، لکھا نہیں۔"
+    ],
+    "Kuch hissa parha nahi ja saka.": [
+      "Part of it could not be read.",
+      "کچھ حصہ پڑھا نہیں جا سکا۔"
+    ],
+    "Line adhoori lag rahi hai ('...').": [
+      "The line looks incomplete ('...').",
+      "لائن ادھوری لگ رہی ہے ('...')۔"
+    ],
+    "Tasveer ki line aur parhi gayi line mel nahi khatin.": [
+      "The line in the photo and the line read do not match.",
+      "تصویر کی لائن اور پڑھی گئی لائن میل نہیں کھاتیں۔"
+    ],
+    "Is line mein 'D/c' (band karna) likha hai, pharmacist se poochein.": [
+      "This line says 'D/c' (discontinue); ask a pharmacist.",
+      "اس لائن میں 'D/c' (بند کرنا) لکھا ہے، فارماسسٹ سے پوچھیں۔"
+    ],
+    "Dawai lene ka tareeqa (route) samajh nahi aaya.": [
+      "How to take the medicine (route) is not clear.",
+      "دوا لینے کا طریقہ (route) سمجھ نہیں آیا۔"
+    ],
+    "Kitni baar leni hai (abbreviation) samajh nahi aaya.": [
+      "How often to take it (abbreviation) is not clear.",
+      "کتنی بار لینی ہے (abbreviation) سمجھ نہیں آیا۔"
+    ],
+    "Samajh nahi aaya — waqt khud set karein": [
+      "Not understood — set the times yourself",
+      "سمجھ نہیں آیا — وقت خود سیٹ کریں"
+    ],
+    "Zaroorat par (jab ho)": [
+      "When needed",
+      "ضرورت پر (جب ہو)"
+    ],
+    "Raat sone se pehle": [
+      "At night before sleeping",
+      "رات سونے سے پہلے"
+    ],
+    "Likha nahi": [
+      "Not written",
+      "لکھا نہیں"
+    ],
+    "Waqt khud set karein": [
+      "Set the times yourself",
+      "وقت خود سیٹ کریں"
+    ],
+    "Munh se khani hai": [
+      "By mouth",
+      "منہ سے کھانی ہے"
+    ],
+    "Drip/injection (hospital wali)": [
+      "Drip/injection (hospital only)",
+      "ڈرپ / انجکشن (ہسپتال والی)"
+    ],
+    "Injection (hospital wali)": [
+      "Injection (hospital only)",
+      "انجکشن (ہسپتال والی)"
+    ],
+    "Jild ke neeche injection (hospital wali)": [
+      "Injection under the skin (hospital only)",
+      "جلد کے نیچے انجکشن (ہسپتال والی)"
+    ],
+    "Zabaan ke neeche rakhni hai": [
+      "Under the tongue",
+      "زبان کے نیچے رکھنی ہے"
+    ],
+    "Jild par lagani hai": [
+      "Apply on the skin",
+      "جلد پر لگانی ہے"
+    ],
+    "Saans ke zariye (inhaler/nebulizer)": [
+      "Inhaled (inhaler/nebulizer)",
+      "سانس کے ذریعے (انہیلر / نیبولائزر)"
+    ],
+    "Likha nahi / samajh nahi aaya": [
+      "Not written / not understood",
+      "لکھا نہیں / سمجھ نہیں آیا"
+    ],
+    "Khane se pehle": [
+      "Before food",
+      "کھانے سے پہلے"
+    ],
+    "Khane ke baad": [
+      "After food",
+      "کھانے کے بعد"
+    ],
+    "Khane ke saath": [
+      "With food",
+      "کھانے کے ساتھ"
+    ],
+    "Kuch ghalat ho gaya": [
+      "Something went wrong",
+      "کچھ غلط ہو گیا"
+    ],
+    "Sirf JPG, PNG ya WebP tasveer bhejein": [
+      "Send only a JPG, PNG or WebP photo",
+      "صرف JPG، PNG یا WebP تصویر بھیجیں"
+    ]
+  },
+  "patterns": [
+    {
+      "re": "^Din mein (\\d+) baar$",
+      "en": "{1} times a day",
+      "ur": "دن میں {1} بار"
+    },
+    {
+      "re": "^Har (\\d+) ghante baad$",
+      "en": "Every {1} hours",
+      "ur": "ہر {1} گھنٹے بعد"
+    },
+    {
+      "re": "^Har (\\d+) ghante = 24 ghante mein (\\d+) baar\\. Raat ka waqt zaroorat ho to khud add karein\\.$",
+      "en": "Every {1} hours = {2} times in 24 hours. Add a night time yourself if needed.",
+      "ur": "ہر {1} گھنٹے = ۲۴ گھنٹوں میں {2} بار۔ رات کا وقت ضرورت ہو تو خود شامل کریں۔"
+    }
+  ],
+  "slots": {
+    "subah": [
+      "morning",
+      "صبح"
+    ],
+    "dopahar": [
+      "afternoon",
+      "دوپہر"
+    ],
+    "shaam": [
+      "evening",
+      "شام"
+    ],
+    "raat": [
+      "night",
+      "رات"
+    ]
+  }
+}

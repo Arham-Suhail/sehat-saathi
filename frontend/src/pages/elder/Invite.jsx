@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../../api/client';
 import { BigButton, ErrorText, Notice, TopBar, fmtDay, fmtTime } from '../../components/ui';
+import { t } from '../../i18n/useT';
 
 export default function Invite() {
   const [invite, setInvite] = useState(null);
@@ -22,7 +23,7 @@ export default function Invite() {
 
   // Audit F2: the elder can take back access at any time; it ends on the carer's next request.
   const revokeAll = async () => {
-    if (!window.confirm('Kya aap sab ghar walon aur doctors ki ijazat khatam karna chahte hain? Dobara jurne ke liye unhein naya code chahiye hoga.')) return;
+    if (!window.confirm(t('invite.revoke.confirm'))) return;
     setBusy(true);
     setErr(null);
     try {
@@ -38,35 +39,32 @@ export default function Invite() {
 
   return (
     <main className="page stack">
-      <TopBar back="/elder" title="Ghar walon ko jorein" />
-      <h1>Ghar walon / doctor ko jorein</h1>
-      <p>
-        Code banayein aur apne ghar wale ya doctor ko batayein. Woh apne account mein yeh code daal kar aap ki dawaiyan
-        aur hal-chaal dekh sakenge. Woh kuch badal nahi sakte. Har code sirf ek shakhs ke liye hai.
-      </p>
+      <TopBar back="/elder" title={t('home.invite')} />
+      <h1>{t('invite.title')}</h1>
+      <p>{t('invite.intro')}</p>
       {invite ? (
         <section className="glass-card card--feature stack center" aria-live="polite">
           <p className="muted" style={{ margin: 0 }}>
-            Aap ka code
+            {t('invite.your_code')}
           </p>
-          <p className="code-display">
+          <p className="code-display" dir="ltr">
             {invite.code.slice(0, 3)} {invite.code.slice(3)}
           </p>
           <p className="muted small">
-            {fmtDay(invite.expires_at)} {fmtTime(invite.expires_at)} tak chalega
+            {t('invite.valid_until', { when: `${fmtDay(invite.expires_at)} ${fmtTime(invite.expires_at)}` })}
           </p>
         </section>
       ) : null}
-      <Notice kind="warning">Yeh code sirf apne bharosay ke logon ko dein.</Notice>
+      <Notice kind="warning">{t('invite.trust')}</Notice>
       {removed !== null ? (
-        <Notice kind="success">{removed} logon ki ijazat khatam ho gayi. Ab koi aap ki maloomat nahi dekh sakta.</Notice>
+        <Notice kind="success">{t('invite.revoked', { n: removed })}</Notice>
       ) : null}
       <ErrorText>{err}</ErrorText>
       <BigButton onClick={make} disabled={busy}>
-        {busy ? 'Ban raha hai…' : invite ? 'Naya code banayein' : 'Code banayein'}
+        {busy ? t('invite.making') : invite ? t('invite.new') : t('invite.make')}
       </BigButton>
       <BigButton variant="secondary" onClick={revokeAll} disabled={busy}>
-        Sab ki ijazat khatam karein
+        {t('invite.revoke')}
       </BigButton>
     </main>
   );

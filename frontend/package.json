@@ -8,12 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test": "node --test src/i18n/translit.test.js src/hooks/vapiClass.test.js src/lib/streaks.test.js src/lib/water.test.js"
+    "test": "node --test src/i18n/translit.test.js src/hooks/vapiClass.test.js src/lib/streaks.test.js src/lib/water.test.js src/i18n/server.test.js src/i18n/toUrdu.test.js"
   },
   "dependencies": {
     "@fontsource/anton": "5.3.0",
     "@fontsource/atkinson-hyperlegible": "5.3.0",
     "@fontsource/fraunces": "5.3.0",
+    "@fontsource/noto-nastaliq-urdu": "5.3.0",
     "@fontsource/yellowtail": "5.3.0",
     "@tailwindcss/vite": "4.3.5",
     "@vapi-ai/web": "3.1.1",

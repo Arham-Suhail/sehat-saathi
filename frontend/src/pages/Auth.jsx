@@ -62,11 +62,11 @@ export function Login() {
       <form className="glass-card stack" onSubmit={submit} noValidate>
         <h1>{t('common.login')}</h1>
         <Field id="email" label={t('auth.email')}>
-          <input id="email" className="input" type="email" autoComplete="email" inputMode="email" required
+          <input id="email" className="input" dir="ltr" type="email" autoComplete="email" inputMode="email" required
             maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <Field id="password" label={t('auth.password')}>
-          <input id="password" className="input" type="password" autoComplete="current-password" required
+          <input id="password" className="input" dir="ltr" type="password" autoComplete="current-password" required
             maxLength={72} value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
         <ErrorText>{err}</ErrorText>
@@ -133,11 +133,11 @@ export function Register() {
             onChange={set('name')} />
         </Field>
         <Field id="email" label={t('auth.email')}>
-          <input id="email" className="input" type="email" autoComplete="email" inputMode="email" required
+          <input id="email" className="input" dir="ltr" type="email" autoComplete="email" inputMode="email" required
             maxLength={254} value={form.email} onChange={set('email')} />
         </Field>
         <Field id="password" label={t('auth.password')} hint={t('auth.password.hint')}>
-          <input id="password" className="input" type="password" autoComplete="new-password" required minLength={8}
+          <input id="password" className="input" dir="ltr" type="password" autoComplete="new-password" required minLength={8}
             maxLength={72} value={form.password} onChange={set('password')} aria-describedby="password-hint" />
         </Field>
         <ErrorText>{err}</ErrorText>

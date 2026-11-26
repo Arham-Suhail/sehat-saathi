@@ -1,8 +1,11 @@
 /* Web Speech API dictation. Feature-detected; the text box always works without it.
-   hi-IN, not ur-PK: spoken Urdu is recognised as well, and Hindi script can be turned into Roman
-   Urdu by fixed rules (Urdu script can't: short vowels aren't written). The app shows Roman only. */
+   The recogniser follows the UI language: ur-PK returns Urdu script for the Urdu UI, en-IN English
+   for the English UI. A legacy hi-IN caller still gets Hindi script turned into Roman Urdu. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toRoman } from '../i18n/translit';
+import { getLang, t } from '../i18n/useT';
+
+const SPEECH_LANG = { ur: 'ur-PK', en: 'en-IN' };
 
 const SR = typeof window !== 'undefined' ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 
@@ -10,7 +13,7 @@ export function speechSupported() {
   return Boolean(SR);
 }
 
-export function useSpeech({ lang = 'hi-IN', onFinal } = {}) {
+export function useSpeech({ lang, onFinal } = {}) {
   const recRef = useRef(null);
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState('');
@@ -26,7 +29,9 @@ export function useSpeech({ lang = 'hi-IN', onFinal } = {}) {
     if (!SR) return;
     setError(null);
     const rec = new SR();
-    rec.lang = lang;
+    const recLang = lang || SPEECH_LANG[getLang()] || 'ur-PK';
+    const shown = (s) => (recLang === 'hi-IN' ? toRoman(s) : s);
+    rec.lang = recLang;
     rec.interimResults = true;
     rec.continuous = false;
     rec.maxAlternatives = 1;
@@ -38,18 +43,18 @@ export function useSpeech({ lang = 'hi-IN', onFinal } = {}) {
         if (r.isFinal) finalText += r[0].transcript;
         else interimText += r[0].transcript;
       }
-      setInterim(toRoman(interimText));
-      if (finalText) onFinalRef.current?.(toRoman(finalText).trim());
+      setInterim(shown(interimText));
+      if (finalText) onFinalRef.current?.(shown(finalText).trim());
     };
     rec.onerror = (e) => {
       const map = {
-        'not-allowed': 'Mic ki ijazat nahi mili. Browser settings mein mic allow karein, ya likh kar bataein.',
-        'service-not-allowed': 'Is browser mein awaaz se likhna band hai. Likh kar bataein.',
-        'no-speech': 'Awaaz nahi aayi. Dobara bolein ya likh kar bataein.',
-        'audio-capture': 'Mic nahi mila — likh kar bataein.',
-        network: 'Internet ka masla hai. Likh kar bataein.',
+        'not-allowed': 'mic.denied',
+        'service-not-allowed': 'speech.blocked',
+        'no-speech': 'speech.silence',
+        'audio-capture': 'mic.missing',
+        network: 'speech.network',
       };
-      setError(map[e.error] || 'Awaaz samajh nahi aayi. Likh kar bataein.');
+      setError(t(map[e.error] || 'speech.unclear'));
     };
     rec.onend = () => {
       setListening(false);

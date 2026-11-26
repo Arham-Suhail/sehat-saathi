@@ -9,6 +9,8 @@ import VitalsForm from '../../components/VitalsForm';
 import VitalsList from '../../components/VitalsList';
 import Icon from '../../components/Icon';
 import { karachiToday, progressFrom } from '../../lib/streaks';
+import { st } from '../../i18n/server';
+import { t } from '../../i18n/useT';
 
 // Cards fade up once as they scroll into view (Stage B); off with reduced motion via MotionConfig.
 const reveal = {
@@ -18,24 +20,25 @@ const reveal = {
   transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
 };
 
-const MOOD = { good: '🙂 Acha', okay: '😐 Theek', low: '🙁 Udaas' };
-const CHANNEL = { text: 'likh kar', speech: 'bol kar', vapi: 'call' };
+const MOOD_EMOJI = { good: '🙂', okay: '😐', low: '🙁' };
 
 function Timeline({ checkins }) {
-  if (!checkins.length) return <p className="muted">Abhi koi hal-chaal nahi.</p>;
+  if (!checkins.length) return <p className="muted">{t('chart.no_checkins')}</p>;
   return (
     <ul className="timeline">
       {checkins.map((c) => (
         <li key={c.id} className={`timeline__item stack${c.concern_flag ? ' timeline__item--concern' : ''}`}>
           <div className="spaced">
-            <strong>{MOOD[c.mood]}</strong>
+            <strong>
+              {MOOD_EMOJI[c.mood]} {t(`mood.${c.mood}`)}
+            </strong>
             <span className="muted small">
-              {fmtDay(c.created_at)} {fmtTime(c.created_at)} · {CHANNEL[c.channel]}
+              {fmtDay(c.created_at)} {fmtTime(c.created_at)} · {t(`dash.channel.${c.channel}`)}
             </span>
           </div>
           {c.concern_flag ? (
             <div className="notice notice--danger" role="note">
-              <strong>⚠ Tawajjo zaroori</strong>
+              <strong>⚠ {t('dash.attention')}</strong>
               {c.concern_reason}
             </div>
           ) : null}
@@ -43,7 +46,7 @@ function Timeline({ checkins }) {
             .filter((x) => x.role === 'elder')
             .map((x, i) => (
               <p key={i} className="timeline__quote">
-                “{x.text}”
+                “<span dir="auto">{x.text}</span>”
               </p>
             ))}
         </li>
@@ -63,7 +66,7 @@ function AdherenceRing({ pct }) {
       width="110"
       height="110"
       role="img"
-      aria-label={pct == null ? 'Abhi data nahi' : `${pct}% dawai waqt par`}
+      aria-label={pct == null ? t('dash.no_data') : t('dash.pct_on_time', { pct })}
     >
       <circle className="stat-ring__track" cx="55" cy="55" r={r} />
       <circle
@@ -118,11 +121,11 @@ export default function Dashboard() {
     return (
       <main className="page">
         <TopBar back="/carer" />
-        <p className="muted">Load ho raha hai…</p>
+        <p className="muted">{t('common.loading')}</p>
       </main>
     );
 
-  const t = d.adherence_totals;
+  const tot = d.adherence_totals;
   const streak = progressFrom(d, karachiToday()).streak;
   return (
     <MotionConfig reducedMotion="user">
@@ -137,7 +140,7 @@ export default function Dashboard() {
           }
         />
         <h1>
-          {d.elder.name} — pichle {d.days} din
+          {t('dash.heading', { name: d.elder.name, days: d.days })}
         </h1>
 
         <motion.div {...reveal} className="grid gap-4 sm:grid-cols-2">
@@ -146,8 +149,8 @@ export default function Dashboard() {
               <Icon name="flame" size={30} />
             </span>
             <p className="m-0 text-ink">
-              <span className="block text-[2.2rem] font-bold leading-none [font-variant-numeric:tabular-nums]">{streak} din</span>
-              <span className="text-[1.25rem] font-bold">lagataar har dawai waqt par</span>
+              <span className="block text-[2.2rem] font-bold leading-none [font-variant-numeric:tabular-nums]">{t('home.streak.days', { n: streak })}</span>
+              <span className="text-[1.25rem] font-bold">{t('dash.streak')}</span>
             </p>
           </div>
           {contact ? (
@@ -159,9 +162,9 @@ export default function Dashboard() {
                 <Icon name="phone" size={28} />
               </span>
               <span className="flex flex-col">
-                <span className="text-[1.25rem] text-muted">Madad ka number</span>
+                <span className="text-[1.25rem] text-muted">{t('home.emergency')}</span>
                 <span className="text-[1.3rem] font-bold">
-                  {contact.name} · {contact.phone}
+                  {contact.name} · <span dir="ltr">{contact.phone}</span>
                 </span>
               </span>
             </a>
@@ -170,65 +173,65 @@ export default function Dashboard() {
               <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-surface-alt text-muted">
                 <Icon name="phone" size={28} />
               </span>
-              <span className="text-[1.25rem] text-muted">Madad ka number abhi shamil nahi kiya gaya.</span>
+              <span className="text-[1.25rem] text-muted">{t('dash.no_contact')}</span>
             </div>
           )}
         </motion.div>
 
         <div className="dash-grid">
-          <motion.section {...reveal} className="card" aria-label="Khulasa">
-            <h2>Khulasa</h2>
+          <motion.section {...reveal} className="card" aria-labelledby="sum-h">
+            <h2 id="sum-h">{t('dash.summary')}</h2>
             <div className="stat-ring">
-              <AdherenceRing pct={t.adherence_pct} />
+              <AdherenceRing pct={tot.adherence_pct} />
               <div className="stack" style={{ gap: 8 }}>
                 <p className="big" style={{ margin: 0 }}>
-                  {t.adherence_pct != null ? 'Dawai waqt par' : 'Abhi data nahi'}
+                  {tot.adherence_pct != null ? t('dash.on_time') : t('dash.no_data')}
                 </p>
                 <div className="chips">
-                  <span className="chip-stat chip-stat--ok">✓ {t.taken} li</span>
-                  <span className="chip-stat chip-stat--skip">{t.skipped} nahi li</span>
-                  <span className="chip-stat chip-stat--miss">{t.missed} reh gayin</span>
+                  <span className="chip-stat chip-stat--ok">✓ {t('dash.taken', { n: tot.taken })}</span>
+                  <span className="chip-stat chip-stat--skip">{t('dash.skipped', { n: tot.skipped })}</span>
+                  <span className="chip-stat chip-stat--miss">{t('dash.missed', { n: tot.missed })}</span>
                 </div>
               </div>
             </div>
             {d.concerns ? (
-              <Notice kind="warning">⚠ {d.concerns} hal-chaal mein tawajjo ki baat</Notice>
+              <Notice kind="warning">⚠ {t('dash.concerns', { n: d.concerns })}</Notice>
             ) : (
-              <p className="muted">Koi tawajjo wali baat nahi.</p>
+              <p className="muted">{t('dash.no_concerns')}</p>
             )}
           </motion.section>
 
           <motion.section {...reveal} className="card" aria-labelledby="mood-h">
-            <h2 id="mood-h">Mood</h2>
+            <h2 id="mood-h">{t('chart.mood')}</h2>
             <MoodChart series={d.mood_series} />
           </motion.section>
 
           <motion.section {...reveal} className="card" aria-labelledby="adh-h">
-            <h2 id="adh-h">Dawai: li / reh gayi</h2>
-            <AdherenceBars series={d.adherence} totals={t} />
+            <h2 id="adh-h">{t('dash.adherence')}</h2>
+            <AdherenceBars series={d.adherence} totals={tot} />
           </motion.section>
 
           <motion.section {...reveal} className="card span-all" aria-labelledby="tl-h">
-            <h2 id="tl-h">Hal-chaal (timeline)</h2>
+            <h2 id="tl-h">{t('dash.timeline')}</h2>
             <Timeline checkins={d.checkins} />
           </motion.section>
 
           <motion.section {...reveal} className="card stack" aria-labelledby="meds-h">
-            <h2 id="meds-h">Dawaiyan</h2>
-            {d.medicines.length === 0 ? <p className="muted">Koi dawai nahi.</p> : null}
+            <h2 id="meds-h">{t('dash.medicines')}</h2>
+            {d.medicines.length === 0 ? <p className="muted">{t('dash.no_meds')}</p> : null}
             <ul className="list">
               {d.medicines.map((m) => (
                 <li key={m.id} className="med-row stack">
                   <div>
                     <strong>{m.name}</strong> {m.strength_text ? <span className="muted">{m.strength_text}</span> : null}
                     <p className="small muted" style={{ margin: 0 }}>
-                      {[m.dose_text, m.frequency_label, m.route_kind !== 'unknown' ? m.route_label : null].filter(Boolean).join(' · ')}
+                      {[m.dose_text, st(m.frequency_label), m.route_kind !== 'unknown' ? st(m.route_label) : null].filter(Boolean).join(' · ')}
                     </p>
                     <p className="small" style={{ margin: 0 }}>
                       {m.reminder_mode === 'hospital'
-                        ? 'Hospital wali dawai — reminders nahi'
+                        ? t('dash.hospital')
                         : m.reminder_mode === 'prn'
-                          ? `Zaroorat par${m.prn_condition ? `: ${m.prn_condition}` : ''}`
+                          ? `${t('confirm.prn')}${m.prn_condition ? `: ${m.prn_condition}` : ''}`
                           : m.timings.map(fmtHHMM).join(', ')}
                     </p>
                   </div>
@@ -241,13 +244,13 @@ export default function Dashboard() {
           </motion.section>
 
           <motion.section {...reveal} className="card stack" aria-labelledby="vit-h">
-            <h2 id="vit-h">BP / Sugar / Pulse</h2>
+            <h2 id="vit-h">{t('dash.vitals')}</h2>
             {d.can_add_vitals ? (
               showVitalsForm ? (
                 <VitalsForm elderId={d.elder.id} onSaved={() => load()} />
               ) : (
                 <BigButton variant="secondary" small onClick={() => setShowVitalsForm(true)}>
-                  + Reading likhein
+                  + {t('dash.add_reading')}
                 </BigButton>
               )
             ) : null}

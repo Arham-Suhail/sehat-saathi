@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/AuthContext';
 import Icon from '../../components/Icon';
 import { BigButton, ErrorText, Field, Notice } from '../../components/ui';
 import { usePush } from '../../hooks/usePush';
+import { LangToggle } from '../../i18n/LangProvider';
 import { t } from '../../i18n/useT';
 
 // Up to two letters; names without letters fall back to a neutral dot.
@@ -46,7 +47,7 @@ export default function CarerHome() {
     setOk(null);
     try {
       const elder = await api('/invites/redeem', { method: 'POST', json: { code } });
-      setOk(`${elder.name} jur gaye.`);
+      setOk(t('carer.linked', { name: elder.name }));
       setCode('');
       await refresh();
       await load();
@@ -64,13 +65,16 @@ export default function CarerHome() {
           <div>
             <p className="m-0 inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-[1.25rem] font-bold text-accent">
               <Icon name={user.role === 'doctor' ? 'stethoscope' : 'family'} size={20} />
-              {user.role === 'doctor' ? 'Doctor' : 'Ghar wale'}
+              {user.role === 'doctor' ? t('auth.role.doctor') : t('landing.cta.chip.family')}
             </p>
-            <h1 className="mt-2">Assalam o Alaikum, {user.name.split(' ')[0]}</h1>
+            <h1 className="mt-2">{t('home.greeting', { name: user.name.split(' ')[0] })}</h1>
           </div>
-          <BigButton variant="secondary" block={false} small onClick={logout}>
-            Log out
-          </BigButton>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <LangToggle />
+            <BigButton variant="secondary" block={false} small onClick={logout}>
+              {t('common.logout')}
+            </BigButton>
+          </div>
         </motion.header>
 
         {push.state === 'on' ? <Notice kind="success">🔔 {t('push.carer.enabled')}</Notice> : null}
@@ -84,9 +88,9 @@ export default function CarerHome() {
         <p className="muted">{user.role === 'doctor' ? 'Doctor' : 'Family'} account · sirf dekhne ke liye</p>
 
         <motion.section variants={item} className="card stack" aria-labelledby="elders-h">
-          <h2 id="elders-h">Aap ke buzurg</h2>
+          <h2 id="elders-h">{t('carer.elders')}</h2>
           {elders === null ? <p className="muted">…</p> : null}
-          {elders?.length === 0 ? <p className="muted">Abhi koi buzurg nahi jura. Neeche code daalein.</p> : null}
+          {elders?.length === 0 ? <p className="muted">{t('carer.none')}</p> : null}
           <div className="stack">
             {elders?.map((e) => (
               <motion.div key={e.id} whileTap={{ scale: 0.97 }} whileHover={{ y: -2 }}>
@@ -96,7 +100,7 @@ export default function CarerHome() {
                   </span>
                   <span className="tile__text">
                     <span>{e.name}</span>
-                    <small>Dashboard dekhein →</small>
+                    <small>{t('carer.open')}</small>
                   </span>
                 </Link>
               </motion.div>
@@ -105,10 +109,11 @@ export default function CarerHome() {
         </motion.section>
 
         <motion.form variants={item} className="card stack" onSubmit={redeem} noValidate>
-          <h2>Naya buzurg jorein</h2>
-          <Field id="code" label="6 number ka code" hint="Buzurg ke app mein 'Ghar walon ko jorein' se milega">
+          <h2>{t('carer.add')}</h2>
+          <Field id="code" label={t('carer.code')} hint={t('carer.code.hint')}>
             <input
               id="code"
+              dir="ltr"
               className="input"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -123,7 +128,7 @@ export default function CarerHome() {
           <ErrorText>{err}</ErrorText>
           {ok ? <Notice kind="success">✓ {ok}</Notice> : null}
           <BigButton type="submit" disabled={busy || code.length !== 6}>
-            {busy ? 'Check ho raha hai…' : 'Jorein'}
+            {busy ? t('carer.checking') : t('carer.join')}
           </BigButton>
         </motion.form>
       </motion.main>

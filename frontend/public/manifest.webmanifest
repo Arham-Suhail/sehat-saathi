@@ -1,7 +1,7 @@
 {
   "name": "Sehat Saathi",
   "short_name": "Sehat Saathi",
-  "description": "Dawai ki yaad dehani aur rozana hal-chaal, buzurgon ke liye.",
+  "description": "Medicine reminders and a daily check-in for elders. بزرگوں کے لیے دوا کی یاد دہانی اور روزانہ حال چال۔",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

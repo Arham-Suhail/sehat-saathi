@@ -110,7 +110,7 @@ export default function HeroStage() {
             {say !== null && (
               <motion.p
                 key={say}
-                className="m-0 rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-2.5 text-center text-[1.2rem] font-bold leading-snug text-ink shadow-lift"
+                className="m-0 rounded-2xl rounded-es-md border border-line bg-surface px-4 py-2.5 text-center text-[1.2rem] font-bold leading-snug text-ink shadow-lift"
                 initial={reduce ? false : { opacity: 0, y: 10, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.95 }}

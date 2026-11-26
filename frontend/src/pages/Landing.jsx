@@ -11,7 +11,7 @@ import RevealText from '../components/landing/RevealText';
 import ScrollBuddy from '../components/landing/ScrollBuddy';
 import { useReveal } from '../components/landing/motion';
 import { BigButton } from '../components/ui';
-import { t } from '../i18n/useT';
+import { getLang, t } from '../i18n/useT';
 
 /* Stage B landing, kept to the point: four sections (hero, features, a day with Chotu, CTA).
    Hero: serif "Aapki sehat," + huge tight caps "SAATHI" + serif tagline (CLAUDE.md), next to an
@@ -41,7 +41,7 @@ export default function Landing() {
             data-chotu="hide"
             className="mx-auto grid w-full max-w-6xl items-center gap-6 px-5 pb-10 pt-8 md:min-h-[calc(100svh-4.5rem)] md:grid-cols-[1.05fr_0.95fr] md:gap-10 md:pt-10"
           >
-            <div className="flex flex-col items-center text-center md:items-start md:text-left">
+            <div className="flex flex-col items-center text-center md:items-start md:text-start">
               <motion.p
                 {...fadeUp(0)}
                 className="m-0 mb-5 inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-[1.25rem] font-bold text-accent shadow-soft backdrop-blur-md"
@@ -55,9 +55,13 @@ export default function Landing() {
                   {t('landing.hero.line1')}
                 </motion.span>{' '}
                 <RevealText
-                  text="SAATHI"
+                  text={t('landing.hero.word')}
                   delay={0.25}
-                  className="font-display text-[clamp(5rem,26vw,12rem)] uppercase leading-[0.9] tracking-[0.01em] md:text-[clamp(6rem,13vw,10.5rem)]"
+                  className={
+                    getLang() === 'ur'
+                      ? 'font-display px-2 text-[clamp(4.5rem,22vw,9rem)] font-bold leading-[1.7]'
+                      : 'font-display text-[clamp(5rem,26vw,12rem)] uppercase leading-[0.9] tracking-[0.01em] md:text-[clamp(6rem,13vw,10.5rem)]'
+                  }
                 />
               </h1>
 

@@ -88,6 +88,7 @@ export default function Emergency() {
           <input
             id="em-phone"
             className="input"
+            dir="ltr"
             type="tel"
             inputMode="tel"
             value={phone}

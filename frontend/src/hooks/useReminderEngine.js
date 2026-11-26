@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
 import { t } from '../i18n/useT';
+import { st } from '../i18n/server';
 
 const POLL_MS = 60_000;
 const DUE_WINDOW_MS = 60 * 60_000; // alert up to 60 min after the scheduled time
@@ -64,7 +65,7 @@ export function useReminderEngine({ enabled }) {
     if (next && !alerted.current.has(`${next.id}:${snoozed.current.get(next.id) || 0}`)) {
       alerted.current.add(`${next.id}:${snoozed.current.get(next.id) || 0}`);
       setDue(next);
-      showNotification(t('rem.alert.title'), `${next.medicine_name}${next.dose ? ' — ' + next.dose : ''}`);
+      showNotification(t('rem.alert.title'), `${st(next.medicine_name)}${next.dose ? ' — ' + next.dose : ''}`);
     }
   }, []);
 

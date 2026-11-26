@@ -8,11 +8,12 @@
 5. Reminders show as in-app alerts while the app is open and as **Web Push** notifications when it is closed
    (optional: needs VAPID_* keys); elder marks taken or skipped. A flagged check-in sends a generic Web Push alert to the
    elder's currently linked family/doctors. Push endpoints are allowlisted (FCM, Mozilla, Apple, Windows) to prevent SSRF.
-6. A daily Roman Urdu check-in ("Aaj aap kaisa mehsoos kar rahe hain?") via text, Web Speech (hi-IN) or Vapi voice (Deepgram `hi`).
-   Speech-to-text returns Hindi script; `services/translit.py` / `src/i18n/translit.js` (shared vectors in
-   `shared/translit-vectors.json`) turn it into Roman Urdu. The app only ever shows Roman Urdu; concern keywords
-   also cover Hindi and Urdu script.
-7. AI replies briefly with one general wellness tip, logs mood (good/okay/low); symptoms → "doctor se baat karein" + flag.
+6. A daily check-in ("آج آپ کیسا محسوس کر رہے ہیں؟") via text, Web Speech (ur-PK / en-IN) or Vapi voice (Deepgram `hi`).
+   UI languages (user decision, Nov 27): **Urdu script (default, RTL, Noto Nastaliq Urdu) + English toggle**;
+   Roman Urdu was removed from the UI. Vapi returns Hindi script: `src/i18n/toUrdu.js` converts it for the Urdu UI
+   (best effort), `translit.js` to Roman for English. Concern keywords cover Roman, English, Hindi and Urdu script.
+7. AI replies (in the request's `lang`: ur/en; default roman for old clients) briefly with one general wellness tip,
+   logs mood (good/okay/low); symptoms → the "talk to your doctor" line (enforced in code per language) + flag.
 8. Family and doctors link to an elder with a 6-digit invite code and see a read-only dashboard.
 9. Dashboard: check-in timeline, mood trend, taken vs missed doses, manually entered vitals (BP, sugar, heart rate).
 10. Cheaper generic alternatives are LLM-suggested and always labelled "needs doctor verification".
@@ -52,7 +53,11 @@
 - Check-in tips are general wellness only — never condition-, symptom- or medicine-specific.
 - `concern_flag` = LLM flag OR deterministic keyword match (`services/concern.py`, Roman Urdu + English). Never rely on the LLM alone.
 - Prescription images are processed in memory and never stored. No extraction audit collection.
-- UI is Roman Urdu only (`src/i18n/ur-roman.json`); base font ≥ 20px, tap targets ≥ 48px, WCAG AA contrast, one primary action per screen.
+- UI text lives in `src/i18n/ur.json` + `en.json` (same keys; `t()`); `<html lang dir>` follows the toggle. Use
+  logical CSS (start/end, ps/pe, ms/me) so RTL works. Server text stays Roman Urdu on the wire and is translated
+  client-side via `shared/server-strings.json` (`st()`; `backend/tests/test_server_strings.py` fails on a missing
+  entry). Medicine names and prescription text are always shown verbatim. Base font ≥ 20px, tap targets ≥ 48px,
+  WCAG AA contrast, one primary action per screen.
 - Role/link checks via FastAPI dependencies (`require_role`, `resolve_elder_access`). Family may enter vitals for a linked elder; doctors are read-only.
 - Store datetimes in UTC; times of day as "HH:MM" Asia/Karachi.
 - Vapi is optional at runtime: hide the button if not configured; text/speech check-in must always work.
@@ -62,7 +67,7 @@
 
 ## Design rules
 - Colours ONLY as CSS variables in `frontend/src/styles/theme.css` (bg, surface, text, text-muted, accent, accent-text, success, warning, danger, border, focus). Never hardcode a colour elsewhere. Text contrast ≥ WCAG AA.
-- Fonts self-hosted via @fontsource only (no Google Fonts requests). Stage A: Atkinson Hyperlegible only. Stage B adds Fraunces, Anton, Yellowtail.
+- Fonts self-hosted via @fontsource only (no Google Fonts requests). Stage A: Atkinson Hyperlegible only. Stage B adds Fraunces, Anton, Yellowtail, and Noto Nastaliq Urdu (Arabic subset only) for the Urdu UI.
 - Display/script fonts (Stage B) ONLY for the landing hero and section headings. Never for medical info, medicine names or buttons.
 - Mobile-first at 360px; check 360/390/768/1280/1440; no horizontal scroll; 48px+ targets; sticky bottom action bar on key elder screens; safe-area insets; `viewport-fit=cover`; no hover-only UI.
 - Reusable components (BigButton, Disclaimer, PharmacistBanner, ServerWakingBanner, ReminderAlert, MoodChart, AdherenceBars, VitalsList) so Stage B only restyles them.

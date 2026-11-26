@@ -6,8 +6,24 @@ import { motion, useReducedMotion } from 'motion/react';
 
 const GRADIENT = 'linear-gradient(90deg, var(--accent) 0%, var(--accent) 45%, var(--gold-text) 100%)';
 
+// Arabic/Urdu letters join to their neighbours: splitting them into spans would break the word.
+const JOINED_SCRIPT = /[\u0600-\u06FF]/;
+
 export default function RevealText({ text, className = '', delay = 0 }) {
   const reduce = useReducedMotion();
+  if (JOINED_SCRIPT.test(text)) {
+    return (
+      <motion.span
+        className={`inline-block ${className}`}
+        style={{ backgroundImage: GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
+        initial={reduce ? false : { opacity: 0, y: '0.2em' }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {text}
+      </motion.span>
+    );
+  }
   const letters = [...text];
   const n = letters.length;
   return (

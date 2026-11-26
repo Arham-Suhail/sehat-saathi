@@ -61,8 +61,8 @@ function AlarmVisual() {
 
 function ChatVisual() {
   const bubbles = [
-    ['self-start rounded-bl-md bg-accent-soft text-accent', 'landing.stage.ask'],
-    ['self-end rounded-br-md bg-gold-soft text-ink', 'landing.stage.reply'],
+    ['self-start rounded-es-md bg-accent-soft text-accent', 'landing.stage.ask'],
+    ['self-end rounded-ee-md bg-gold-soft text-ink', 'landing.stage.reply'],
   ];
   return (
     <div className="flex w-full max-w-[17rem] flex-col gap-3">
@@ -99,7 +99,7 @@ function FamilyVisual() {
         {people.map((c, i) => (
           <motion.span
             key={c}
-            className={`-ml-4 inline-flex h-20 w-20 items-center justify-center rounded-full border-4 border-surface first:ml-0 ${c}`}
+            className={`-ms-4 inline-flex h-20 w-20 items-center justify-center rounded-full border-4 border-surface first:ms-0 ${c}`}
             initial={{ opacity: 0, x: (i - 1) * 40, scale: 0.7 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ delay: i * 0.12, duration: 0.45, ease }}
@@ -189,7 +189,7 @@ export default function FeatureTabs() {
                 tabIndex={on ? 0 : -1}
                 onClick={() => setActive(i)}
                 onPointerEnter={(e) => e.pointerType === 'mouse' && setActive(i)}
-                className={`relative flex min-h-16 w-full cursor-pointer items-center gap-4 rounded-2xl border px-4 py-3 text-left transition-[transform,box-shadow,background-color,border-color] duration-200 active:scale-[0.98] ${
+                className={`relative flex min-h-16 w-full cursor-pointer items-center gap-4 rounded-2xl border px-4 py-3 text-start transition-[transform,box-shadow,background-color,border-color] duration-200 active:scale-[0.98] ${
                   on ? 'border-accent bg-surface shadow-lift' : 'border-line bg-surface/60 shadow-soft hover:bg-surface'
                 }`}
               >
@@ -202,7 +202,7 @@ export default function FeatureTabs() {
                 </span>
                 <span className="text-[1.3rem] font-bold leading-snug text-ink">{t(`landing.f.${it.key}.title`)}</span>
                 {on && !reduce && (
-                  <motion.span layoutId="ftab-bar" aria-hidden="true" className="absolute inset-y-3 left-0 w-1.5 rounded-r-full bg-gold" />
+                  <motion.span layoutId="ftab-bar" aria-hidden="true" className="absolute inset-y-3 start-0 w-1.5 rounded-e-full bg-gold" />
                 )}
               </button>
             );
