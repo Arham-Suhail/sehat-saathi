@@ -25,6 +25,7 @@ from app.routers import (
     auth,
     checkins,
     dashboard,
+    emergency,
     invites,
     medicines,
     prescriptions,
@@ -191,6 +192,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.include_router(dashboard.router)
     app.include_router(alternatives.router)
     app.include_router(push.router)
+    app.include_router(emergency.router)
     return app
 
 

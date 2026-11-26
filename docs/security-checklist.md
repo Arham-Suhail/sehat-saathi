@@ -38,6 +38,8 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | `GET /push/config` | any logged-in | returns only `enabled` + the VAPID **public** key | — | `test_push.py::test_config_reports_public_key_only`, `test_push_disabled_without_vapid` |
 | `POST /push/subscribe` | any logged-in | row keyed by endpoint, owned by the caller; ≤ 5 devices; **endpoint must be https on a real push service (SSRF allowlist)** | 20/h per user | `test_push.py::test_real_push_services_allowed`, `test_other_endpoints_rejected`, `test_subscribe_rejects_bad_input`, `test_at_most_five_devices_per_user` |
 | `POST /push/unsubscribe` | any logged-in | deletes only `{endpoint, user_id: caller}` | — | `test_push.py::test_same_browser_moves_to_the_latest_login_and_unsubscribe_is_owner_only` |
+| `GET /emergency-contact?elder_id=` | elder (self) / linked carer | `resolve_elder_access(read)`; reads only the `emergency_contact` field | — | `test_emergency.py::test_carers_cannot_write_and_unlinked_cannot_read`, `test_elder_cannot_read_another_elders_contact` |
+| `PUT` / `DELETE /emergency-contact` | elder | `require_role(elder)`; updates only the caller's own user doc; name ≤ 40, phone pattern + 7–15 digits, `extra=forbid`; phone never logged | — | `test_emergency.py::test_validation_rejects_bad_input`, `test_carers_cannot_write_and_unlinked_cannot_read` |
 | `GET /health` | public | no data | — | `test_security_headers.py::test_health_and_security_headers` |
 
 ## Controls: status

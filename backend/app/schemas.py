@@ -235,6 +235,21 @@ class CheckinOut(BaseModel):
 VitalType = Literal["bp", "sugar", "heart_rate"]
 
 
+# ---------- emergency contact (elder's "Madad" button) ----------
+# Digits with an optional leading +, spaces or dashes allowed; 7-15 digits in total.
+PHONE_PATTERN = r"^\+?[0-9][0-9 -]{5,18}[0-9]$"
+
+
+class EmergencyContactIn(Strict):
+    name: Text(40, 1)
+    phone: Annotated[str, StringConstraints(max_length=20, pattern=PHONE_PATTERN)]
+
+
+class EmergencyContactOut(BaseModel):
+    name: str
+    phone: str
+
+
 class VitalIn(Strict):
     elder_id: OptText(24) = None
     type: VitalType
