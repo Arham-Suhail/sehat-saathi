@@ -898,3 +898,15 @@
   color: var(--accent);
   margin: 0;
 }
+
+/* Top bar: the back pill never wraps; a long title shrinks with an ellipsis instead. */
+.topbar .btn--small {
+  white-space: nowrap;
+  flex: none;
+}
+.topbar__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
