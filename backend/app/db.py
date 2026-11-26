@@ -25,6 +25,8 @@ async def ensure_indexes(db: Any) -> None:
     await db.checkins.create_index([("elder_id", ASCENDING), ("created_at", ASCENDING)])
     await db.vitals.create_index([("elder_id", ASCENDING), ("measured_at", ASCENDING)])
     await db.login_throttle.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
+    await db.push_subscriptions.create_index([("endpoint", ASCENDING)], unique=True)
+    await db.push_subscriptions.create_index([("user_id", ASCENDING)])
 
 
 def get_db(request: Request) -> Any:

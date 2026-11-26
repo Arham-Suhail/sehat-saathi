@@ -35,6 +35,9 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | `POST /invites/revoke-all` | elder | `$pull` of the caller's own id from every carer; deletes the caller's codes | — | `test_audit_fixes.py::test_f2_elder_revokes_all_carers_immediately`, `test_f2_only_elders_can_revoke` |
 | `GET /carer/elders` | family / doctor | caller's links only | — | `test_audit_fixes.py::test_f2_elder_revokes_all_carers_immediately` |
 | `GET /dashboard/{elder_id}` | elder (self) / linked carer | `resolve_elder_access(read)` + `elder_id` on all 5 queries | — | `test_features.py::test_dashboard_shape_and_access`; content isolation |
+| `GET /push/config` | any logged-in | returns only `enabled` + the VAPID **public** key | — | `test_push.py::test_config_reports_public_key_only`, `test_push_disabled_without_vapid` |
+| `POST /push/subscribe` | any logged-in | row keyed by endpoint, owned by the caller; ≤ 5 devices; **endpoint must be https on a real push service (SSRF allowlist)** | 20/h per user | `test_push.py::test_real_push_services_allowed`, `test_other_endpoints_rejected`, `test_subscribe_rejects_bad_input`, `test_at_most_five_devices_per_user` |
+| `POST /push/unsubscribe` | any logged-in | deletes only `{endpoint, user_id: caller}` | — | `test_push.py::test_same_browser_moves_to_the_latest_login_and_unsubscribe_is_owner_only` |
 | `GET /health` | public | no data | — | `test_security_headers.py::test_health_and_security_headers` |
 
 ## Controls: status

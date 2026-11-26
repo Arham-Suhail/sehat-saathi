@@ -13,3 +13,10 @@ httpx==0.28.1
 slowapi==0.1.10
 pillow==13.0.0
 tzdata==2026.6
+# Web Push (dose alarms when the app is closed; concern alerts to family/doctor)
+pywebpush==2.5.0
+py-vapid==1.9.6
+http_ece==1.2.1
+cryptography==50.0.2
+aiohttp==3.14.5
+requests==2.34.2

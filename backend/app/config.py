@@ -74,6 +74,12 @@ class Settings(BaseSettings):
     text_fallback_2_api_key: str | None = None
     text_fallback_2_model: str | None = None
     text_fallback_2_json_mode: Literal["json_schema", "json_object", "prompt"] = "json_object"
+    # Web Push (dose alarms when the app is closed; concern alerts). Both keys or neither.
+    # Generate with: python -m scripts.gen_vapid   (writes them into backend/.env; never commit)
+    vapid_public_key: str | None = None
+    vapid_private_key: str | None = None
+    vapid_subject: str | None = None  # https://<your web app> or mailto:<ops address>; sent to push services
+
     # Whole-chain time budget, kept under the frontend timeouts (60 s text, 120 s upload).
     llm_text_budget_seconds: float = 50.0
     llm_vision_budget_seconds: float = 100.0
@@ -81,6 +87,10 @@ class Settings(BaseSettings):
     @property
     def origins(self) -> list[str]:
         return [o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip()]
+
+    @property
+    def push_enabled(self) -> bool:
+        return bool((self.vapid_public_key or "").strip() and (self.vapid_private_key or "").strip())
 
     @property
     def resolved_vision_provider(self) -> str:
@@ -140,6 +150,11 @@ class Settings(BaseSettings):
                 ]
                 if any(parts) and not all(parts):
                     problems.append(f"{pre.upper()} needs BASE_URL, API_KEY and MODEL (or none of them)")
+        vapid = [(self.vapid_public_key or "").strip(), (self.vapid_private_key or "").strip()]
+        if any(vapid) and not all(vapid):
+            problems.append("VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY must be set together")
+        if all(vapid) and not (self.vapid_subject or "").startswith(("https://", "mailto:")):
+            problems.append("VAPID_SUBJECT must start with https:// or mailto:")
         if self.resolved_vision_provider != "fake" and not self.vision_supports_images:
             problems.append("VISION_SUPPORTS_IMAGES=false: the vision model must accept images")
 

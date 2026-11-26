@@ -1,10 +1,11 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 
 from app.db import get_db
 from app.llm import get_text
+from app.push import alert_carers_of_concern
 from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import CheckinOut, CheckinTextIn, CheckinVoiceIn
 from app.security import get_current_user, require_role, resolve_elder_access
@@ -51,12 +52,19 @@ async def _store(db: Any, elder_id, channel: str, transcript: list[dict], result
     return doc
 
 
+def _alert_if_concern(request: Request, background: BackgroundTasks, db: Any, doc: dict) -> None:
+    # After the response is sent: a slow push service never delays the elder's check-in.
+    if doc["concern_flag"]:
+        background.add_task(alert_carers_of_concern, db, request.app.state.push_sender, doc["elder_id"])
+
+
 @router.post("/text", response_model=CheckinOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit(LLM_LIMIT, key_func=user_key)
 @llm_global
 async def text_checkin(
     request: Request,
     body: CheckinTextIn,
+    background: BackgroundTasks,
     user: dict = Depends(require_role("elder")),
     db: Any = Depends(get_db),
 ) -> CheckinOut:
@@ -67,6 +75,7 @@ async def text_checkin(
         {"role": "ai", "text": result["reply"]},
     ]
     doc = await _store(db, user["_id"], body.channel, transcript, result)
+    _alert_if_concern(request, background, db, doc)
     return checkin_out(doc)
 
 
@@ -76,6 +85,7 @@ async def text_checkin(
 async def voice_checkin(
     request: Request,
     body: CheckinVoiceIn,
+    background: BackgroundTasks,
     user: dict = Depends(require_role("elder")),
     db: Any = Depends(get_db),
 ) -> CheckinOut:
@@ -93,6 +103,7 @@ async def voice_checkin(
     result = await analyse(get_text(request), elder_text)  # original script: best for the LLM
     stored = [{"role": t["role"], "text": to_roman(t["text"])} for t in kept]  # Roman Urdu for display
     doc = await _store(db, user["_id"], "vapi", stored, result, body.vapi_call_id)
+    _alert_if_concern(request, background, db, doc)
     return checkin_out(doc)
 
 

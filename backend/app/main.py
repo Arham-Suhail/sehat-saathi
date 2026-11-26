@@ -18,6 +18,7 @@ from app.config import Settings, get_settings
 from app.db import ensure_indexes, make_client
 from app.llm import build_providers
 from app.logging_setup import setup_logging
+from app.push import RealSender, push_loop
 from app.ratelimit import limiter
 from app.routers import (
     alternatives,
@@ -27,6 +28,7 @@ from app.routers import (
     invites,
     medicines,
     prescriptions,
+    push,
     reminders,
     vitals,
 )
@@ -68,8 +70,14 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
 
         # Don't block startup (Render health checks) on a slow/unreachable DB.
         index_task = asyncio.create_task(_indexes())
+        # Dose alarms via Web Push (only when VAPID keys are configured; never in tests).
+        push_task = (
+            asyncio.create_task(push_loop(app)) if app.state.push_sender and settings.env != "test" else None
+        )
         yield
         index_task.cancel()
+        if push_task:
+            push_task.cancel()
         if client is not None:
             await client.close()
 
@@ -85,6 +93,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.state.db = db
     app.state.llm = build_providers(settings)
     app.state.limiter = limiter
+    app.state.push_sender = RealSender(settings) if settings.push_enabled else None
 
     # ---------- middleware (last added = outermost) ----------
     @app.middleware("http")
@@ -181,6 +190,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.include_router(invites.router)
     app.include_router(dashboard.router)
     app.include_router(alternatives.router)
+    app.include_router(push.router)
     return app
 
 
