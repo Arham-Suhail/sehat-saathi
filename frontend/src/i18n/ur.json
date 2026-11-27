@@ -416,5 +416,6 @@
   "signup.resent": "نیا کوڈ {email} پر بھیج دیا گیا۔",
   "signup.code.title": "اپنا ای میل دیکھیں",
   "signup.finish": "میرا اکاؤنٹ بنائیں",
-  "signup.change_email": "ای میل بدلیں"
+  "signup.change_email": "ای میل بدلیں",
+  "signup.bounced": "{email} پر ای میل واپس آ گئی: یہ ایڈریس موجود نہیں۔ اسے چیک کریں اور اپنا صحیح ای میل لکھیں۔"
 }

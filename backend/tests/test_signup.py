@@ -125,3 +125,35 @@ async def test_validation(client, mail):
         assert (await client.post("/auth/register/start", json=body)).status_code == 422, body
     for body in ({"email": "a@example.com", "code": "12345"}, {"email": {"$ne": None}, "code": "123456"}):
         assert (await client.post("/auth/register/verify", json=body)).status_code == 422, body
+
+
+async def test_bounced_signup_is_reported_and_ended(client, db, mail):
+    good, bad = "real.person@gmail.com", "made-up-xyz@gmail.com"
+    mail.bounce_to.add(bad)
+    for e in (good, bad):
+        assert (await client.post("/auth/register/start", json={**FORM, "email": e})).status_code == 202
+    assert (await client.get("/auth/register/status", params={"email": good})).json() == {"bounced": False}
+    assert (await client.get("/auth/register/status", params={"email": bad.upper()})).json() == {
+        "bounced": True
+    }
+    # the bounced sign-up is gone: its code can't create an account any more
+    assert await db.pending_signups.count_documents({"email": bad}) == 0
+    r = await client.post("/auth/register/verify", json={"email": bad, "code": code_for(mail, bad)})
+    assert r.status_code == 400
+    # the good one still works
+    r = await client.post("/auth/register/verify", json={"email": good, "code": code_for(mail, good)})
+    assert r.status_code == 201
+
+
+async def test_status_reveals_nothing_about_existing_accounts(client, app, mail):
+    saved, app.state.email_sender = app.state.email_sender, None
+    old = await register(client, "family")
+    app.state.email_sender = saved
+    await client.post("/auth/register/start", json={**FORM, "email": old["email"]})
+    assert (await client.get("/auth/register/status", params={"email": old["email"]})).json() == {
+        "bounced": False
+    }
+    assert (await client.get("/auth/register/status", params={"email": "never@x.com"})).json() == {
+        "bounced": False
+    }
+    assert (await client.get("/auth/register/status")).status_code == 422

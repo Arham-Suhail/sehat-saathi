@@ -416,5 +416,6 @@
   "signup.resent": "A new code was sent to {email}.",
   "signup.code.title": "Check your email",
   "signup.finish": "Create my account",
-  "signup.change_email": "Change email"
+  "signup.change_email": "Change email",
+  "signup.bounced": "The email to {email} bounced: this address doesn't exist. Please check it and write your real email."
 }

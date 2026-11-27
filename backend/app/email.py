@@ -13,6 +13,10 @@ import httpx
 log = logging.getLogger(__name__)
 
 BREVO_URL = "https://api.brevo.com/v3/smtp/email"
+BREVO_EVENTS_URL = "https://api.brevo.com/v3/smtp/statistics/events"
+# Brevo events that mean "this address can't receive mail" (blocked = already on Brevo's blocklist
+# after an earlier hard bounce).
+BOUNCE_EVENTS = {"hardBounces", "hard_bounce", "invalid", "blocked", "error"}
 SEND_TIMEOUT = 10.0
 
 SUBJECTS = {
@@ -57,13 +61,13 @@ def render(purpose: str, code: str, minutes: int) -> tuple[str, str, str]:
 
 
 class BrevoSender:
-    """POSTs one email to Brevo. Returns True when Brevo accepted it."""
+    """POSTs one email to Brevo. Returns Brevo's message id when accepted (truthy), else None."""
 
     def __init__(self, settings: Any):
         self.api_key = settings.brevo_api_key
         self.sender = {"email": settings.email_from, "name": settings.email_from_name}
 
-    async def __call__(self, to: str, purpose: str, code: str, minutes: int) -> bool:
+    async def __call__(self, to: str, purpose: str, code: str, minutes: int) -> str | None:
         subject, text, html = render(purpose, code, minutes)
         payload = {
             "sender": self.sender,
@@ -77,11 +81,38 @@ class BrevoSender:
                 r = await client.post(BREVO_URL, json=payload, headers={"api-key": self.api_key})
         except httpx.HTTPError as e:
             log.warning("email send failed: %s", type(e).__name__)
-            return False
+            return None
         if r.status_code >= 300:
             log.warning("email send rejected: status %s", r.status_code)
+            return None
+        try:
+            mid = r.json().get("messageId")
+        except ValueError:
+            mid = None
+        return str(mid)[:200] if mid else "sent"
+
+    async def bounced(self, message_id: str) -> bool:
+        """Did this message bounce (address doesn't exist / blocked)? False when unknown."""
+        if not message_id or message_id == "sent":
             return False
-        return True
+        try:
+            async with httpx.AsyncClient(timeout=SEND_TIMEOUT) as client:
+                r = await client.get(
+                    BREVO_EVENTS_URL,
+                    params={"messageId": message_id, "limit": 20},
+                    headers={"api-key": self.api_key, "accept": "application/json"},
+                )
+        except httpx.HTTPError as e:
+            log.warning("email status check failed: %s", type(e).__name__)
+            return False
+        if r.status_code >= 300:
+            log.warning("email status check rejected: status %s", r.status_code)
+            return False
+        try:
+            events = r.json().get("events") or []
+        except ValueError:
+            return False
+        return any(str(e.get("event")) in BOUNCE_EVENTS for e in events if isinstance(e, dict))
 
 
 class FakeEmailSender:
@@ -90,7 +121,11 @@ class FakeEmailSender:
     def __init__(self, ok: bool = True):
         self.sent: list[dict] = []
         self.ok = ok
+        self.bounce_to: set[str] = set()  # addresses that will "bounce"
 
-    async def __call__(self, to: str, purpose: str, code: str, minutes: int) -> bool:
+    async def __call__(self, to: str, purpose: str, code: str, minutes: int) -> str | None:
         self.sent.append({"to": to, "purpose": purpose, "code": code, "minutes": minutes})
-        return self.ok
+        return f"fake-{len(self.sent)}-{to}" if self.ok else None
+
+    async def bounced(self, message_id: str) -> bool:
+        return any(message_id.endswith(f"-{a}") for a in self.bounce_to)

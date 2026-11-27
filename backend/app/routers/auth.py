@@ -1,9 +1,10 @@
 import hashlib
 import hmac
+import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
@@ -32,6 +33,7 @@ from app.services.email_codes import CODE_TTL, check_code, issue_code
 from app.services.signup import start_signup, take_signup
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+log = logging.getLogger(__name__)
 
 GENERIC_LOGIN_ERROR = "Email ya password ghalat hai"
 GENERIC_REGISTER_ERROR = "Account nahi ban saka. Doosra email try karein ya login karein."
@@ -120,9 +122,36 @@ async def register_start(request: Request, body: RegisterIn, db: Any = Depends(g
             role=body.role,
             secret=request.app.state.settings.jwt_secret,
         )
-        if not await request.app.state.email_sender(email, "signup", code, CODE_MINUTES):
+        message_id = await request.app.state.email_sender(email, "signup", code, CODE_MINUTES)
+        if not message_id:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=EMAIL_SEND_FAILED)
+        await db.pending_signups.update_one({"email": email}, {"$set": {"message_id": message_id}})
     return {"sent": True, "minutes": CODE_MINUTES}
+
+
+@router.get("/register/status")
+@limiter.limit("40/15minute")
+async def register_status(
+    request: Request,
+    email: str = Query(..., min_length=3, max_length=254),
+    db: Any = Depends(get_db),
+) -> dict:
+    """Did the sign-up code bounce? The page asks every few seconds after step 1. Only ever answers
+    "bounced" or not: never "delivered", and an existing account (no email sent) looks the same as a
+    new one, so nothing about accounts can be learned. A bounce ends that pending sign-up."""
+    _email_on(request)
+    pending = await db.pending_signups.find_one({"email": email.strip().lower()}, {"message_id": 1})
+    mid = (pending or {}).get("message_id")
+    checker = getattr(request.app.state.email_sender, "bounced", None)
+    bounced = False
+    if mid and checker is not None:
+        try:
+            bounced = await checker(mid)
+        except Exception as e:  # the status check must never break sign-up
+            log.warning("bounce check failed: %s", type(e).__name__)
+    if bounced:
+        await db.pending_signups.delete_one({"_id": pending["_id"]})
+    return {"bounced": bounced}
 
 
 @router.post("/register/verify", response_model=TokenOut, status_code=status.HTTP_201_CREATED)

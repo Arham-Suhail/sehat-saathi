@@ -286,7 +286,40 @@ export function Register() {
   const [step, setStep] = useState(1); // 2 = "enter the code we emailed"
   const [code, setCode] = useState('');
   const [sentMsg, setSentMsg] = useState(null);
+  const [sendCount, setSendCount] = useState(0); // restarts the bounce watch after each send
   useWake();
+
+  // A made-up address on a real domain (e.g. random@gmail.com) can only be caught after sending:
+  // the mail bounces within seconds to a minute. Ask every 5 s for ~1 minute; on a bounce, go
+  // back to the form with a clear message (the server already ended that sign-up).
+  useEffect(() => {
+    if (step !== 2) return undefined;
+    let tries = 0;
+    let stopped = false;
+    const email = form.email.trim();
+    const id = setInterval(async () => {
+      tries += 1;
+      if (tries > 12) return clearInterval(id);
+      try {
+        const r = await api(`/auth/register/status?email=${encodeURIComponent(email)}`, { auth: false });
+        if (!stopped && r?.bounced) {
+          clearInterval(id);
+          setStep(1);
+          setCode('');
+          setSentMsg(null);
+          setErr(t('signup.bounced', { email }));
+        }
+      } catch {
+        /* a failed check never blocks sign-up */
+      }
+    }, 5000);
+    return () => {
+      stopped = true;
+      clearInterval(id);
+    };
+    // form.email is fixed while on step 2; sendCount restarts the watch after "send a new code"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, sendCount]);
 
   if (user) return <Navigate to={homeFor(user.role)} replace />;
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -313,6 +346,7 @@ export function Register() {
       }
       if (started) {
         setSentMsg(t('signup.sent', { email: clean.email }));
+        setSendCount((n) => n + 1);
         setStep(2);
       } else {
         const u = await register(clean);
@@ -346,6 +380,7 @@ export function Register() {
       await registerStart({ ...form, name: form.name.trim(), email: form.email.trim() });
       setCode('');
       setSentMsg(t('signup.resent', { email: form.email.trim() }));
+      setSendCount((n) => n + 1);
     } catch (e2) {
       setErr(e2.message);
     } finally {
