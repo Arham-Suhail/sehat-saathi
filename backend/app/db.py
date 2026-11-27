@@ -27,6 +27,8 @@ async def ensure_indexes(db: Any) -> None:
     await db.login_throttle.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
     await db.push_subscriptions.create_index([("endpoint", ASCENDING)], unique=True)
     await db.push_subscriptions.create_index([("user_id", ASCENDING)])
+    await db.email_codes.create_index([("user_id", ASCENDING), ("purpose", ASCENDING)], unique=True)
+    await db.email_codes.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
 
 
 def get_db(request: Request) -> Any:

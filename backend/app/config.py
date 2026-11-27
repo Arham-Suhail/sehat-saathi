@@ -80,6 +80,12 @@ class Settings(BaseSettings):
     vapid_private_key: str | None = None
     vapid_subject: str | None = None  # https://<your web app> or mailto:<ops address>; sent to push services
 
+    # Email codes (verify email, forgot password) via Brevo. Both or neither; off when unset.
+    # EMAIL_FROM must be a sender address verified in Brevo (Senders & IP).
+    brevo_api_key: str | None = None
+    email_from: str | None = None
+    email_from_name: str = "Sehat Saathi"
+
     # Whole-chain time budget, kept under the frontend timeouts (60 s text, 120 s upload).
     llm_text_budget_seconds: float = 50.0
     llm_vision_budget_seconds: float = 100.0
@@ -87,6 +93,10 @@ class Settings(BaseSettings):
     @property
     def origins(self) -> list[str]:
         return [o.strip().rstrip("/") for o in self.allowed_origins.split(",") if o.strip()]
+
+    @property
+    def email_enabled(self) -> bool:
+        return bool((self.brevo_api_key or "").strip() and (self.email_from or "").strip())
 
     @property
     def push_enabled(self) -> bool:
@@ -150,6 +160,11 @@ class Settings(BaseSettings):
                 ]
                 if any(parts) and not all(parts):
                     problems.append(f"{pre.upper()} needs BASE_URL, API_KEY and MODEL (or none of them)")
+        mail = [(self.brevo_api_key or "").strip(), (self.email_from or "").strip()]
+        if any(mail) and not all(mail):
+            problems.append("BREVO_API_KEY and EMAIL_FROM must be set together")
+        if mail[1] and "@" not in mail[1]:
+            problems.append("EMAIL_FROM must be an email address (a sender verified in Brevo)")
         vapid = [(self.vapid_public_key or "").strip(), (self.vapid_private_key or "").strip()]
         if any(vapid) and not all(vapid):
             problems.append("VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY must be set together")

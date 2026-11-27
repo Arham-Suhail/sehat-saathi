@@ -57,6 +57,23 @@ class LoginIn(Strict):
     password: Text(72, 1)
 
 
+Code6 = Annotated[str, StringConstraints(pattern=r"^\d{6}$")]
+
+
+class VerifyEmailIn(Strict):
+    code: Code6
+
+
+class ForgotPasswordIn(Strict):
+    email: Email
+
+
+class ResetPasswordIn(Strict):
+    email: Email
+    code: Code6
+    new_password: Password
+
+
 class DeleteAccountIn(Strict):
     """Deleting an account needs the password again (a phone left logged in is not enough)."""
 
@@ -69,6 +86,7 @@ class UserOut(BaseModel):
     email: str
     role: Role
     linked_elder_ids: list[str] = []
+    email_verified: bool = False
 
 
 class TokenOut(BaseModel):

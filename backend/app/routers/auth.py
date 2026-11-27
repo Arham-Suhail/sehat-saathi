@@ -16,8 +16,18 @@ from app.ratelimit import (
     limiter,
     user_key,
 )
-from app.schemas import DeleteAccountIn, LoginIn, RegisterIn, TokenOut, UserOut
+from app.schemas import (
+    DeleteAccountIn,
+    ForgotPasswordIn,
+    LoginIn,
+    RegisterIn,
+    ResetPasswordIn,
+    TokenOut,
+    UserOut,
+    VerifyEmailIn,
+)
 from app.security import create_access_token, get_current_user, hash_password, verify_password
+from app.services.email_codes import CODE_TTL, check_code, issue_code
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -49,11 +59,14 @@ def user_out(user: dict) -> UserOut:
         email=user["email"],
         role=user["role"],
         linked_elder_ids=[str(x) for x in user.get("linked_elder_ids") or []],
+        email_verified=bool(user.get("email_verified")),
     )
 
 
 def _token_response(request: Request, user: dict) -> TokenOut:
-    token, ttl = create_access_token(user["_id"], user["role"], request.app.state.settings)
+    token, ttl = create_access_token(
+        user["_id"], user["role"], request.app.state.settings, ver=int(user.get("token_version") or 0)
+    )
     return TokenOut(access_token=token, expires_in=ttl, user=user_out(user))
 
 
@@ -78,6 +91,8 @@ async def register(request: Request, body: RegisterIn, db: Any = Depends(get_db)
     except DuplicateKeyError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=GENERIC_REGISTER_ERROR) from None
     doc["_id"] = res.inserted_id
+    # Soft verification: send the code right away when email is configured; never block sign-up.
+    await _send_code(request, db, doc, "verify")
     return _token_response(request, doc)
 
 
@@ -112,6 +127,105 @@ async def login(request: Request, body: LoginIn, db: Any = Depends(get_db)) -> T
 
 
 me_router = APIRouter(tags=["auth"])
+
+# ---------- email codes (verify email, forgot password) ----------
+EMAIL_OFF = "Nahi mila"
+BAD_CODE = "Code ghalat hai ya purana ho gaya. Naya code mangwayein."
+EMAIL_SEND_FAILED = "Email nahi ja saka. Thori dair baad koshish karein."
+CODE_MINUTES = int(CODE_TTL.total_seconds() // 60)
+
+
+async def _send_code(request: Request, db: Any, user: dict, purpose: str) -> bool:
+    """Issue a code and email it. False (never an exception) if email is off or the send fails."""
+    sender = request.app.state.email_sender
+    if sender is None:
+        return False
+    code = await issue_code(db, user["_id"], purpose, request.app.state.settings.jwt_secret)
+    return await sender(user["email"], purpose, code, CODE_MINUTES)
+
+
+def _email_on(request: Request) -> None:
+    if request.app.state.email_sender is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=EMAIL_OFF)
+
+
+@router.get("/email-config")
+async def email_config(request: Request) -> dict:
+    """Public: lets the UI show or hide the email features. Reveals nothing else."""
+    return {"enabled": request.app.state.email_sender is not None}
+
+
+@me_router.post("/me/verify-email/send", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("3/15minute;10/day", key_func=user_key)
+async def send_verify_code(
+    request: Request, user: dict = Depends(get_current_user), db: Any = Depends(get_db)
+) -> Response:
+    _email_on(request)
+    if not user.get("email_verified") and not await _send_code(request, db, user, "verify"):
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=EMAIL_SEND_FAILED)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@me_router.post("/me/verify-email", response_model=UserOut)
+@limiter.limit("10/15minute", key_func=user_key)
+async def verify_email(
+    request: Request,
+    body: VerifyEmailIn,
+    user: dict = Depends(get_current_user),
+    db: Any = Depends(get_db),
+) -> UserOut:
+    _email_on(request)
+    if user.get("email_verified"):
+        return user_out(user)
+    ok = await check_code(db, user["_id"], "verify", body.code, request.app.state.settings.jwt_secret)
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=BAD_CODE)
+    now = datetime.now(UTC)
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"email_verified": True, "updated_at": now}})
+    return user_out({**user, "email_verified": True})
+
+
+@router.post("/password/forgot", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("3/15minute;20/day")
+async def forgot_password(request: Request, body: ForgotPasswordIn, db: Any = Depends(get_db)) -> Response:
+    """Always the same answer, whether or not the email exists or is verified (no account probing).
+    A code is only emailed to VERIFIED addresses (soft verification, user decision Nov 27)."""
+    _email_on(request)
+    user = await db.users.find_one({"email": body.email.lower()})
+    if user and user.get("email_verified"):
+        await _send_code(request, db, user, "reset")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/password/reset", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("10/15minute")
+async def reset_password(request: Request, body: ResetPasswordIn, db: Any = Depends(get_db)) -> Response:
+    """Code + new password. Same generic error for unknown email, unverified email or a wrong code.
+    Success ends every existing session (token_version bump, checked in get_current_user)."""
+    _email_on(request)
+    user = await db.users.find_one({"email": body.email.lower()})
+    secret = request.app.state.settings.jwt_secret
+    if (
+        not user
+        or not user.get("email_verified")
+        or not await check_code(db, user["_id"], "reset", body.code, secret)
+    ):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=BAD_CODE)
+    now = datetime.now(UTC)
+    await db.users.update_one(
+        {"_id": user["_id"]},
+        {
+            "$set": {
+                "password_hash": hash_password(body.new_password),
+                "password_changed_at": now,
+                "updated_at": now,
+            },
+            "$inc": {"token_version": 1},  # ends every earlier session (see get_current_user)
+        },
+    )
+    # The per-email login lock no longer applies to the new password.
+    await db.login_throttle.delete_one({"_id": _throttle_id(user["email"], secret)})
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @me_router.get("/me", response_model=UserOut)

@@ -42,6 +42,11 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | `GET /emergency-contact?elder_id=` | elder (self) / linked carer | `resolve_elder_access(read)`; reads only the `emergency_contact` field | — | `test_emergency.py::test_carers_cannot_write_and_unlinked_cannot_read`, `test_elder_cannot_read_another_elders_contact` |
 | `PUT` / `DELETE /emergency-contact` | elder | `require_role(elder)`; updates only the caller's own user doc; name ≤ 40, phone pattern + 7–15 digits, `extra=forbid`; phone never logged | — | `test_emergency.py::test_validation_rejects_bad_input`, `test_carers_cannot_write_and_unlinked_cannot_read` |
 | `POST /me/delete` | any logged-in | **password re-check**; deletes only the caller's own docs (`_id`/`elder_id`/`user_id` = caller); elder: medicines, reminders, check-ins, vitals, invites, push subs + `$pull` from every carer's links; carer: own doc + push subs | 5/min + 20/h per user | `test_account_delete.py` (wrong password, other elder untouched, carer unlink, old token 401, schema, rate limit) |
+| `GET /auth/email-config` | public | returns only `enabled` | — | `test_email_codes.py::test_email_off_by_default` |
+| `POST /me/verify-email/send` | any logged-in | caller's own email only; 404 when email is off | 3/15 min + 10/day per user | `test_email_codes.py::test_validation_and_rate_limits` |
+| `POST /me/verify-email` | any logged-in | caller's own code; only an HMAC of the code is stored; 15 min, single use, dies after 5 wrong tries (atomic attempt count) | 10/15 min per user | `test_email_codes.py` (flow, 5 wrong guesses, expiry) |
+| `POST /auth/password/forgot` | public | always 204 (no account probing); a code is sent only to VERIFIED emails | 3/15 min + 20/day per IP | `test_email_codes.py::test_forgot_and_reset_password`, `test_reset_needs_a_verified_email...` |
+| `POST /auth/password/reset` | public | email + code + new password; one generic error for unknown/unverified/wrong; success bumps `token_version` so every older session gets 401, and clears the login lock | 10/15 min per IP | `test_email_codes.py::test_forgot_and_reset_password` |
 | `GET /health` | public | no data | — | `test_security_headers.py::test_health_and_security_headers` |
 
 ## Controls: status

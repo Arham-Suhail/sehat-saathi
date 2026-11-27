@@ -244,6 +244,14 @@
     "Is dawai ka waqt yahan nahi badla ja sakta": [
       "This medicine's times can't be changed here",
       "اس دوا کا وقت یہاں نہیں بدلا جا سکتا"
+    ],
+    "Code ghalat hai ya purana ho gaya. Naya code mangwayein.": [
+      "The code is wrong or has expired. Ask for a new code.",
+      "کوڈ غلط ہے یا پرانا ہو گیا۔ نیا کوڈ منگوائیں۔"
+    ],
+    "Email nahi ja saka. Thori dair baad koshish karein.": [
+      "The email could not be sent. Please try again in a little while.",
+      "ای میل نہیں جا سکا۔ تھوڑی دیر بعد کوشش کریں۔"
     ]
   },
   "patterns": [

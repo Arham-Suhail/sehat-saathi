@@ -46,7 +46,7 @@ def token_lifetime(role: str, settings: Any) -> timedelta:
     return timedelta(hours=settings.carer_token_hours)
 
 
-def create_access_token(user_id: ObjectId, role: str, settings: Any) -> tuple[str, int]:
+def create_access_token(user_id: ObjectId, role: str, settings: Any, ver: int = 0) -> tuple[str, int]:
     now = datetime.now(UTC)
     lifetime = token_lifetime(role, settings)
     payload = {
@@ -55,6 +55,7 @@ def create_access_token(user_id: ObjectId, role: str, settings: Any) -> tuple[st
         "iat": int(now.timestamp()),
         "exp": int((now + lifetime).timestamp()),
         "jti": secrets.token_hex(8),
+        "ver": int(ver),  # users.token_version at login; a password reset bumps it
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALG), int(lifetime.total_seconds())
 
@@ -88,6 +89,10 @@ async def get_current_user(
         raise _UNAUTH
     user = await db.users.find_one({"_id": ObjectId(sub)})
     if not user:
+        raise _UNAUTH
+    # A password reset ends every earlier session: it bumps users.token_version, and tokens carry the
+    # version they were issued with (JWTs can't be revoked otherwise). Old tokens without "ver" = 0.
+    if int(payload.get("ver") or 0) != int(user.get("token_version") or 0):
         raise _UNAUTH
     request.state.user_id = sub
     return user

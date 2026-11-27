@@ -99,7 +99,8 @@
 ## Out of scope — do NOT build
 - Smartwatch / wearable / Bluetooth device integration (vitals are manual entry only).
 - Native mobile app.
-- OAuth, OTP, email verification, password reset emails.
+- OAuth, OTP. (Email verification + forgot-password codes via Brevo were moved INTO scope on Nov 27 at the user's request:
+  soft verification, 6-digit codes, optional at runtime like Web Push.)
 - Payments or subscriptions.
 - Scraping of pharmacy or price sites (alternatives are LLM-suggested only).
 - Native push SDKs (FCM/APNs) and native background alarms. (Web Push for closed-tab dose alarms and concern alerts

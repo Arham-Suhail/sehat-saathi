@@ -16,6 +16,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import Settings, get_settings
 from app.db import ensure_indexes, make_client
+from app.email import BrevoSender
 from app.llm import build_providers
 from app.logging_setup import setup_logging
 from app.push import RealSender, push_loop
@@ -95,6 +96,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.state.llm = build_providers(settings)
     app.state.limiter = limiter
     app.state.push_sender = RealSender(settings) if settings.push_enabled else None
+    app.state.email_sender = BrevoSender(settings) if settings.email_enabled else None
 
     # ---------- middleware (last added = outermost) ----------
     @app.middleware("http")
