@@ -99,13 +99,13 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | F13 | An elder can mark old doses "taken". | Data-integrity only; 5 min fix queued. |
 | F14 | `Retry-After` is fixed at 60 s for IP/user limits (the invite lock now sends 1800). | Cosmetic. |
 | F15 | CI actions pinned by tag, gitleaks binary not checksummed, no Dependabot. | Post-freeze hardening. |
-| F16 | No account deletion/export, no retention policy; prescription images and check-in text go to Gemini (free tier may use inputs to improve Google products). | Prototype with fake data only. |
+| F16 | No data export or retention policy; prescription images and check-in text go to Gemini (free tier may use inputs to improve Google products). | Partly fixed Nov 27: users can delete their account and all its data (`POST /me/delete`). AI data use disclosed in the README. |
 | F17–F20 | `style-src 'unsafe-inline'`; `c.daily.co` allowed host-wide; quadratic regex reachable only by ≤ 400-char LLM output; self-declared doctor accounts (read-only, need the elder's code). | Hardening backlog / accepted. |
 | — | Rate limits and login/invite counters for IPs are in memory (single instance) and **reset on every redeploy**; the per-email login and per-account invite counters are in MongoDB and survive. | Free tier, single instance. |
 | — | Atlas Network Access `0.0.0.0/0` (Render free tier has no static IP). Compensating: dedicated `readWrite` user on one DB, long generated password, TLS only. | Platform limit. |
 
 ## Phase 4 (Saturday): still to do
 
-- [x] Live attack checks against the Render/Vercel URLs after redeploy (results in `docs/engineering-checklist.md`)
+- [x] Live attack checks against the Render/Vercel URLs after redeploy (Nov 26 and again Nov 27 after `4ad7204`; results in `docs/engineering-checklist.md`)
 - [ ] Production log grep for passwords/tokens/emails (needs Render dashboard access)
 - [x] `pip-audit` + `npm audit` + gitleaks (full history) run in CI on every push

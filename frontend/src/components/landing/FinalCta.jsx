@@ -1,6 +1,6 @@
 /* Closing call to action + footer. Same Login (primary) / Register (secondary) pair as the hero,
    so the page keeps one primary action. Who it's for and the two key safety promises are short chips
-   (they replace the old roles/trust sections). Chotu note and prototype disclaimer always shown. */
+   (they replace the old roles/trust sections). Chotu note and the 'not a replacement for a doctor' line are always shown. */
 import { motion, useReducedMotion } from 'motion/react';
 import ChotuAgent from '../chotu/ChotuAgent';
 import ChotuBoundary from '../chotu/ChotuBoundary';
