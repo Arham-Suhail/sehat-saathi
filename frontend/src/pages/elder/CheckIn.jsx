@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { BigButton, BottomBar, Disclaimer, ErrorText, Notice, TopBar } from '../../components/ui';
 import { useSpeech } from '../../hooks/useSpeech';
@@ -45,6 +46,18 @@ export default function CheckIn() {
   }, []);
   const speech = useSpeech({ onFinal });
   const vapi = useVapiCall({ onSaved: setResult });
+
+  // Opened from the phone button (?call=1): start the live call at once, or explain why it can't.
+  const [params, setParams] = useSearchParams();
+  const [callUnavailable, setCallUnavailable] = useState(false);
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (params.get('call') !== '1' || autoStarted.current) return;
+    autoStarted.current = true;
+    setParams({}, { replace: true });
+    if (vapi.configured) vapi.start();
+    else setCallUnavailable(true);
+  }, [params, setParams, vapi]);
 
   const send = async () => {
     const message = text.trim();
@@ -104,6 +117,7 @@ export default function CheckIn() {
 
       {vapi.configured && VAPI_STATES.has(vapi.state) ? <Notice>{t(`checkin.vapi.${vapi.state}`)}</Notice> : null}
       <ErrorText>{vapi.error}</ErrorText>
+      {callUnavailable ? <Notice kind="warning">{t('call.unavailable')}</Notice> : null}
 
       {result ? <ResultCard result={result} /> : null}
 

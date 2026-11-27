@@ -1,6 +1,7 @@
 /* Small reusable building blocks. Stage B restyles these via CSS only. */
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import CallChotuButton from './CallChotuButton';
 import { onServerStatus } from '../api/client';
 import { LangToggle } from '../i18n/LangProvider';
 import { getLang, t } from '../i18n/useT';
@@ -65,6 +66,8 @@ export function BottomBar({ children }) {
 }
 
 export function TopBar({ title, back, right }) {
+  // Every elder screen gets the live-call button next to the language switch.
+  const elder = useLocation().pathname.startsWith('/elder');
   return (
     <header className="topbar">
       {back ? (
@@ -75,7 +78,12 @@ export function TopBar({ title, back, right }) {
         <span className="topbar__title">{t('app.name')}</span>
       )}
       {title && back ? <span className="topbar__title">{title}</span> : null}
-      {right || <LangToggle />}
+      {right || (
+        <span className="flex shrink-0 items-center gap-2">
+          {elder ? <CallChotuButton /> : null}
+          <LangToggle />
+        </span>
+      )}
     </header>
   );
 }

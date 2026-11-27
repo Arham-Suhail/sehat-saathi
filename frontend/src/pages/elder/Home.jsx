@@ -9,6 +9,7 @@ import ChotuBoundary from '../../components/chotu/ChotuBoundary';
 import Icon from '../../components/Icon';
 import { Disclaimer, fmtTime } from '../../components/ui';
 import { useEmergencyContact, useProgress, useWater } from '../../hooks/useElderData';
+import CallChotuButton from '../../components/CallChotuButton';
 import { LangToggle } from '../../i18n/LangProvider';
 import { st } from '../../i18n/server';
 import { getLang, t } from '../../i18n/useT';
@@ -178,19 +179,23 @@ export default function ElderHome() {
   return (
     <MotionConfig reducedMotion="user">
       <motion.main className="page flex flex-col gap-5" variants={list} initial="hidden" animate="show">
-        <motion.header variants={item} className="flex items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="m-0 text-[1.25rem] font-bold text-muted">{pkDate(new Date())}</p>
-              <LangToggle />
-            </div>
-            <h1 className="m-0 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: user.name.split(' ')[0] })}</h1>
+        <motion.header variants={item} className="flex flex-col gap-2">
+          {/* Top row: the live-call button and language switch sit in the top corner of the screen. */}
+          <div className="flex items-center justify-end gap-2 rtl:justify-start">
+            <CallChotuButton />
+            <LangToggle />
           </div>
-          <Link to="/elder/checkin" aria-label={t('home.checkin')} className="shrink-0 rounded-full">
-            <ChotuBoundary>
-              <ChotuAgent size={64} state="idle" />
-            </ChotuBoundary>
-          </Link>
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="m-0 text-[1.25rem] font-bold text-muted">{pkDate(new Date())}</p>
+              <h1 className="m-0 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: user.name.split(' ')[0] })}</h1>
+            </div>
+            <Link to="/elder/checkin" aria-label={t('home.checkin')} className="shrink-0 rounded-full">
+              <ChotuBoundary>
+                <ChotuAgent size={64} state="idle" />
+              </ChotuBoundary>
+            </Link>
+          </div>
         </motion.header>
 
         <motion.div variants={item}>
