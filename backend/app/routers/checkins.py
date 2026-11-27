@@ -19,6 +19,7 @@ def _display(text: str, lang: str) -> str:
     the Urdu/English UIs show the text as sent (the browser already converted Hindi script)."""
     return to_roman(text) if lang == "roman" else text
 
+
 router = APIRouter(prefix="/checkins", tags=["checkins"])
 
 MAX_VOICE_CHARS = 6000

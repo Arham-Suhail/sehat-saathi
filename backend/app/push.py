@@ -153,6 +153,7 @@ async def alert_carers_of_concern(db: Any, sender: Any, elder_id: Any) -> None:
     carers = await db.users.find(
         {"linked_elder_ids": elder_id, "role": {"$in": ["family", "doctor"]}}, {"_id": 1}
     ).to_list(length=50)
+
     def concern_payload(lang: str) -> dict:
         name = elder.get("name") or pick(PUSH_ELDER_DEFAULT, lang)
         return {
