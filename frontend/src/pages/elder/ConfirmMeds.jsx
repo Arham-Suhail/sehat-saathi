@@ -337,7 +337,7 @@ export default function ConfirmMeds() {
 
   return (
     <main className="page page--with-bar stack">
-      <TopBar back="/elder/upload" title={t('confirm.title')} />
+      <TopBar back={state?.from || '/elder/upload'} title={t('confirm.title')} />
       <h1>{t('confirm.title')}</h1>
       <p>{t('confirm.help')}</p>
       {extraction?.needs_pharmacist ? <PharmacistBanner /> : null}

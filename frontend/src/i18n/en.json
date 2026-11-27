@@ -349,5 +349,15 @@
   "invite.make": "Create a code",
   "upload.preview_alt": "Chosen prescription photo",
   "call.aria": "Call Chotu (live voice call)",
-  "call.unavailable": "The live call is not set up on this app yet. You can still speak (tap \"Speak to type\") or type below."
+  "call.unavailable": "The live call is not set up on this app yet. You can still speak (tap \"Speak to type\") or type below.",
+  "meds.title": "My medicines",
+  "meds.none": "No medicines yet. Add one below.",
+  "meds.remove": "Remove",
+  "meds.remove.aria": "Remove {name}",
+  "meds.sure": "Remove {name}? Its reminders will stop. Ask your doctor before stopping a medicine.",
+  "meds.yes": "Yes, remove",
+  "meds.no": "No, keep it",
+  "meds.removed": "{name} removed. Its reminders have stopped.",
+  "meds.add": "Add a medicine yourself",
+  "meds.add.photo": "Add from a prescription photo"
 }

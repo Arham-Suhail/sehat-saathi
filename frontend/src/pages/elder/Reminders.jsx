@@ -6,6 +6,7 @@ import { notificationsSupported } from '../../hooks/useReminderEngine';
 import { t } from '../../i18n/useT';
 import { useReminders } from './ElderLayout';
 import { st } from '../../i18n/server';
+import MyMedicines from '../../components/MyMedicines';
 
 function NotificationToggle() {
   const [perm, setPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'unsupported'));
@@ -88,7 +89,7 @@ export default function Reminders() {
                   </div>
                   <div className="stack" style={{ gap: 6 }}>
                     <p className="dose__name">{st(r.medicine_name)}</p>
-                    {r.dose ? <p className="muted" style={{ margin: 0 }}>{r.dose}</p> : null}
+                    {r.dose ? <p className="muted" dir="auto" style={{ margin: 0 }}>{r.dose}</p> : null}
                     {r.instructions ? <p className="muted small" style={{ margin: 0 }}>{st(r.instructions)}</p> : null}
                     <span className={`tag tag--${r.status === 'skipped' ? 'missed' : r.status}`} style={{ justifySelf: 'start' }}>
                       {t(`rem.status.${r.status}`)}
@@ -110,6 +111,8 @@ export default function Reminders() {
           })}
         </ul>
       )}
+
+      <MyMedicines onChanged={refresh} />
     </main>
   );
 }
