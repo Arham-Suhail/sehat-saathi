@@ -156,6 +156,10 @@ class FakeProvider:
                         {"name": "Calpol 500mg", "company": "GSK"},
                         {"name": "Panadol 500mg", "company": "GSK"},
                         {"name": "Febrol 500mg", "company": None},
+                        # Real-world LLM mistakes the code guard must drop:
+                        {"name": "Disprin 300mg", "company": "Reckitt"},  # aspirin
+                        {"name": "Panadol Extra 500mg", "company": "GSK"},  # + caffeine
+                        {"name": "Calpol 250mg", "company": "GSK"},  # other strength
                     ],
                 )
             }

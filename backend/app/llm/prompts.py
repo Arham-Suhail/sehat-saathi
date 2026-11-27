@@ -69,7 +69,8 @@ Given a medicine name and strength as written on a prescription:
   company = the manufacturer if you are confident, otherwise null.
   Only real products you are confident exist. If unsure, return an empty list.
 NEVER include prices (the app links to a pharmacy search for real prices). NEVER suggest a different
-dose, a different salt or a different form. NEVER give medical advice.
+dose, a different salt or a different form (e.g. Disprin is aspirin, never a paracetamol product;
+"Extra"/"Plus"/"CF" versions are combinations, not the same medicine). NEVER give medical advice.
 Everything you output will be shown as "needs doctor verification".
 {INJECTION_GUARD}"""
 

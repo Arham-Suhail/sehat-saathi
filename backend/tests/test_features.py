@@ -255,6 +255,7 @@ async def test_alternatives_labelled_and_owned(client):
     assert body["generic_name"] == "Paracetamol"
     names = [p["name"] for p in body["products"]]
     assert names and all("panadol" not in n.lower() for n in names)  # own brand only as `current`
+    assert names == ["Calpol 500mg", "Febrol 500mg"]  # no Disprin (aspirin), no combo, no 250mg
     assert body["current"]["name"].startswith("Panadol")
     for p in [body["current"], *body["products"]]:
         assert p["links"]["dawaai"].startswith("https://dawaai.pk/search?search=")

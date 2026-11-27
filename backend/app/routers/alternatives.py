@@ -13,6 +13,7 @@ from app.llm.schemas import AlternativesLLM
 from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import AlternativesOut, PriceLinks, ProductOut
 from app.security import allowed_elder_ids, get_current_user
+from app.services.alternatives_guard import is_safe_alternative
 
 router = APIRouter(tags=["alternatives"])
 log = logging.getLogger(__name__)
@@ -67,7 +68,13 @@ async def alternatives(
     own = f"{med['name']} {strength}".strip()
     # Never list the brand the elder already takes as an "alternative" (it is shown as `current`).
     first_word = med["name"].strip().lower().split()[0] if med["name"].strip() else ""
-    others = [p for p in cached.products if not first_word or first_word not in p.name.lower()]
+    others = [
+        p
+        for p in cached.products
+        if (not first_word or first_word not in p.name.lower())
+        # Code check over the LLM: wrong salt (Disprin for paracetamol), combos, other strengths.
+        and is_safe_alternative(p.name, cached.generic_name, med["name"], strength)
+    ]
     return AlternativesOut(
         medicine_id=str(med["_id"]),
         medicine_name=med["name"],
