@@ -12,6 +12,32 @@ import { BigButton, Disclaimer, ErrorText } from './ui';
 // Defence in depth: only ever open https links on the two hosts the server uses.
 const SAFE = /^https:\/\/(dawaai\.pk|www\.google\.com)\//;
 
+// Same fixed hosts as the server (routers/alternatives.py), for answers without links.
+const linksFor = (name) => {
+  const q = encodeURIComponent(String(name).slice(0, 100)).replace(/%20/g, '+');
+  return { dawaai: `https://dawaai.pk/search?search=${q}`, google: `https://www.google.com/search?q=${q}+price+Pakistan` };
+};
+
+/* Accept the current answer shape AND the older one ({alternatives: [names]}) from a backend that
+   hasn't been redeployed yet, so a mismatch can never blank the screen. */
+function normalise(d, medicine) {
+  const own = `${medicine.name || ''} ${medicine.strength_text || ''}`.trim();
+  const current = d?.current?.name ? d.current : { name: own };
+  const raw = Array.isArray(d?.products) ? d.products : Array.isArray(d?.alternatives) ? d.alternatives : [];
+  const products = raw
+    .map((p) => (typeof p === 'string' ? { name: p } : p))
+    .filter((p) => p && typeof p.name === 'string' && p.name.trim())
+    .slice(0, 6);
+  const withLinks = (p) => ({ ...p, links: p.links && SAFE.test(p.links.dawaai || '') ? p.links : linksFor(p.name) });
+  return {
+    label: typeof d?.label === 'string' ? d.label : 'Needs doctor verification / doctor se tasdeeq zaroori',
+    disclaimer: typeof d?.disclaimer === 'string' ? d.disclaimer : undefined,
+    generic_name: typeof d?.generic_name === 'string' ? d.generic_name : 'unknown',
+    current: withLinks(current),
+    products: products.map(withLinks),
+  };
+}
+
 function PriceLinks({ links, name }) {
   const out = [
     ['dawaai', 'Dawaai.pk'],
@@ -60,7 +86,7 @@ export default function Alternatives({ medicine }) {
     setBusy(true);
     setErr(null);
     try {
-      setData(await api(`/medicines/${medicine.id}/alternatives`, { timeoutMs: 60000 }));
+      setData(normalise(await api(`/medicines/${medicine.id}/alternatives`, { timeoutMs: 60000 }), medicine));
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -92,7 +118,7 @@ export default function Alternatives({ medicine }) {
       </ul>
       {data.products.length ? null : <p style={{ margin: 0 }}>{t('alt.none')}</p>}
       <p className="m-0 text-[1.25rem]">{t('alt.price_note')}</p>
-      <Disclaimer text={st(data.disclaimer)} />
+      <Disclaimer text={data.disclaimer ? st(data.disclaimer) : undefined} />
     </div>
   );
 }

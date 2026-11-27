@@ -36,6 +36,7 @@ const TILES = [
   { to: '/elder/invite', key: 'invite', icon: 'family', tint: 'bg-gold-soft text-gold-text' },
   { to: '/elder/progress', key: 'progress', icon: 'trophy', tint: 'bg-success-bg text-success' },
   { to: '/elder/emergency', key: 'emergency', icon: 'phone', tint: 'bg-danger-bg text-danger' },
+  { to: '/elder/alternatives', key: 'alternatives', icon: 'swap', tint: 'bg-accent-soft text-accent' },
 ];
 
 function dayOfYear(d = new Date()) {
@@ -263,7 +264,7 @@ export default function ElderHome() {
           </h2>
           <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0">
             {TILES.map((x) => (
-              <li key={x.key} className={x.key === 'emergency' ? 'col-span-2 sm:col-span-1' : ''}>
+              <li key={x.key}>
                 <motion.div whileTap={{ scale: 0.96 }} whileHover={{ y: -3 }} className="h-full">
                   <Link
                     to={x.to}

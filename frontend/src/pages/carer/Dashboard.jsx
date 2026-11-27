@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import Alternatives from '../../components/Alternatives';
+import SafeBoundary from '../../components/SafeBoundary';
 import { AdherenceBars, MoodChart } from '../../components/charts';
 import { BigButton, Disclaimer, ErrorText, Notice, PharmacistBanner, TopBar, fmtDay, fmtHHMM, fmtTime } from '../../components/ui';
 import VitalsForm from '../../components/VitalsForm';
@@ -140,9 +141,7 @@ export default function Dashboard() {
             </BigButton>
           }
         />
-        <h1>
-          {t('dash.heading', { name: d.elder.name, days: d.days })}
-        </h1>
+        <h1>{t('dash.heading', { name: d.elder.name, days: d.days })}</h1>
 
         <motion.div {...reveal} className="grid gap-4 sm:grid-cols-2">
           <div className="flex items-center gap-4 rounded-3xl bg-gold-soft p-5">
@@ -150,7 +149,9 @@ export default function Dashboard() {
               <Icon name="flame" size={30} />
             </span>
             <p className="m-0 text-ink">
-              <span className="block text-[2.2rem] font-bold leading-none [font-variant-numeric:tabular-nums]">{t('home.streak.days', { n: streak })}</span>
+              <span className="block text-[2.2rem] font-bold leading-none [font-variant-numeric:tabular-nums]">
+                {t('home.streak.days', { n: streak })}
+              </span>
               <span className="text-[1.25rem] font-bold">{t('dash.streak')}</span>
             </p>
           </div>
@@ -226,7 +227,9 @@ export default function Dashboard() {
                   <div>
                     <strong>{m.name}</strong> {m.strength_text ? <span className="muted">{m.strength_text}</span> : null}
                     <p className="small muted" style={{ margin: 0 }}>
-                      {[m.dose_text, st(m.frequency_label), m.route_kind !== 'unknown' ? st(m.route_label) : null].filter(Boolean).join(' · ')}
+                      {[m.dose_text, st(m.frequency_label), m.route_kind !== 'unknown' ? st(m.route_label) : null]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </p>
                     <p className="small" style={{ margin: 0 }}>
                       {m.reminder_mode === 'hospital'
@@ -237,7 +240,9 @@ export default function Dashboard() {
                     </p>
                   </div>
                   {m.needs_pharmacist ? <PharmacistBanner /> : null}
-                  <Alternatives medicine={m} />
+                  <SafeBoundary>
+                    <Alternatives medicine={m} />
+                  </SafeBoundary>
                 </li>
               ))}
             </ul>

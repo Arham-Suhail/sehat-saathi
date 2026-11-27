@@ -381,5 +381,7 @@
   "delete.password": "Your password",
   "delete.password.hint": "Type your password to confirm it is you.",
   "delete.confirm": "Delete my account for good",
-  "delete.done": "Your account and data have been deleted."
+  "delete.done": "Your account and data have been deleted.",
+  "home.alternatives": "Extra alternatives",
+  "alt.page.intro": "Other products with the same medicine and strength, to compare and check prices. Never change your medicine without asking your doctor."
 }
