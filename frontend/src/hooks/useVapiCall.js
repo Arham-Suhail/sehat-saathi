@@ -53,9 +53,10 @@ export function useVapiCall({ onSaved } = {}) {
     try {
       const saved = await api('/checkins/voice', {
         method: 'POST',
-        // Urdu UI: Vapi's Hindi-script transcript is converted before it is stored and shown back.
+        // Vapi's transcriber writes spoken Urdu in Hindi (Devanagari) script. Always store it in Urdu
+        // script, whatever the UI language; English words (Latin letters) pass through unchanged.
         json: {
-          transcript: getLang() === 'ur' ? turns.map((x) => ({ ...x, text: toUrdu(x.text) })) : turns,
+          transcript: turns.map((x) => ({ ...x, text: toUrdu(x.text) })),
           vapi_call_id: callIdRef.current,
           lang: getLang(),
         },

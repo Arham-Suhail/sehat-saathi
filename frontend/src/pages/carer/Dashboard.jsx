@@ -10,6 +10,7 @@ import VitalsList from '../../components/VitalsList';
 import Icon from '../../components/Icon';
 import { karachiToday, progressFrom } from '../../lib/streaks';
 import { st } from '../../i18n/server';
+import { toUrdu } from '../../i18n/toUrdu';
 import { t } from '../../i18n/useT';
 
 // Cards fade up once as they scroll into view (Stage B); off with reduced motion via MotionConfig.
@@ -46,7 +47,7 @@ function Timeline({ checkins }) {
             .filter((x) => x.role === 'elder')
             .map((x, i) => (
               <p key={i} className="timeline__quote">
-                “<span dir="auto">{x.text}</span>”
+                “<span dir="auto">{toUrdu(x.text)}</span>”
               </p>
             ))}
         </li>

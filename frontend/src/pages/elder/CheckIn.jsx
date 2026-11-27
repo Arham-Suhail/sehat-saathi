@@ -6,13 +6,12 @@ import { useSpeech } from '../../hooks/useSpeech';
 import { useVapiCall } from '../../hooks/useVapiCall';
 import ChotuAgent from '../../components/chotu/ChotuAgent';
 import ChotuBoundary from '../../components/chotu/ChotuBoundary';
-import { toRoman } from '../../i18n/translit';
 import { toUrdu } from '../../i18n/toUrdu';
 import { getLang, t } from '../../i18n/useT';
 
 const VAPI_STATES = new Set(['connecting', 'listening', 'thinking', 'speaking', 'saving']);
-// Vapi's transcriber returns Hindi script: show it in the UI's script.
-const script = (s) => (getLang() === 'ur' ? toUrdu(s) : toRoman(s));
+// Vapi's transcriber returns spoken Urdu in Hindi script: show it in Urdu script (English stays English).
+const script = toUrdu;
 
 function ResultCard({ result }) {
   return (
