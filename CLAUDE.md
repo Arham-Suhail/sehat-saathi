@@ -70,7 +70,7 @@
 - Fonts self-hosted via @fontsource only (no Google Fonts requests). Stage A: Atkinson Hyperlegible only. Stage B adds Fraunces, Anton, Yellowtail, and Noto Nastaliq Urdu (Arabic subset only) for the Urdu UI.
 - Display/script fonts (Stage B) ONLY for the landing hero and section headings. Never for medical info, medicine names or buttons.
 - Mobile-first at 360px; check 360/390/768/1280/1440; no horizontal scroll; 48px+ targets; sticky bottom action bar on key elder screens; safe-area insets; `viewport-fit=cover`; no hover-only UI.
-- Reusable components (BigButton, Disclaimer, PharmacistBanner, ServerWakingBanner, ReminderAlert, MoodChart, AdherenceBars, VitalsList) so Stage B only restyles them.
+- Reusable components (BigButton, Disclaimer, PharmacistBanner, ReminderAlert, MoodChart, AdherenceBars, VitalsList) so Stage B only restyles them.
 - Carer dashboard: single-column cards on mobile, multi-column grid on laptop; charts in ResponsiveContainer.
 - (Stage B) Hero: serif "Aapki sehat," + huge tight caps "SAATHI" + serif tagline, clamp()-sized; CSS/SVG only, no heavy images.
 - (Stage B) Mascot is named **Chotu** (app stays "Sehat Saathi"). `ChotuAgent` is pure SVG/CSS, animates transform/opacity only, one `state` prop (idle|listening|thinking|speaking|error), inside `ChotuBoundary`; the text check-in must work if Chotu or Vapi fails. Always show: "Chotu ek AI sahayak hai, doctor nahi. Dawai ke baare mein apne doctor se poochein." Never shows a diagnosis or dosage.

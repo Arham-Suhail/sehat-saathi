@@ -1,8 +1,6 @@
 /* Small reusable building blocks. Stage B restyles these via CSS only. */
-import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import CallChotuButton from './CallChotuButton';
-import { onServerStatus } from '../api/client';
 import { LangToggle } from '../i18n/LangProvider';
 import { getLang, t } from '../i18n/useT';
 
@@ -42,17 +40,6 @@ export function Notice({ kind = 'info', children }) {
   return (
     <div className={`notice notice--${kind}`} role="status">
       {children}
-    </div>
-  );
-}
-
-export function ServerWakingBanner() {
-  const [status, setStatus] = useState('unknown');
-  useEffect(() => onServerStatus(setStatus), []);
-  if (status !== 'waking') return null;
-  return (
-    <div className="banner banner--info" role="status" aria-live="polite">
-      ⏳ {t('server.waking')}
     </div>
   );
 }

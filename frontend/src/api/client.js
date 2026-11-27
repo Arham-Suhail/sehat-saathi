@@ -23,7 +23,7 @@ export function setToken(token) {
   }
 }
 
-// ---------- server status (for ServerWakingBanner) ----------
+// ---------- server status (listeners; the top "waking" banner was removed on user request) ----------
 const listeners = new Set();
 let serverStatus = 'unknown'; // unknown | waking | ok
 export function onServerStatus(fn) {

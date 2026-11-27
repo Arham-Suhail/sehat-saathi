@@ -350,21 +350,6 @@
   font-size: 0.85em;
 }
 
-.banner {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  padding: 10px 16px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  text-align: center;
-  font-weight: 700;
-}
-.banner--info {
-  background: var(--accent-soft);
-  color: var(--text);
-  border-bottom: 2px solid var(--accent);
-}
-
 .center {
   text-align: center;
 }
