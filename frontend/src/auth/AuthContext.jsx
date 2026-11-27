@@ -1,9 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { api, getToken, setToken, setUnauthorizedHandler } from '../api/client';
+import { TOKEN_KEY, api, getToken, setToken, setUnauthorizedHandler } from '../api/client';
 import { disablePushForLogout } from '../hooks/usePush';
 
 const AuthContext = createContext(null);
+
+// Set just before this tab reloads because another tab changed the login (read by AccountSwitchedNotice).
+export const SWITCH_FLAG = 'ss_account_switched';
 
 export function homeFor(role) {
   return role === 'elder' ? '/elder' : '/carer';
@@ -37,6 +40,25 @@ export function AuthProvider({ children }) {
       })
       .finally(() => setReady(true));
   }, [clearSession]);
+
+  // The login token is shared by every tab of this browser. If another tab logs in (as anyone) or
+  // logs out, this tab would keep showing the old account while its requests already use the new
+  // token (e.g. a family screen sending an elder's token -> "Ijazat nahi"). So reload: the app then
+  // starts as whoever is logged in now, and RequireRole sends each tab to the right home.
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== TOKEN_KEY && e.key !== null) return; // null = storage cleared
+      if (e.key !== null && e.oldValue === e.newValue) return;
+      try {
+        sessionStorage.setItem(SWITCH_FLAG, '1');
+      } catch {
+        /* private mode: reload anyway */
+      }
+      window.location.reload();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const finish = useCallback((data) => {
     setToken(data.access_token);

@@ -359,5 +359,8 @@
   "meds.no": "No, keep it",
   "meds.removed": "{name} removed. Its reminders have stopped.",
   "meds.add": "Add a medicine yourself",
-  "meds.add.photo": "Add from a prescription photo"
+  "meds.add.photo": "Add from a prescription photo",
+  "auth.switched": "Another tab logged in. This window now shows {name}'s account.",
+  "auth.switched_out": "You were logged out in another tab. Please log in again.",
+  "common.close": "Close"
 }

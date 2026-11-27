@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireRole } from './auth/AuthContext';
+import AccountSwitchedNotice from './components/AccountSwitchedNotice';
 import { Login, Register } from './pages/Auth';
 import Landing from './pages/Landing';
 import CarerHome from './pages/carer/CarerHome';
@@ -22,6 +23,7 @@ const Dashboard = lazy(() => import('./pages/carer/Dashboard'));
 export default function App() {
   return (
     <>
+      <AccountSwitchedNotice />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

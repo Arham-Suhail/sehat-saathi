@@ -4,7 +4,7 @@ import { st } from '../i18n/server';
 import { t } from '../i18n/useT';
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
-const TOKEN_KEY = 'ss_token';
+export const TOKEN_KEY = 'ss_token';
 
 // ---------- token storage (localStorage can throw in private mode) ----------
 export function getToken() {
