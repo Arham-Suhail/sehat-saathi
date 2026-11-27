@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Icon from '../../components/Icon';
 import { api } from '../../api/client';
 import { BigButton, ErrorText, Notice, TopBar, fmtDay, fmtTime } from '../../components/ui';
 import { t } from '../../i18n/useT';
@@ -8,6 +9,18 @@ export default function Invite() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [removed, setRemoved] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  // Copies the 6 digits only (no space), so pasting it anywhere gives exactly the code.
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(invite.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const make = async () => {
     setBusy(true);
@@ -50,6 +63,14 @@ export default function Invite() {
           <p className="code-display" dir="ltr">
             {invite.code.slice(0, 3)} {invite.code.slice(3)}
           </p>
+          <button
+            type="button"
+            onClick={copy}
+            className="mx-auto inline-flex min-h-12 items-center gap-2 rounded-full border border-line bg-surface px-5 text-[1.25rem] font-bold text-accent shadow-soft"
+          >
+            {copied ? <Icon name="check" size={22} /> : <Icon name="copy" size={22} />}
+            {copied ? t('invite.copied') : t('invite.copy')}
+          </button>
           <p className="muted small">
             {t('invite.valid_until', { when: `${fmtDay(invite.expires_at)} ${fmtTime(invite.expires_at)}` })}
           </p>

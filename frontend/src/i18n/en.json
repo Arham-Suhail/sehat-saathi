@@ -362,5 +362,7 @@
   "meds.add.photo": "Add from a prescription photo",
   "auth.switched": "Another tab logged in. This window now shows {name}'s account.",
   "auth.switched_out": "You were logged out in another tab. Please log in again.",
-  "common.close": "Close"
+  "common.close": "Close",
+  "invite.copy": "Copy code",
+  "invite.copied": "Copied!"
 }
