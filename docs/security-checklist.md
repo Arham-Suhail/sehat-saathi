@@ -21,6 +21,7 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | `GET /medicines/schedule-options` | any logged-in | static data | — | — |
 | `POST /medicines/confirm` | elder | writes with caller's `elder_id` | — (F8, known limitation) | `test_idor.py::test_carers_cannot_use_elder_only_write_endpoints` |
 | `GET /medicines?elder_id=` | elder (self) / linked carer | `resolve_elder_access(read)` + `elder_id` filter | — | `test_idor.py::test_unlinked_carer_forbidden_linked_carer_reads`; content isolation |
+| `PATCH /medicines/{id}` | elder | `{_id, elder_id: caller}` (other elder 404, carers 403); only confirmed fixed-schedule meds; body `extra=forbid` (timings 1–6 HH:MM, dose ≤ 80, days 1–365; name/route not editable); replaces only future pending reminders | — | `test_medicine_edit.py` |
 | `POST /medicines/{id}/stop` | elder | `{_id, elder_id: caller}` | — | `test_idor.py::test_elder_cannot_touch_other_elders_medicine_or_reminders` |
 | `GET /medicines/{id}/alternatives` | elder / linked carer | `elder_id ∈ allowed_elder_ids(user)` | per user + global LLM | `test_features.py::test_alternatives_labelled_and_owned` |
 | `GET /reminders/upcoming` | elder | caller's `elder_id` | — | content isolation |

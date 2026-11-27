@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db import get_db
 from app.ids import parse_object_id
-from app.schemas import ConfirmIn, MedicineOut
+from app.schemas import ConfirmIn, MedicineEditIn, MedicineOut
 from app.security import get_current_user, require_role, resolve_elder_access
 from app.services.frequency import ROUTE_LABEL, schedule_options
 from app.services.medplan import NeedTime, plan
@@ -132,6 +132,51 @@ async def list_medicines(
         query["status"] = "confirmed"
     docs = await db.medicines.find(query).sort("created_at", -1).to_list(length=100)
     return [medicine_out(d) for d in docs]
+
+
+NOT_EDITABLE = "Is dawai ka waqt yahan nahi badla ja sakta"
+
+
+@router.patch("/{medicine_id}", response_model=MedicineOut)
+async def edit_medicine(
+    medicine_id: str,
+    body: MedicineEditIn,
+    user: dict = Depends(require_role("elder")),
+    db: Any = Depends(get_db),
+) -> MedicineOut:
+    """Edit the alarm times of the caller's own active, fixed-schedule medicine.
+
+    Future pending reminders are replaced by ones at the new times; past and acted-on reminders are
+    kept so adherence history stays true. PRN, hospital (IV/IM/SC) and stopped medicines have no alarms
+    and can't be edited here (code decides schedules, never the client: same rules as /confirm)."""
+    mid = parse_object_id(medicine_id)
+    med = await db.medicines.find_one({"_id": mid, "elder_id": user["_id"]})
+    if not med:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
+    if med.get("status") != "confirmed" or med.get("reminder_mode", "fixed") != "fixed":
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=NOT_EDITABLE)
+    now = datetime.now(UTC)
+    timings = sorted(set(body.timings))
+    created = med.get("created_at") or now
+    if created.tzinfo is None:  # PyMongo without tz_aware returns naive UTC datetimes
+        created = created.replace(tzinfo=UTC)
+    update = {
+        "timings": timings,
+        "dose_text": body.dose_text if body.dose_text is not None else med.get("dose_text"),
+        "duration_days": body.duration_days,
+        "end_at": course_end(created, body.duration_days),
+        # The prescription's frequency label ("Subah aur raat") no longer matches user-chosen times.
+        "frequency_label": None,
+        "edited_by_user": True,
+        "updated_at": now,
+    }
+    await db.medicines.update_one({"_id": mid, "elder_id": user["_id"]}, {"$set": update})
+    await db.reminders.delete_many(
+        {"elder_id": user["_id"], "medicine_id": mid, "status": "pending", "scheduled_at": {"$gt": now}}
+    )
+    doc = {**med, **update}
+    await create_reminders(db, doc, start=now, now=now)
+    return medicine_out(doc)
 
 
 @router.post("/{medicine_id}/stop", response_model=MedicineOut)

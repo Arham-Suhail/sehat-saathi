@@ -240,6 +240,10 @@
     "Password ghalat hai": [
       "The password is wrong",
       "پاس ورڈ غلط ہے"
+    ],
+    "Is dawai ka waqt yahan nahi badla ja sakta": [
+      "This medicine's times can't be changed here",
+      "اس دوا کا وقت یہاں نہیں بدلا جا سکتا"
     ]
   },
   "patterns": [

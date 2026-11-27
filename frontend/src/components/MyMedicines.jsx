@@ -11,6 +11,7 @@ import { getLang, t } from '../i18n/useT';
 import Alternatives from './Alternatives';
 import SafeBoundary from './SafeBoundary';
 import Icon from './Icon';
+import MedicineEditor from './MedicineEditor';
 import { BigButton, ErrorText, Notice, fmtHHMM } from './ui';
 
 function scheduleText(m) {
@@ -26,6 +27,8 @@ export default function MyMedicines({ onChanged }) {
   const [busy, setBusy] = useState(null);
   const [err, setErr] = useState(null);
   const [removed, setRemoved] = useState(null);
+  const [editing, setEditing] = useState(null); // id whose alarm is being edited
+  const [saved, setSaved] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -64,6 +67,7 @@ export default function MyMedicines({ onChanged }) {
 
       <div aria-live="polite">
         {removed ? <Notice kind="success">✓ {t('meds.removed', { name: removed })}</Notice> : null}
+        {saved ? <Notice kind="success">✓ {t('meds.edit.saved', { name: saved })}</Notice> : null}
         <ErrorText>{err}</ErrorText>
       </div>
 
@@ -99,7 +103,34 @@ export default function MyMedicines({ onChanged }) {
                 </button>
               ) : null}
             </div>
-            {asking !== m.id ? (
+            {asking !== m.id && editing !== m.id && m.reminder_mode === 'fixed' ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(m.id);
+                  setAsking(null);
+                  setSaved(null);
+                  setRemoved(null);
+                }}
+                aria-label={t('meds.edit.aria', { name: m.name })}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-accent bg-surface px-4 text-[1.25rem] font-bold text-accent"
+              >
+                ✎ {t('meds.edit')}
+              </button>
+            ) : null}
+            {editing === m.id ? (
+              <MedicineEditor
+                med={m}
+                onCancel={() => setEditing(null)}
+                onSaved={async () => {
+                  setEditing(null);
+                  setSaved(m.name);
+                  await load();
+                  await onChanged?.();
+                }}
+              />
+            ) : null}
+            {asking !== m.id && editing !== m.id ? (
               <SafeBoundary>
                 <Alternatives medicine={m} />
               </SafeBoundary>

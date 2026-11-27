@@ -164,6 +164,15 @@ class ConfirmIn(Strict):
     medicines: Annotated[list[MedicineIn], Field(min_length=1, max_length=15)]
 
 
+class MedicineEditIn(Strict):
+    """Change an active medicine's alarm times (and optionally dose text / number of days).
+    Everything else (name, strength, route, frequency label) stays as confirmed from the prescription."""
+
+    timings: Annotated[list[HHMM], Field(min_length=1, max_length=6)]
+    dose_text: OptText(80) = None
+    duration_days: Annotated[int, Field(ge=1, le=365)] | None = None
+
+
 class MedicineOut(BaseModel):
     id: str
     name: str
