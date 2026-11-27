@@ -15,7 +15,17 @@ export default function RevealText({ text, className = '', delay = 0 }) {
     return (
       <motion.span
         className={`inline-block ${className}`}
-        style={{ backgroundImage: GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
+        // background-clip:text only paints inside the element's box, and Nastaliq marks (the dots and
+        // small ط of ٹ) rise far above the line box, so they came out transparent. Pad the box to
+        // cover them and pull the same space back with negative margins, so layout doesn't move.
+        style={{
+          backgroundImage: GRADIENT,
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          color: 'transparent',
+          padding: '0.6em 0.15em 0.35em',
+          margin: '-0.15em -0.15em -0.35em', // less pull-up on top: room so ٹ doesn't touch the line above
+        }}
         initial={reduce ? false : { opacity: 0, y: '0.2em' }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
