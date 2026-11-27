@@ -411,5 +411,10 @@
   "forgot.save": "نیا پاس ورڈ محفوظ کریں",
   "forgot.again_send": "دوسرا ای میل / دوبارہ بھیجیں",
   "forgot.done": "پاس ورڈ بدل گیا۔ نئے پاس ورڈ سے لاگ اِن کریں۔",
-  "emergency.change": "نمبر بدلیں"
+  "emergency.change": "نمبر بدلیں",
+  "signup.sent": "ہم نے {email} پر 6 ہندسوں کا کوڈ بھیجا ہے۔ اکاؤنٹ بنانا مکمل کرنے کے لیے یہ کوڈ لکھیں۔",
+  "signup.resent": "نیا کوڈ {email} پر بھیج دیا گیا۔",
+  "signup.code.title": "اپنا ای میل دیکھیں",
+  "signup.finish": "میرا اکاؤنٹ بنائیں",
+  "signup.change_email": "ای میل بدلیں"
 }

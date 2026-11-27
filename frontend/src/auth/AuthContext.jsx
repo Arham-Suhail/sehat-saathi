@@ -73,16 +73,26 @@ export function AuthProvider({ children }) {
   );
 
   const register = useCallback(
-    async (form) =>
-      finish(await api('/auth/register', { method: 'POST', json: form, auth: false, timeoutMs: 90000 })),
+    async (form) => finish(await api('/auth/register', { method: 'POST', json: form, auth: false, timeoutMs: 90000 })),
+    [finish],
+  );
+
+  // Code-first sign-up (email on): step 1 emails a code, step 2 creates the account and logs in.
+  const registerStart = useCallback(
+    async (form) => api('/auth/register/start', { method: 'POST', json: form, auth: false, timeoutMs: 90000 }),
+    [],
+  );
+  const registerVerify = useCallback(
+    async (email, code) =>
+      finish(await api('/auth/register/verify', { method: 'POST', json: { email, code }, auth: false, timeoutMs: 90000 })),
     [finish],
   );
 
   const refresh = useCallback(async () => setUser(await api('/me')), []);
 
   const value = useMemo(
-    () => ({ user, ready, login, register, logout, refresh }),
-    [user, ready, login, register, logout, refresh],
+    () => ({ user, ready, login, register, registerStart, registerVerify, logout, refresh }),
+    [user, ready, login, register, registerStart, registerVerify, logout, refresh],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -278,11 +278,15 @@ export function ForgotPassword() {
 const ROLE_ICON = { elder: '🧓', family: '👪', doctor: '🩺' };
 
 export function Register() {
-  const { user, register } = useAuth();
+  const { user, register, registerStart, registerVerify } = useAuth();
   const nav = useNavigate();
+  const emailOn = useEmailEnabled();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'elder' });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [step, setStep] = useState(1); // 2 = "enter the code we emailed"
+  const [code, setCode] = useState('');
+  const [sentMsg, setSentMsg] = useState(null);
   useWake();
 
   if (user) return <Navigate to={homeFor(user.role)} replace />;
@@ -297,14 +301,93 @@ export function Register() {
     setBusy(true);
     setErr(null);
     try {
-      const u = await register({ ...form, name: form.name.trim(), email: form.email.trim() });
-      nav(homeFor(u.role), { replace: true });
+      const clean = { ...form, name: form.name.trim(), email: form.email.trim() };
+      if (emailOn) {
+        // No account until the emailed code is entered (made-up emails can't sign up).
+        await registerStart(clean);
+        setSentMsg(t('signup.sent', { email: clean.email }));
+        setStep(2);
+      } else {
+        const u = await register(clean);
+        nav(homeFor(u.role), { replace: true });
+      }
     } catch (e2) {
       setErr(e2.message);
     } finally {
       setBusy(false);
     }
   };
+
+  const verify = async (e) => {
+    e.preventDefault();
+    if (code.length !== 6) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const u = await registerVerify(form.email.trim(), code);
+      nav(homeFor(u.role), { replace: true });
+    } catch (e2) {
+      setErr(e2.message);
+      setBusy(false);
+    }
+  };
+
+  const resend = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await registerStart({ ...form, name: form.name.trim(), email: form.email.trim() });
+      setCode('');
+      setSentMsg(t('signup.resent', { email: form.email.trim() }));
+    } catch (e2) {
+      setErr(e2.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (step === 2) {
+    return (
+      <AuthShell>
+        <form className="glass-card stack" onSubmit={verify} noValidate>
+          <h1>{t('signup.code.title')}</h1>
+          <div aria-live="polite">{sentMsg ? <Notice kind="info">{sentMsg}</Notice> : null}</div>
+          <Field id="signup-code" label={t('verify.code')} hint={t('verify.code.hint')}>
+            <input
+              id="signup-code"
+              className="input"
+              dir="ltr"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              aria-describedby="signup-code-hint"
+              value={code}
+              style={{ letterSpacing: '0.3em', fontSize: '1.4em' }}
+              onChange={(e) => setCode(onlyDigits(e.target.value).slice(0, 6))}
+            />
+          </Field>
+          <ErrorText>{err}</ErrorText>
+          <BigButton type="submit" disabled={busy || code.length !== 6}>
+            {busy ? t('common.loading') : t('signup.finish')}
+          </BigButton>
+          <BigButton variant="secondary" disabled={busy} onClick={resend}>
+            {t('verify.resend')}
+          </BigButton>
+          <BigButton
+            variant="secondary"
+            disabled={busy}
+            onClick={() => {
+              setStep(1);
+              setCode('');
+              setErr(null);
+            }}
+          >
+            {t('signup.change_email')}
+          </BigButton>
+          <p className="muted">{t('verify.spam')}</p>
+        </form>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell>

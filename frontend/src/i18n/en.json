@@ -411,5 +411,10 @@
   "forgot.save": "Save new password",
   "forgot.again_send": "Use another email / send again",
   "forgot.done": "Password changed. Log in with your new password.",
-  "emergency.change": "Change the number"
+  "emergency.change": "Change the number",
+  "signup.sent": "We emailed a 6-digit code to {email}. Enter it to finish creating your account.",
+  "signup.resent": "A new code was sent to {email}.",
+  "signup.code.title": "Check your email",
+  "signup.finish": "Create my account",
+  "signup.change_email": "Change email"
 }
