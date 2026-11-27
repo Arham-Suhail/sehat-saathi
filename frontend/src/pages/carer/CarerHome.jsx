@@ -4,19 +4,14 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import Icon from '../../components/Icon';
+import VerifyEmailBanner from '../../components/VerifyEmailBanner';
+import { onlyDigits } from '../../lib/digits';
 import { BigButton, ErrorText, Field, Notice } from '../../components/ui';
 import { usePush } from '../../hooks/usePush';
 import { LangToggle } from '../../i18n/LangProvider';
 import { t } from '../../i18n/useT';
 
 // Up to two letters; names without letters fall back to a neutral dot.
-// "123 456", "123-456", "۱۲۳۴۵۶" -> "123456"
-const onlyDigits = (s) =>
-  s
-    .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
-    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-    .replace(/\D/g, '');
-
 const initials = (name) =>
   (name.match(/\p{L}+/gu) || [])
     .slice(0, 2)
@@ -83,6 +78,9 @@ export default function CarerHome() {
             </BigButton>
           </div>
         </motion.header>
+        <motion.div variants={item}>
+          <VerifyEmailBanner />
+        </motion.div>
 
         {push.state === 'on' ? <Notice kind="success">🔔 {t('push.carer.enabled')}</Notice> : null}
         {push.state === 'denied' ? <Notice kind="warning">{t('push.denied')}</Notice> : null}

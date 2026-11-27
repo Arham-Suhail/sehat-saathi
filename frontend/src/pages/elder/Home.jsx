@@ -10,6 +10,7 @@ import Icon from '../../components/Icon';
 import { Disclaimer, fmtTime } from '../../components/ui';
 import { useEmergencyContact, useProgress, useWater } from '../../hooks/useElderData';
 import CallChotuButton from '../../components/CallChotuButton';
+import VerifyEmailBanner from '../../components/VerifyEmailBanner';
 import { LangToggle } from '../../i18n/LangProvider';
 import { st } from '../../i18n/server';
 import { getLang, t } from '../../i18n/useT';
@@ -198,6 +199,10 @@ export default function ElderHome() {
             </Link>
           </div>
         </motion.header>
+
+        <motion.div variants={item}>
+          <VerifyEmailBanner />
+        </motion.div>
 
         <motion.div variants={item}>
           <MadadButton contact={contact} />

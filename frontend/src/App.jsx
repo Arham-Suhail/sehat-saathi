@@ -2,7 +2,8 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireRole } from './auth/AuthContext';
 import AccountSwitchedNotice from './components/AccountSwitchedNotice';
-import { Login, Register } from './pages/Auth';
+import { ForgotPassword, Login, Register } from './pages/Auth';
+import VerifyEmail from './pages/VerifyEmail';
 import Landing from './pages/Landing';
 import DeleteAccount from './pages/DeleteAccount';
 import CarerHome from './pages/carer/CarerHome';
@@ -30,6 +31,15 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route
+          path="/account/verify"
+          element={
+            <RequireRole roles={['elder', 'family', 'doctor']}>
+              <VerifyEmail />
+            </RequireRole>
+          }
+        />
 
         <Route
           path="/elder"
