@@ -16,6 +16,7 @@ import { st } from '../../i18n/server';
 import { getLang, t } from '../../i18n/useT';
 import { BADGES } from '../../lib/streaks';
 import { WATER_GOAL } from '../../lib/water';
+import { dayOffset } from '../../lib/days';
 import { useReminders } from './ElderLayout';
 
 const TIP_COUNT = 20;
@@ -184,7 +185,7 @@ export default function ElderHome() {
         <motion.header variants={item} className="flex flex-col gap-2">
           {/* Top row: the live-call button and language switch sit in the top corner of the screen. */}
           <div className="flex items-center justify-end gap-2 rtl:justify-start">
-            <CallChotuButton />
+            <CallChotuButton showLabel />
             <LangToggle />
           </div>
           <div className="flex items-center gap-3">
@@ -192,10 +193,14 @@ export default function ElderHome() {
               <p className="m-0 text-[1.25rem] font-bold text-muted">{pkDate(new Date())}</p>
               <h1 className="m-0 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: user.name.split(' ')[0] })}</h1>
             </div>
-            <Link to="/elder/checkin" aria-label={t('home.checkin')} className="shrink-0 rounded-full">
+            <Link
+              to="/elder/checkin"
+              className="flex min-h-12 shrink-0 flex-col items-center gap-1 rounded-2xl text-center text-[1.25rem] font-bold leading-tight text-accent no-underline"
+            >
               <ChotuBoundary>
                 <ChotuAgent size={64} state="idle" />
               </ChotuBoundary>
+              <span className="max-w-[7rem]">{t('home.checkin.label')}</span>
             </Link>
           </div>
         </motion.header>
@@ -220,6 +225,9 @@ export default function ElderHome() {
           </h2>
           {next ? (
             <>
+              {dayOffset(next.scheduled_at) === 1 ? (
+                <p className="m-0 mt-3 inline-flex rounded-full bg-surface px-3 py-1 text-[1.25rem] font-bold text-accent">{t('day.tomorrow')}</p>
+              ) : null}
               <p className="m-0 mt-3 text-[2.4rem] font-bold leading-none [font-variant-numeric:tabular-nums]">{fmtTime(next.scheduled_at)}</p>
               <p className="m-0 mt-2 text-[1.4rem] font-bold leading-snug">
                 {st(next.medicine_name)}

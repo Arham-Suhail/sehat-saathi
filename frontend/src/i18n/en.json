@@ -417,5 +417,9 @@
   "signup.code.title": "Check your email",
   "signup.finish": "Create my account",
   "signup.change_email": "Change email",
-  "signup.bounced": "The email to {email} bounced: this address doesn't exist. Please check it and write your real email."
+  "signup.bounced": "The email to {email} bounced: this address doesn't exist. Please check it and write your real email.",
+  "day.tomorrow": "Tomorrow",
+  "rem.status.upcoming": "Upcoming",
+  "home.call.label": "Voice call",
+  "home.checkin.label": "Daily check-in"
 }

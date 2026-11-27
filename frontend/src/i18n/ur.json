@@ -417,5 +417,9 @@
   "signup.code.title": "اپنا ای میل دیکھیں",
   "signup.finish": "میرا اکاؤنٹ بنائیں",
   "signup.change_email": "ای میل بدلیں",
-  "signup.bounced": "{email} پر ای میل واپس آ گئی: یہ ایڈریس موجود نہیں۔ اسے چیک کریں اور اپنا صحیح ای میل لکھیں۔"
+  "signup.bounced": "{email} پر ای میل واپس آ گئی: یہ ایڈریس موجود نہیں۔ اسے چیک کریں اور اپنا صحیح ای میل لکھیں۔",
+  "day.tomorrow": "کل",
+  "rem.status.upcoming": "آنے والی",
+  "home.call.label": "آواز میں بات",
+  "home.checkin.label": "آج کا حال چال"
 }

@@ -7,6 +7,7 @@ import { t } from '../../i18n/useT';
 import { useReminders } from './ElderLayout';
 import { st } from '../../i18n/server';
 import MyMedicines from '../../components/MyMedicines';
+import { dayOffset } from '../../lib/days';
 
 function NotificationToggle() {
   const [perm, setPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'unsupported'));
@@ -37,6 +38,20 @@ function AlarmToggle() {
   if (push.state === 'unsupported' && isIosNotInstalled()) return <Notice>{t('push.ios')}</Notice>;
   if (push.state === 'loading') return null;
   return <NotificationToggle />;
+}
+
+// Doses grouped under "Today" / "Tomorrow" / a date (Karachi calendar), so a dose for tomorrow is
+// never shown as "Due" under today.
+function groupByDay(reminders) {
+  const groups = [];
+  for (const r of reminders) {
+    const offset = dayOffset(r.scheduled_at);
+    const label = offset === 0 ? t('home.date.today') : offset === 1 ? t('day.tomorrow') : fmtDay(r.scheduled_at);
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.items.push(r);
+    else groups.push({ offset, label, items: [r] });
+  }
+  return groups;
 }
 
 const DOSE_CLASS = { taken: 'dose--done', missed: 'dose--missed', skipped: 'dose--missed' };
@@ -76,40 +91,44 @@ export default function Reminders() {
       {reminders.length === 0 ? (
         <p className="muted">{t('rem.none')}</p>
       ) : (
-        <ul className="list">
-          {reminders.map((r) => {
-            const at = new Date(r.scheduled_at).getTime();
-            const actionable = r.status === 'pending' && at - now < 60 * 60_000;
-            return (
-              <li key={r.id} className={`card stack ${DOSE_CLASS[r.status] || ''}`}>
-                <div className="dose">
-                  <div className="dose__time">
-                    <strong>{fmtTime(r.scheduled_at)}</strong>
-                    <small>{fmtDay(r.scheduled_at)}</small>
-                  </div>
-                  <div className="stack" style={{ gap: 6 }}>
-                    <p className="dose__name">{st(r.medicine_name)}</p>
-                    {r.dose ? <p className="muted" dir="auto" style={{ margin: 0 }}>{r.dose}</p> : null}
-                    {r.instructions ? <p className="muted small" style={{ margin: 0 }}>{st(r.instructions)}</p> : null}
-                    <span className={`tag tag--${r.status === 'skipped' ? 'missed' : r.status}`} style={{ justifySelf: 'start' }}>
-                      {t(`rem.status.${r.status}`)}
-                    </span>
-                  </div>
-                </div>
-                {actionable ? (
-                  <div className="grid-2">
-                    <BigButton variant="success" disabled={busyId === r.id} onClick={() => run(r.id, 'taken')}>
-                      ✓ {t('rem.taken')}
-                    </BigButton>
-                    <BigButton variant="danger" disabled={busyId === r.id} onClick={() => run(r.id, 'skipped')}>
-                      {t('rem.skip')}
-                    </BigButton>
-                  </div>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
+        groupByDay(reminders).map(({ offset, label, items }) => (
+          <section key={label} className="stack" aria-label={label}>
+            <h2 className={offset === 0 ? '' : 'muted'}>{label}</h2>
+            <ul className="list">
+              {items.map((r) => {
+                const at = new Date(r.scheduled_at).getTime();
+                const actionable = r.status === 'pending' && at - now < 60 * 60_000;
+                return (
+                  <li key={r.id} className={`card stack ${DOSE_CLASS[r.status] || ''}`}>
+                    <div className="dose">
+                      <div className="dose__time">
+                        <strong>{fmtTime(r.scheduled_at)}</strong>
+                      </div>
+                      <div className="stack" style={{ gap: 6 }}>
+                        <p className="dose__name">{st(r.medicine_name)}</p>
+                        {r.dose ? <p className="muted" dir="auto" style={{ margin: 0 }}>{r.dose}</p> : null}
+                        {r.instructions ? <p className="muted small" style={{ margin: 0 }}>{st(r.instructions)}</p> : null}
+                        <span className={`tag tag--${r.status === 'skipped' ? 'missed' : r.status}`} style={{ justifySelf: 'start' }}>
+                          {r.status === 'pending' && offset > 0 ? t('rem.status.upcoming') : t(`rem.status.${r.status}`)}
+                        </span>
+                      </div>
+                    </div>
+                    {actionable ? (
+                      <div className="grid-2">
+                        <BigButton variant="success" disabled={busyId === r.id} onClick={() => run(r.id, 'taken')}>
+                          ✓ {t('rem.taken')}
+                        </BigButton>
+                        <BigButton variant="danger" disabled={busyId === r.id} onClick={() => run(r.id, 'skipped')}>
+                          {t('rem.skip')}
+                        </BigButton>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))
       )}
 
       <MyMedicines onChanged={refresh} />
