@@ -7,8 +7,16 @@ from app.services.alternatives_guard import generic_salts, is_safe_alternative
 
 @pytest.mark.parametrize(
     "product",
-    ["Disprin 300mg", "Loprin 75mg", "Brufen 400mg", "Ponstan 500mg", "Panadol Extra", "Panadol CF 500mg",
-     "Calpol 250mg", "Panadol 1g"],
+    [
+        "Disprin 300mg",
+        "Loprin 75mg",
+        "Brufen 400mg",
+        "Ponstan 500mg",
+        "Panadol Extra",
+        "Panadol CF 500mg",
+        "Calpol 250mg",
+        "Panadol 1g",
+    ],
 )
 def test_wrong_salt_combo_or_strength_is_dropped(product):
     assert not is_safe_alternative(product, "Paracetamol", "Panadol", "500mg")

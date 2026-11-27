@@ -54,8 +54,27 @@ KNOWN_BRANDS: dict[str, frozenset[str]] = {
 
 # Words that turn a brand into a different (usually combination) product.
 VARIANT_WORDS = frozenset(
-    {"extra", "plus", "cf", "cold", "flu", "sinus", "night", "forte", "advance", "advanced",
-     "duo", "max", "ds", "xr", "sr", "er", "cr", "mr", "la"}
+    {
+        "extra",
+        "plus",
+        "cf",
+        "cold",
+        "flu",
+        "sinus",
+        "night",
+        "forte",
+        "advance",
+        "advanced",
+        "duo",
+        "max",
+        "ds",
+        "xr",
+        "sr",
+        "er",
+        "cr",
+        "mr",
+        "la",
+    }
 )
 
 _SALT_ALIASES = {
