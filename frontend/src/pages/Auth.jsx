@@ -280,7 +280,6 @@ const ROLE_ICON = { elder: '🧓', family: '👪', doctor: '🩺' };
 export function Register() {
   const { user, register, registerStart, registerVerify } = useAuth();
   const nav = useNavigate();
-  const emailOn = useEmailEnabled();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'elder' });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
@@ -302,9 +301,17 @@ export function Register() {
     setErr(null);
     try {
       const clean = { ...form, name: form.name.trim(), email: form.email.trim() };
-      if (emailOn) {
-        // No account until the emailed code is entered (made-up emails can't sign up).
+      // Always try code-first sign-up (no account until the emailed code is entered). Only when the
+      // server says email is off (404) use one-step sign-up. Never decided from a possibly stale or
+      // not-yet-loaded email-config, which once sent people to the closed one-step route.
+      let started = false;
+      try {
         await registerStart(clean);
+        started = true;
+      } catch (e3) {
+        if (e3?.status !== 404) throw e3;
+      }
+      if (started) {
         setSentMsg(t('signup.sent', { email: clean.email }));
         setStep(2);
       } else {
