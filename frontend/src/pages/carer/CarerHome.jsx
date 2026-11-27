@@ -139,6 +139,15 @@ export default function CarerHome() {
             {busy ? t('carer.checking') : t('carer.join')}
           </BigButton>
         </motion.form>
+        <motion.div variants={item} className="flex justify-center">
+          <Link
+            to="/account/delete"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-[1.25rem] font-bold text-danger"
+          >
+            <Icon name="trash" size={20} />
+            {t('delete.link')}
+          </Link>
+        </motion.div>
       </motion.main>
     </MotionConfig>
   );

@@ -5,7 +5,7 @@ import { homeFor, useAuth } from '../auth/AuthContext';
 import ChotuAgent from '../components/chotu/ChotuAgent';
 import ChotuBoundary from '../components/chotu/ChotuBoundary';
 import AuroraBackground from '../components/landing/AuroraBackground';
-import { BigButton, ErrorText, Field, TopBar } from '../components/ui';
+import { BigButton, ErrorText, Field, Notice, TopBar } from '../components/ui';
 import { t } from '../i18n/useT';
 
 /* Stage B: both auth screens share the landing's aurora, a small Chotu and a glass card. */
@@ -38,6 +38,15 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  // Shown for 30 s after "Delete my account" (timestamp set by DeleteAccount.jsx). Not removed on
+  // read: logging out can mount this screen twice, and the second mount must still show it.
+  const [deleted] = useState(() => {
+    try {
+      return Date.now() - Number(sessionStorage.getItem('ss_account_deleted') || 0) < 30_000;
+    } catch {
+      return false;
+    }
+  });
   useWake();
 
   if (user) return <Navigate to={homeFor(user.role)} replace />;
@@ -61,6 +70,7 @@ export function Login() {
     <AuthShell>
       <form className="glass-card stack" onSubmit={submit} noValidate>
         <h1>{t('common.login')}</h1>
+        {deleted ? <Notice kind="success">✓ {t('delete.done')}</Notice> : null}
         <Field id="email" label={t('auth.email')}>
           <input id="email" className="input" dir="ltr" type="email" autoComplete="email" inputMode="email" required
             maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} />

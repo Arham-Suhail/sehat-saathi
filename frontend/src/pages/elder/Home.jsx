@@ -296,6 +296,13 @@ export default function ElderHome() {
             <Icon name="logout" size={22} />
             {t('home.logout')}
           </button>
+          <Link
+            to="/account/delete"
+            className="inline-flex min-h-12 items-center justify-center gap-2 self-center rounded-full px-4 text-[1.25rem] font-bold text-danger"
+          >
+            <Icon name="trash" size={20} />
+            {t('delete.link')}
+          </Link>
         </motion.div>
       </motion.main>
     </MotionConfig>

@@ -40,6 +40,7 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | `POST /push/unsubscribe` | any logged-in | deletes only `{endpoint, user_id: caller}` | — | `test_push.py::test_same_browser_moves_to_the_latest_login_and_unsubscribe_is_owner_only` |
 | `GET /emergency-contact?elder_id=` | elder (self) / linked carer | `resolve_elder_access(read)`; reads only the `emergency_contact` field | — | `test_emergency.py::test_carers_cannot_write_and_unlinked_cannot_read`, `test_elder_cannot_read_another_elders_contact` |
 | `PUT` / `DELETE /emergency-contact` | elder | `require_role(elder)`; updates only the caller's own user doc; name ≤ 40, phone pattern + 7–15 digits, `extra=forbid`; phone never logged | — | `test_emergency.py::test_validation_rejects_bad_input`, `test_carers_cannot_write_and_unlinked_cannot_read` |
+| `POST /me/delete` | any logged-in | **password re-check**; deletes only the caller's own docs (`_id`/`elder_id`/`user_id` = caller); elder: medicines, reminders, check-ins, vitals, invites, push subs + `$pull` from every carer's links; carer: own doc + push subs | 5/min + 20/h per user | `test_account_delete.py` (wrong password, other elder untouched, carer unlink, old token 401, schema, rate limit) |
 | `GET /health` | public | no data | — | `test_security_headers.py::test_health_and_security_headers` |
 
 ## Controls: status

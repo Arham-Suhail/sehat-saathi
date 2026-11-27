@@ -236,6 +236,10 @@
     "Sirf JPG, PNG ya WebP tasveer bhejein": [
       "Send only a JPG, PNG or WebP photo",
       "صرف JPG، PNG یا WebP تصویر بھیجیں"
+    ],
+    "Password ghalat hai": [
+      "The password is wrong",
+      "پاس ورڈ غلط ہے"
     ]
   },
   "patterns": [

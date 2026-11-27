@@ -3,13 +3,20 @@ import hmac
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
 from app.db import get_db
-from app.ratelimit import LOGIN_LIMIT, REGISTER_LIMIT, global_key, global_register_limit, limiter
-from app.schemas import LoginIn, RegisterIn, TokenOut, UserOut
+from app.ratelimit import (
+    LOGIN_LIMIT,
+    REGISTER_LIMIT,
+    global_key,
+    global_register_limit,
+    limiter,
+    user_key,
+)
+from app.schemas import DeleteAccountIn, LoginIn, RegisterIn, TokenOut, UserOut
 from app.security import create_access_token, get_current_user, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -110,3 +117,33 @@ me_router = APIRouter(tags=["auth"])
 @me_router.get("/me", response_model=UserOut)
 async def me(user: dict = Depends(get_current_user)) -> UserOut:
     return user_out(user)
+
+
+WRONG_PASSWORD_ERROR = "Password ghalat hai"  # noqa: S105 - a user-facing message, not a secret
+
+
+@me_router.post("/me/delete", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(LOGIN_LIMIT, key_func=user_key)
+async def delete_account(
+    request: Request,
+    body: DeleteAccountIn,
+    user: dict = Depends(get_current_user),
+    db: Any = Depends(get_db),
+) -> Response:
+    """Permanently delete the caller's own account and everything stored about them.
+
+    Needs the password again. Elder: their medicines, reminders, check-ins, vitals, invite codes and
+    push subscriptions are deleted, and every family/doctor link to them is removed. Family/doctor:
+    their links and push subscriptions go with the account (the elders' data is untouched). Only the
+    caller's own id is used in every query; existing tokens stop working because /me lookups fail.
+    """
+    if not verify_password(body.password, user.get("password_hash")):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=WRONG_PASSWORD_ERROR)
+    uid = user["_id"]
+    if user.get("role") == "elder":
+        for coll in ("medicines", "reminders", "checkins", "vitals", "invites"):
+            await db[coll].delete_many({"elder_id": uid})
+        await db.users.update_many({"linked_elder_ids": uid}, {"$pull": {"linked_elder_ids": uid}})
+    await db.push_subscriptions.delete_many({"user_id": uid})
+    await db.users.delete_one({"_id": uid})
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

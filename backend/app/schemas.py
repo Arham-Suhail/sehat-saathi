@@ -57,6 +57,12 @@ class LoginIn(Strict):
     password: Text(72, 1)
 
 
+class DeleteAccountIn(Strict):
+    """Deleting an account needs the password again (a phone left logged in is not enough)."""
+
+    password: Text(72, 1)
+
+
 class UserOut(BaseModel):
     id: str
     name: str

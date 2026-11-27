@@ -4,6 +4,7 @@ import { RequireRole } from './auth/AuthContext';
 import AccountSwitchedNotice from './components/AccountSwitchedNotice';
 import { Login, Register } from './pages/Auth';
 import Landing from './pages/Landing';
+import DeleteAccount from './pages/DeleteAccount';
 import CarerHome from './pages/carer/CarerHome';
 import CheckIn from './pages/elder/CheckIn';
 import ConfirmMeds from './pages/elder/ConfirmMeds';
@@ -63,6 +64,14 @@ export default function App() {
               <Suspense fallback={<p className="page muted">{t('common.loading')}</p>}>
                 <Dashboard />
               </Suspense>
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/account/delete"
+          element={
+            <RequireRole roles={['elder', 'family', 'doctor']}>
+              <DeleteAccount />
             </RequireRole>
           }
         />

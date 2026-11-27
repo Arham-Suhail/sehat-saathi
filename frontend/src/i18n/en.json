@@ -364,5 +364,18 @@
   "auth.switched_out": "You were logged out in another tab. Please log in again.",
   "common.close": "Close",
   "invite.copy": "Copy code",
-  "invite.copied": "Copied!"
+  "invite.copied": "Copied!",
+  "delete.link": "Delete my account",
+  "delete.title": "Delete account",
+  "delete.warning": "This cannot be undone. These will be deleted for good:",
+  "delete.elder.1": "Your account and login",
+  "delete.elder.2": "All your medicines and reminders",
+  "delete.elder.3": "Your check-ins, BP / sugar readings and help number",
+  "delete.elder.4": "Your family and doctors will no longer be connected to you",
+  "delete.carer.1": "Your account and login",
+  "delete.carer.2": "Your connection to the elders you follow (their own data stays with them)",
+  "delete.password": "Your password",
+  "delete.password.hint": "Type your password to confirm it is you.",
+  "delete.confirm": "Delete my account for good",
+  "delete.done": "Your account and data have been deleted."
 }
