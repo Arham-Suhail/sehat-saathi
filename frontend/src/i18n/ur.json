@@ -184,7 +184,7 @@
   "emergency.name": "نام",
   "emergency.name.hint": "مثلاً: بیٹا علی",
   "emergency.phone": "فون نمبر",
-  "emergency.phone.hint": "مثلاً: 0300 1234567",
+  "emergency.phone.hint": "مثلاً: ⁦0300 1234567⁩",
   "emergency.saved": "نمبر محفوظ ہو گیا۔",
   "emergency.remove": "نمبر ہٹا دیں",
   "emergency.removed": "نمبر ہٹا دیا گیا۔",
@@ -410,5 +410,6 @@
   "forgot.mismatch": "دونوں پاس ورڈ ایک جیسے نہیں ہیں۔",
   "forgot.save": "نیا پاس ورڈ محفوظ کریں",
   "forgot.again_send": "دوسرا ای میل / دوبارہ بھیجیں",
-  "forgot.done": "پاس ورڈ بدل گیا۔ نئے پاس ورڈ سے لاگ اِن کریں۔"
+  "forgot.done": "پاس ورڈ بدل گیا۔ نئے پاس ورڈ سے لاگ اِن کریں۔",
+  "emergency.change": "نمبر بدلیں"
 }

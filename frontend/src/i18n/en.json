@@ -410,5 +410,6 @@
   "forgot.mismatch": "The two passwords are not the same.",
   "forgot.save": "Save new password",
   "forgot.again_send": "Use another email / send again",
-  "forgot.done": "Password changed. Log in with your new password."
+  "forgot.done": "Password changed. Log in with your new password.",
+  "emergency.change": "Change the number"
 }
