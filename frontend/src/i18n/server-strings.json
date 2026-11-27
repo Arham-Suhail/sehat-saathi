@@ -9,6 +9,10 @@
       "Not allowed",
       "اجازت نہیں"
     ],
+    "Call pehle se bandhi hui hai": [
+      "This call is already linked",
+      "یہ کال پہلے سے جڑی ہوئی ہے"
+    ],
     "Dobara login karein": [
       "Please log in again",
       "دوبارہ لاگ اِن کریں"
@@ -260,6 +264,10 @@
     "Is email address par email nahi ja sakti. Apna sahi email likhein.": [
       "Email can't be delivered to this address. Please write your real email.",
       "اس ای میل ایڈریس پر ای میل نہیں جا سکتی۔ اپنا صحیح ای میل لکھیں۔"
+    ],
+    "Abhi dastiyab nahi": [
+      "Not available right now",
+      "ابھی دستیاب نہیں"
     ]
   },
   "patterns": [

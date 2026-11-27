@@ -31,6 +31,10 @@ async def ensure_indexes(db: Any) -> None:
     await db.email_codes.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
     await db.pending_signups.create_index([("email", ASCENDING)], unique=True)
     await db.pending_signups.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
+    await db.vapi_calls.create_index([("call_id", ASCENDING)], unique=True)
+    await db.vapi_calls.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
+    await db.vapi_tool_calls.create_index([("tool_call_id", ASCENDING)], unique=True)
+    await db.vapi_tool_calls.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
 
 
 def get_db(request: Request) -> Any:

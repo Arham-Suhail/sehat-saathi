@@ -86,6 +86,11 @@ class Settings(BaseSettings):
     email_from: str | None = None
     email_from_name: str = "Sehat Saathi"
 
+    # Vapi voice tools (optional). The browser binds each live call to the signed-in elder;
+    # when a webhook secret is set, Vapi must send it as X-Vapi-Secret or a bearer token.
+    vapi_webhook_secret: str | None = None
+    vapi_assistant_id: str | None = None
+
     # Whole-chain time budget, kept under the frontend timeouts (60 s text, 120 s upload).
     llm_text_budget_seconds: float = 50.0
     llm_vision_budget_seconds: float = 100.0
@@ -165,6 +170,9 @@ class Settings(BaseSettings):
             problems.append("BREVO_API_KEY and EMAIL_FROM must be set together")
         if mail[1] and "@" not in mail[1]:
             problems.append("EMAIL_FROM must be an email address (a sender verified in Brevo)")
+        vapi_secret = (self.vapi_webhook_secret or "").strip()
+        if vapi_secret and (len(vapi_secret) < MIN_SECRET_LEN or vapi_secret.lower() in WEAK_SECRETS):
+            problems.append(f"VAPI_WEBHOOK_SECRET is weak (need >= {MIN_SECRET_LEN} random characters)")
         vapid = [(self.vapid_public_key or "").strip(), (self.vapid_private_key or "").strip()]
         if any(vapid) and not all(vapid):
             problems.append("VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY must be set together")

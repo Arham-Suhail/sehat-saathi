@@ -52,6 +52,8 @@ version (reason given) · **NOT NEEDED** = does not apply (reason given). Anythi
 | `POST /auth/password/forgot` | public | always 204 (no account probing); a code is sent only to VERIFIED emails | 3/15 min + 20/day per IP | `test_email_codes.py::test_forgot_and_reset_password`, `test_reset_needs_a_verified_email...` |
 | `POST /auth/password/reset` | public | email + code + new password; one generic error for unknown/unverified/wrong; success bumps `token_version` so every older session gets 401, and clears the login lock | 10/15 min per IP | `test_email_codes.py::test_forgot_and_reset_password` |
 | `GET /health` | public | no data | — | `test_security_headers.py::test_health_and_security_headers` |
+| `POST /vapi/bind-call` | elder | binds a Vapi call ID to the caller only (2 h TTL); a live call bound to another elder → 409; schema limits | 10/min per user | `test_vapi_tools.py::test_vapi_bind_call_is_elder_only_and_not_stealable` |
+| `POST /vapi/tools` | Vapi servers (no user token) | **off (503) unless `VAPI_WEBHOOK_SECRET` is set**; constant-time secret check (`X-Vapi-Secret` or bearer) → 401; optional assistant-ID match; data only via a call the elder bound; each tool-call ID answered once; `set_medicine_alarm` only MOVES an existing time (never adds a dose); one family alert per call, kept out of the mood trend | max 10 tool calls per request | `test_vapi_tools.py` (secret, unbound call, move-not-add, idempotent alert) |
 
 ## Controls: status
 

@@ -126,6 +126,14 @@ export function useVapiCall({ onSaved } = {}) {
       const vapi = await ensureClient();
       const call = await vapi.start(ASSISTANT_ID);
       callIdRef.current = call?.id ? String(call.id).slice(0, 100) : null;
+      if (callIdRef.current) {
+        // Best effort: lets Chhotu tools read this elder's own app record during the call.
+        api('/vapi/bind-call', {
+          method: 'POST',
+          json: { vapi_call_id: callIdRef.current, assistant_id: ASSISTANT_ID },
+          timeoutMs: 10000,
+        }).catch(() => {});
+      }
     } catch (e) {
       console.error('vapi start failed:', e?.name || 'Error', e?.message || '');
       setError(t('vapi.failed'));

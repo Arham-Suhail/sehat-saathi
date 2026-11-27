@@ -45,6 +45,8 @@ async def dashboard(
     # Mood trend: average score per local day.
     mood_by_day: dict[str, list[int]] = defaultdict(list)
     for c in checkins:
+        if c.get("kind") == "alert":  # a voice "alert my family" request, not a mood check-in
+            continue
         mood_by_day[_local_day(c["created_at"])].append(c["mood_score"])
     mood_series = [
         {"date": d, "score": round(sum(v) / len(v), 2), "count": len(v)}
