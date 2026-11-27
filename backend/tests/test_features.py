@@ -253,7 +253,12 @@ async def test_alternatives_labelled_and_owned(client):
     assert body["needs_doctor_verification"] is True
     assert "doctor" in body["label"].lower()
     assert body["generic_name"] == "Paracetamol"
-    assert all("panadol" not in a.lower() for a in body["alternatives"])
+    names = [p["name"] for p in body["products"]]
+    assert names and all("panadol" not in n.lower() for n in names)  # own brand only as `current`
+    assert body["current"]["name"].startswith("Panadol")
+    for p in [body["current"], *body["products"]]:
+        assert p["links"]["dawaai"].startswith("https://dawaai.pk/search?search=")
+        assert p["links"]["google"].startswith("https://www.google.com/search?q=")
 
     assert (
         await client.get(f"/medicines/{med['id']}/alternatives", headers=auth(other["token"]))
@@ -278,3 +283,28 @@ async def test_alternatives_are_cached(client, app):
     for _ in range(3):
         await client.get(f"/medicines/{med['id']}/alternatives", headers=auth(elder["token"]))
     assert len(fake.calls) - before == 1
+
+
+def test_alternatives_llm_output_is_sanitised_and_links_are_fixed_hosts():
+    from app.llm.schemas import AlternativesLLM
+    from app.routers.alternatives import price_links
+
+    raw = {
+        "generic_name": "Paracetamol",
+        "products": [
+            "Calpol 500mg",
+            {"name": ""},
+            {"company": "x"},
+            42,
+            *({"name": f"P{i}"} for i in range(10)),
+        ],
+    }
+    out = AlternativesLLM.model_validate(raw)
+    assert [p.name for p in out.products][:2] == ["Calpol 500mg", "P0"]
+    assert len(out.products) == 6
+    assert AlternativesLLM.model_validate({"products": "not a list"}).products == []
+    # LLM text can never change the host or add parameters: it is only an encoded query value.
+    links = price_links('Calpol"&search=evil https://evil.example/#')
+    assert links.dawaai.startswith("https://dawaai.pk/search?search=")
+    assert "&search=evil" not in links.dawaai and "https://evil" not in links.dawaai
+    assert links.google.startswith("https://www.google.com/search?q=")

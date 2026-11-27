@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from urllib.parse import quote_plus
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
@@ -10,11 +11,21 @@ from app.llm import LLMError, get_text
 from app.llm.prompts import ALTERNATIVES_SYSTEM, wrap_user_message
 from app.llm.schemas import AlternativesLLM
 from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
-from app.schemas import AlternativesOut
+from app.schemas import AlternativesOut, PriceLinks, ProductOut
 from app.security import allowed_elder_ids, get_current_user
 
 router = APIRouter(tags=["alternatives"])
 log = logging.getLogger(__name__)
+
+
+def price_links(product: str) -> PriceLinks:
+    """Fixed hosts only; the product text is just an encoded query value (no scraping, no prices
+    from the LLM: the user sees the real price on the pharmacy's own page)."""
+    q = quote_plus(product[:100])
+    return PriceLinks(
+        dawaai=f"https://dawaai.pk/search?search={q}",
+        google=f"https://www.google.com/search?q={q}+price+Pakistan",
+    )
 
 
 @router.get("/medicines/{medicine_id}/alternatives", response_model=AlternativesOut)
@@ -53,10 +64,14 @@ async def alternatives(
             ) from None
         alternatives_cache.set(key, cached)
 
+    own = f"{med['name']} {strength}".strip()
+    # Never list the brand the elder already takes as an "alternative" (it is shown as `current`).
+    first_word = med["name"].strip().lower().split()[0] if med["name"].strip() else ""
+    others = [p for p in cached.products if not first_word or first_word not in p.name.lower()]
     return AlternativesOut(
         medicine_id=str(med["_id"]),
         medicine_name=med["name"],
         generic_name=cached.generic_name,
-        # Never "suggest" the same brand the elder already takes.
-        alternatives=[a for a in cached.alternatives if med["name"].strip().lower() not in a.lower()],
+        current=ProductOut(name=own, links=price_links(own)),
+        products=[ProductOut(name=p.name, company=p.company, links=price_links(p.name)) for p in others],
     )

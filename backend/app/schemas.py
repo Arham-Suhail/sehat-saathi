@@ -298,11 +298,26 @@ class ElderRef(BaseModel):
 
 
 # ---------- alternatives ----------
+class PriceLinks(BaseModel):
+    """Search pages where the user sees the real, current price. Built by the server from a fixed
+    allowlist of hosts; the LLM text is only ever a URL-encoded query value."""
+
+    dawaai: str
+    google: str
+
+
+class ProductOut(BaseModel):
+    name: str
+    company: str | None = None
+    links: PriceLinks
+
+
 class AlternativesOut(BaseModel):
     medicine_id: str
     medicine_name: str
     generic_name: str
-    alternatives: list[str]
+    current: ProductOut  # the medicine the elder already takes, for comparison
+    products: list[ProductOut]
     needs_doctor_verification: Literal[True] = True
     label: str = "Needs doctor verification / doctor se tasdeeq zaroori"
     disclaimer: str = DISCLAIMER

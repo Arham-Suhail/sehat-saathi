@@ -60,12 +60,16 @@ def checkin_system(lang: str = "roman") -> str:
 
 CHECKIN_SYSTEM = checkin_system("roman")
 
-ALTERNATIVES_SYSTEM = f"""You help an elderly patient in Pakistan ask their doctor about lower-cost options.
+ALTERNATIVES_SYSTEM = f"""You help an elderly patient in Pakistan compare other products of the SAME medicine,
+to discuss with their doctor or pharmacist.
 Given a medicine name and strength as written on a prescription:
 - generic_name: the generic/salt name if you are confident, otherwise "unknown".
-- alternatives: up to 5 generic options with the SAME salt and SAME strength (names only).
-  If unsure, return an empty list.
-NEVER suggest a different dose, a different salt, or prices. NEVER give medical advice.
+- products: up to 6 products actually sold in Pakistan with the SAME salt and SAME strength.
+  name = the product's brand name with its strength as sold (e.g. "Calpol 500mg").
+  company = the manufacturer if you are confident, otherwise null.
+  Only real products you are confident exist. If unsure, return an empty list.
+NEVER include prices (the app links to a pharmacy search for real prices). NEVER suggest a different
+dose, a different salt or a different form. NEVER give medical advice.
 Everything you output will be shown as "needs doctor verification".
 {INJECTION_GUARD}"""
 

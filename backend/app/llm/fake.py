@@ -149,12 +149,21 @@ class FakeProvider:
                 "concern_reason": None,
             }
         elif schema is AlternativesLLM:
-            known = {"panadol": ("Paracetamol", ["Paracetamol 500 mg (generic)", "Panadol 500 mg"])}
+            known = {
+                "panadol": (
+                    "Paracetamol",
+                    [
+                        {"name": "Calpol 500mg", "company": "GSK"},
+                        {"name": "Panadol 500mg", "company": "GSK"},
+                        {"name": "Febrol 500mg", "company": None},
+                    ],
+                )
+            }
             hit = next((v for k, v in known.items() if k in user_text.lower()), None)
             data = (
-                {"generic_name": hit[0], "alternatives": hit[1]}
+                {"generic_name": hit[0], "products": hit[1]}
                 if hit
-                else {"generic_name": "unknown", "alternatives": []}
+                else {"generic_name": "unknown", "products": []}
             )
         else:
             raise NotImplementedError(schema.__name__)

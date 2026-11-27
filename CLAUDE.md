@@ -16,7 +16,9 @@
    logs mood (good/okay/low); symptoms → the "talk to your doctor" line (enforced in code per language) + flag.
 8. Family and doctors link to an elder with a 6-digit invite code and see a read-only dashboard.
 9. Dashboard: check-in timeline, mood trend, taken vs missed doses, manually entered vitals (BP, sugar, heart rate).
-10. Cheaper generic alternatives are LLM-suggested and always labelled "needs doctor verification".
+10. "Extra alternatives" (user request, Nov 27): LLM-suggested product names with the same salt + strength, always labelled
+    "needs doctor verification", shown under the current medicine; each has server-built "Check price" links (dawaai.pk search,
+    Google price search). No scraping and never LLM-generated prices. Shown on the carer dashboard and the elder's My medicines.
 
 ## Build stages (see docs/ROADMAP.md)
 - **Stage A (DONE: user confirmed "STABLE REACHED" on Nov 27; git tag `stage-a-stable`): stable, deployed, plain-UI core app.** `/` = app name + one-line tagline + Login/Register. Atkinson Hyperlegible only. Neutral placeholder palette in `theme.css`. CheckIn screen has a plain text bubble area and a marked `CHOTU PLACEHOLDER` box. Vapi via a plain button (hidden if not configured).

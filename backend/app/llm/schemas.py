@@ -128,10 +128,28 @@ class CheckinLLM(_LLMModel):
     concern_reason: Short(120) = None
 
 
+class ProductLLM(_LLMModel):
+    name: Annotated[str, BeforeValidator(lambda v: _trunc(80)(v) or "")] = ""
+    company: Short(60) = None
+
+
+def _products(v: Any) -> list:
+    """Untrusted list -> at most 6 products with a non-empty name (bad items are dropped)."""
+    if not isinstance(v, list):
+        return []
+    out = []
+    for item in v[:12]:
+        if isinstance(item, str):
+            item = {"name": item}
+        if isinstance(item, dict) and str(item.get("name") or "").strip():
+            out.append(item)
+    return out[:6]
+
+
 class AlternativesLLM(_LLMModel):
     generic_name: Annotated[str, BeforeValidator(lambda v: _trunc(120)(v) or "unknown")] = Field(
         "unknown", description="Generic/salt name, or 'unknown'"
     )
-    alternatives: Annotated[list[str], BeforeValidator(_str_list(5, 80))] = Field(
-        default_factory=list, description="Generic options with the same salt and strength"
+    products: Annotated[list[ProductLLM], BeforeValidator(_products)] = Field(
+        default_factory=list, description="Products sold in Pakistan with the same salt and strength"
     )

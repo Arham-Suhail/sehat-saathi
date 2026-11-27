@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { st } from '../i18n/server';
 import { getLang, t } from '../i18n/useT';
+import Alternatives from './Alternatives';
 import Icon from './Icon';
 import { BigButton, ErrorText, Notice, fmtHHMM } from './ui';
 
@@ -97,6 +98,7 @@ export default function MyMedicines({ onChanged }) {
                 </button>
               ) : null}
             </div>
+            {asking !== m.id ? <Alternatives medicine={m} /> : null}
             {asking === m.id ? (
               <div className="flex flex-col gap-2 rounded-2xl bg-danger-bg p-3" role="group" aria-label={t('meds.remove.aria', { name: m.name })}>
                 <p className="m-0 text-[1.25rem] font-bold text-danger">{t('meds.sure', { name: m.name })}</p>
