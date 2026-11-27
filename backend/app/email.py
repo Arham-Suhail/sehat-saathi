@@ -16,10 +16,15 @@ BREVO_URL = "https://api.brevo.com/v3/smtp/email"
 SEND_TIMEOUT = 10.0
 
 SUBJECTS = {
+    "signup": "Sehat Saathi: your sign-up code / اکاؤنٹ بنانے کا کوڈ",
     "verify": "Sehat Saathi: your verification code / تصدیق کا کوڈ",
     "reset": "Sehat Saathi: password reset code / پاس ورڈ بدلنے کا کوڈ",
 }
 LINES = {
+    "signup": (
+        "Your code to finish creating your account is:",
+        "اپنا اکاؤنٹ بنانا مکمل کرنے کے لیے آپ کا کوڈ:",
+    ),
     "verify": (
         "Your code to verify your email is:",
         "اپنا ای میل تصدیق کرنے کے لیے آپ کا کوڈ:",

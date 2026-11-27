@@ -100,7 +100,9 @@
 - Smartwatch / wearable / Bluetooth device integration (vitals are manual entry only).
 - Native mobile app.
 - OAuth, OTP. (Email verification + forgot-password codes via Brevo were moved INTO scope on Nov 27 at the user's request:
-  soft verification, 6-digit codes, optional at runtime like Web Push.)
+  6-digit codes, optional at runtime like Web Push. With email on, sign-up is CODE-FIRST: no account until the emailed
+  code is entered, after an MX check of the email's domain; accounts made before that keep working and see a
+  'verify your email' banner.)
 - Payments or subscriptions.
 - Scraping of pharmacy or price sites (alternatives are LLM-suggested only).
 - Native push SDKs (FCM/APNs) and native background alarms. (Web Push for closed-tab dose alarms and concern alerts

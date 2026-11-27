@@ -252,6 +252,14 @@
     "Email nahi ja saka. Thori dair baad koshish karein.": [
       "The email could not be sent. Please try again in a little while.",
       "ای میل نہیں جا سکا۔ تھوڑی دیر بعد کوشش کریں۔"
+    ],
+    "Account banane ke liye email par aaya code chahiye. App dobara kholein.": [
+      "Creating an account needs the code sent to your email. Please reopen the app.",
+      "اکاؤنٹ بنانے کے لیے ای میل پر آیا کوڈ چاہیے۔ ایپ دوبارہ کھولیں۔"
+    ],
+    "Is email address par email nahi ja sakti. Apna sahi email likhein.": [
+      "Email can't be delivered to this address. Please write your real email.",
+      "اس ای میل ایڈریس پر ای میل نہیں جا سکتی۔ اپنا صحیح ای میل لکھیں۔"
     ]
   },
   "patterns": [

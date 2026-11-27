@@ -77,11 +77,11 @@ A full independent audit with every finding and its status is in `docs/security/
   products (OpenRouter's free models in particular). Use fake data only.
 
 ## Dependencies & external services (disclosure)
-**External services:** MongoDB Atlas, Render, Vercel, UptimeRobot (pings `/health` every 5 min to keep the free Render server awake; it sees no user data), Gemini API (primary), Groq and OpenRouter (optional fallback LLM providers, used only when Gemini is rate-limited or down), Vapi (voice, planned), Brevo (optional: sends the 6-digit email verification and password-reset codes; receives only the recipient address and the code),
+**External services:** MongoDB Atlas, Render, Vercel, UptimeRobot (pings `/health` every 5 min to keep the free Render server awake; it sees no user data), Gemini API (primary), Groq and OpenRouter (optional fallback LLM providers, used only when Gemini is rate-limited or down), Vapi (voice, planned), Brevo (optional: sends the 6-digit sign-up, email verification and password-reset codes; receives only the recipient address and the code),
 browser Web Speech API, Notification API and Push API (Web Push is delivered through the browser's own push service:
 Google FCM, Mozilla, Apple or Microsoft; payloads are end-to-end encrypted and contain no symptoms).
 
-**Backend (Python):** fastapi, starlette, uvicorn, pydantic, pydantic-settings, email-validator, pymongo, PyJWT, bcrypt,
+**Backend (Python):** fastapi, starlette, uvicorn, pydantic, pydantic-settings, email-validator, pymongo, dnspython (MX check of sign-up email domains), PyJWT, bcrypt,
 openai (used only as an OpenAI-compatible HTTP client), httpx, slowapi, pillow, tzdata,
 pywebpush + py-vapid + http_ece + cryptography + aiohttp + requests (Web Push encryption, VAPID signing, delivery).
 Dev: pytest, pytest-asyncio, mongomock-motor, ruff, pip-audit. CI: GitHub Actions, gitleaks.

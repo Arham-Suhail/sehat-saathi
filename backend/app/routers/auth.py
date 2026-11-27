@@ -22,12 +22,14 @@ from app.schemas import (
     LoginIn,
     RegisterIn,
     ResetPasswordIn,
+    SignupVerifyIn,
     TokenOut,
     UserOut,
     VerifyEmailIn,
 )
 from app.security import create_access_token, get_current_user, hash_password, verify_password
 from app.services.email_codes import CODE_TTL, check_code, issue_code
+from app.services.signup import start_signup, take_signup
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -74,6 +76,10 @@ def _token_response(request: Request, user: dict) -> TokenOut:
 @limiter.limit(REGISTER_LIMIT)
 @limiter.limit(global_register_limit, key_func=global_key)
 async def register(request: Request, body: RegisterIn, db: Any = Depends(get_db)) -> TokenOut:
+    """One-step sign-up, only while email is OFF. With email on, sign-up is code-first
+    (/auth/register/start + /auth/register/verify) so made-up emails can't create accounts."""
+    if request.app.state.email_sender is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=SIGNUP_NEEDS_CODE)
     now = datetime.now(UTC)
     doc = {
         "name": body.name,
@@ -91,8 +97,61 @@ async def register(request: Request, body: RegisterIn, db: Any = Depends(get_db)
     except DuplicateKeyError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=GENERIC_REGISTER_ERROR) from None
     doc["_id"] = res.inserted_id
-    # Soft verification: send the code right away when email is configured; never block sign-up.
-    await _send_code(request, db, doc, "verify")
+    return _token_response(request, doc)
+
+
+@router.post("/register/start", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit(REGISTER_LIMIT)
+@limiter.limit(global_register_limit, key_func=global_key)
+async def register_start(request: Request, body: RegisterIn, db: Any = Depends(get_db)) -> dict:
+    """Step 1 of code-first sign-up: check the email's domain can receive mail, then email a code.
+    No account exists yet. The answer is the same whether or not the email is already registered
+    (an existing account gets no email and its code can never verify), so accounts can't be probed."""
+    _email_on(request)
+    email = body.email.lower()
+    if not await request.app.state.mx_check(email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=EMAIL_CANT_RECEIVE)
+    if await db.users.find_one({"email": email}, {"_id": 1}) is None:
+        code = await start_signup(
+            db,
+            name=body.name,
+            email=email,
+            password_hash=hash_password(body.password),
+            role=body.role,
+            secret=request.app.state.settings.jwt_secret,
+        )
+        if not await request.app.state.email_sender(email, "signup", code, CODE_MINUTES):
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=EMAIL_SEND_FAILED)
+    return {"sent": True, "minutes": CODE_MINUTES}
+
+
+@router.post("/register/verify", response_model=TokenOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/15minute")
+async def register_verify(request: Request, body: SignupVerifyIn, db: Any = Depends(get_db)) -> TokenOut:
+    """Step 2: the right code creates the (already verified) account and logs in."""
+    _email_on(request)
+    email = body.email.lower()
+    pending = await take_signup(db, email, body.code, request.app.state.settings.jwt_secret)
+    if not pending:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=BAD_CODE)
+    now = datetime.now(UTC)
+    doc = {
+        "name": pending["name"],
+        "email": email,
+        "password_hash": pending["password_hash"],
+        "role": pending["role"],
+        "email_verified": True,
+        "linked_elder_ids": [],
+        "invite_fail_count": 0,
+        "invite_locked_until": None,
+        "created_at": now,
+        "updated_at": now,
+    }
+    try:
+        res = await db.users.insert_one(doc)
+    except DuplicateKeyError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=GENERIC_REGISTER_ERROR) from None
+    doc["_id"] = res.inserted_id
     return _token_response(request, doc)
 
 
@@ -131,6 +190,8 @@ me_router = APIRouter(tags=["auth"])
 # ---------- email codes (verify email, forgot password) ----------
 EMAIL_OFF = "Nahi mila"
 BAD_CODE = "Code ghalat hai ya purana ho gaya. Naya code mangwayein."
+SIGNUP_NEEDS_CODE = "Account banane ke liye email par aaya code chahiye. App dobara kholein."
+EMAIL_CANT_RECEIVE = "Is email address par email nahi ja sakti. Apna sahi email likhein."
 EMAIL_SEND_FAILED = "Email nahi ja saka. Thori dair baad koshish karein."
 CODE_MINUTES = int(CODE_TTL.total_seconds() // 60)
 

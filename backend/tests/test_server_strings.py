@@ -62,7 +62,10 @@ def _detail_strings() -> set[str]:
                         found.add(v.value)
     # Module-level constants used as details (e.g. GENERIC_LOGIN_ERROR).
     for path in APP.rglob("*.py"):
-        for m in re.finditer(r'^[A-Z_]+_ERROR = "([^"]+)"', path.read_text(encoding="utf-8"), re.M):
+        # any UPPER_CASE = "..." constant in a router is a user-facing message (e.g. BAD_CODE)
+        text = path.read_text(encoding="utf-8")
+        consts = re.finditer(r'^[A-Z_]+ = "([^"]+)"', text, re.M) if "routers" in path.parts else ()
+        for m in [*re.finditer(r'^[A-Z_]+_ERROR = "([^"]+)"', text, re.M), *consts]:
             found.add(m.group(1))
     return found
 

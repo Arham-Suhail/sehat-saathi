@@ -64,6 +64,11 @@ class VerifyEmailIn(Strict):
     code: Code6
 
 
+class SignupVerifyIn(Strict):
+    email: Email
+    code: Code6
+
+
 class ForgotPasswordIn(Strict):
     email: Email
 

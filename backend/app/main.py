@@ -34,6 +34,7 @@ from app.routers import (
     reminders,
     vitals,
 )
+from app.services.mailcheck import domain_accepts_mail
 
 log = logging.getLogger("app")
 
@@ -97,6 +98,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.state.limiter = limiter
     app.state.push_sender = RealSender(settings) if settings.push_enabled else None
     app.state.email_sender = BrevoSender(settings) if settings.email_enabled else None
+    app.state.mx_check = domain_accepts_mail  # tests swap in a fake (no real DNS in CI)
 
     # ---------- middleware (last added = outermost) ----------
     @app.middleware("http")

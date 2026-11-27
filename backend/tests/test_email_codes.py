@@ -17,7 +17,21 @@ from tests.conftest import auth, register
 def mail(app):
     sender = FakeEmailSender()
     app.state.email_sender = sender
+
+    async def all_domains_ok(email):  # no real DNS in tests
+        return True
+
+    app.state.mx_check = all_domains_ok
     return sender
+
+
+async def legacy(client, app, role="elder"):
+    """An account from before code-first sign-up (one-step register while email was off): unverified."""
+    saved, app.state.email_sender = app.state.email_sender, None
+    try:
+        return await register(client, role)
+    finally:
+        app.state.email_sender = saved
 
 
 def last_code(mail, purpose):
@@ -31,10 +45,11 @@ async def test_email_off_by_default(client):
     assert (await client.post("/auth/password/forgot", json={"email": u["email"]})).status_code == 404
 
 
-async def test_register_sends_code_and_verify_flow(client, db, mail):
+async def test_legacy_account_verify_flow(client, db, mail, app):
     assert (await client.get("/auth/email-config")).json() == {"enabled": True}
-    u = await register(client, "elder")
+    u = await legacy(client, app, "elder")
     assert u["user"]["email_verified"] is False
+    assert (await client.post("/me/verify-email/send", headers=auth(u["token"]))).status_code == 204
     assert mail.sent[-1]["to"] == u["email"] and mail.sent[-1]["purpose"] == "verify"
     code = last_code(mail, "verify")
     row = await db.email_codes.find_one({"purpose": "verify"})
@@ -51,9 +66,10 @@ async def test_register_sends_code_and_verify_flow(client, db, mail):
     assert await db.email_codes.count_documents({}) == 0
 
 
-async def test_five_wrong_guesses_kill_the_code(client, mail):
-    u = await register(client, "elder")
+async def test_five_wrong_guesses_kill_the_code(client, mail, app):
+    u = await legacy(client, app, "elder")
     h = auth(u["token"])
+    await client.post("/me/verify-email/send", headers=h)
     code = last_code(mail, "verify")
     wrong = "000000" if code != "000000" else "111111"
     for _ in range(5):
@@ -62,17 +78,19 @@ async def test_five_wrong_guesses_kill_the_code(client, mail):
     assert (await client.post("/me/verify-email", json={"code": code}, headers=h)).status_code == 400
 
 
-async def test_expired_code_fails(client, db, mail):
-    u = await register(client, "elder")
+async def test_expired_code_fails(client, db, mail, app):
+    u = await legacy(client, app, "elder")
+    await client.post("/me/verify-email/send", headers=auth(u["token"]))
     code = last_code(mail, "verify")
     await db.email_codes.update_many({}, {"$set": {"expires_at": datetime.now(UTC) - timedelta(minutes=1)}})
     r = await client.post("/me/verify-email", json={"code": code}, headers=auth(u["token"]))
     assert r.status_code == 400
 
 
-async def test_forgot_and_reset_password(client, mail):
-    u = await register(client, "family")
+async def test_forgot_and_reset_password(client, mail, app):
+    u = await legacy(client, app, "family")
     h = auth(u["token"])
+    await client.post("/me/verify-email/send", headers=h)
     await client.post("/me/verify-email", json={"code": last_code(mail, "verify")}, headers=h)
 
     # unknown email: same 204, nothing sent
@@ -101,8 +119,8 @@ async def test_forgot_and_reset_password(client, mail):
     assert (await client.post("/auth/password/reset", json=body)).status_code == 400
 
 
-async def test_reset_needs_a_verified_email_and_gives_one_generic_error(client, mail):
-    u = await register(client, "elder")  # never verified
+async def test_reset_needs_a_verified_email_and_gives_one_generic_error(client, mail, app):
+    u = await legacy(client, app, "elder")  # never verified
     n = len(mail.sent)
     assert (await client.post("/auth/password/forgot", json={"email": u["email"]})).status_code == 204
     assert len(mail.sent) == n  # no reset code for an unverified address
@@ -116,8 +134,8 @@ async def test_reset_needs_a_verified_email_and_gives_one_generic_error(client, 
     assert r1.status_code == r2.status_code == 400 and r1.json()["detail"] == r2.json()["detail"]
 
 
-async def test_validation_and_rate_limits(client, mail):
-    u = await register(client, "elder")
+async def test_validation_and_rate_limits(client, mail, app):
+    u = await legacy(client, app, "elder")
     h = auth(u["token"])
     for body in (
         {"code": "12345"},
@@ -138,8 +156,8 @@ async def test_validation_and_rate_limits(client, mail):
 
 
 async def test_send_failure_is_reported_not_crashing(client, app):
+    u = await legacy(client, app, "elder")
     app.state.email_sender = FakeEmailSender(ok=False)
-    u = await register(client, "elder")  # register still succeeds
     r = await client.post("/me/verify-email/send", headers=auth(u["token"]))
     assert r.status_code == 502
 
