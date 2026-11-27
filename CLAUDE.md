@@ -9,7 +9,7 @@
    (optional: needs VAPID_* keys); elder marks taken or skipped. A flagged check-in sends a generic Web Push alert to the
    elder's currently linked family/doctors. Push endpoints are allowlisted (FCM, Mozilla, Apple, Windows) to prevent SSRF.
 6. A daily check-in ("آج آپ کیسا محسوس کر رہے ہیں؟") via text, Web Speech (ur-PK / en-IN) or Vapi voice (Deepgram `hi`).
-   UI languages (user decision, Nov 27): **Urdu script (default, RTL, Noto Nastaliq Urdu) + English toggle**;
+   UI languages (user decisions, Nov 27): **English (default on a first visit) + Urdu script (RTL, Noto Nastaliq Urdu)** toggle, choice remembered per device;
    Roman Urdu was removed from the UI. Vapi returns Hindi script: `src/i18n/toUrdu.js` converts it for the Urdu UI
    (best effort), `translit.js` to Roman for English. Concern keywords cover Roman, English, Hindi and Urdu script.
 7. AI replies (in the request's `lang`: ur/en; default roman for old clients) briefly with one general wellness tip,

@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import { applyLang, getLang } from './useT';
 
-const LangContext = createContext({ lang: 'ur', setLang: () => {} });
+const LangContext = createContext({ lang: 'en', setLang: () => {} });
 
 export function LangProvider({ children }) {
   const [lang, setLangState] = useState(getLang);

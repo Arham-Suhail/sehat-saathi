@@ -1,4 +1,4 @@
-/* Two UI languages: Urdu (Nastaliq script, right-to-left, the default) and English.
+/* Two UI languages: English (the default on a first visit) and Urdu (Nastaliq script, right-to-left).
    The choice is kept on this device (localStorage "ss_lang") and applied to <html lang dir>.
    t('home.greeting', { name }) -> interpolates {name}. Missing key: English, then the key itself.
    LangProvider (LangProvider.jsx) re-renders the app when the language changes. */
@@ -16,10 +16,10 @@ function initialLang() {
   } catch {
     /* private mode */
   }
-  return 'ur';
+  return 'en'; // first visit: English (user decision, Nov 27); the choice is remembered after that
 }
 
-let current = typeof window === 'undefined' ? 'ur' : initialLang();
+let current = typeof window === 'undefined' ? 'en' : initialLang();
 
 export function getLang() {
   return current;
@@ -27,7 +27,7 @@ export function getLang() {
 
 /** Set the active language, remember it, and update <html lang/dir>. */
 export function applyLang(lang) {
-  current = LANGS.includes(lang) ? lang : 'ur';
+  current = LANGS.includes(lang) ? lang : 'en';
   try {
     localStorage.setItem(KEY, current);
   } catch {
