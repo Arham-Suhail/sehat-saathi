@@ -249,7 +249,6 @@ export default function Dashboard() {
           <p className="m-0 px-1 text-[1rem] text-muted">{t('seen.label', { when: `${fmtDay(d.last_seen)} ${fmtTime(d.last_seen)}` })}</p>
         ) : null}
         <MessageElder elderId={d.elder.id} name={d.elder.name} />
-        <ExportBar d={d} />
 
         {app ? (
           <Segmented
@@ -333,6 +332,7 @@ export default function Dashboard() {
                 </Card>
               ) : null}
             </div>
+            <ExportBar d={d} />
             <Disclaimer />
           </>
         ) : null}

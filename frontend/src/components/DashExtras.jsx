@@ -35,6 +35,7 @@ export function MessageElder({ elderId, name }) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState(null);
+  const [open, setOpen] = useState(false);
   const send = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
@@ -45,12 +46,19 @@ export function MessageElder({ elderId, name }) {
       hapticSuccess();
       setText('');
       setDone(true);
+      setOpen(false);
     } catch (ex) {
       setErr(ex.message);
     } finally {
       setBusy(false);
     }
   };
+  if (!open)
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="app-btn app-btn--secondary app-btn--sm">
+        ✉️ {done ? `✓ ${t('msg.sent')}` : t('msg.write', { name })}
+      </button>
+    );
   return (
     <form onSubmit={send} className="card-ios flex flex-col gap-2 p-4">
       <label htmlFor="msg-elder" className="text-[1.15rem] font-bold">

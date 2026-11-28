@@ -36,8 +36,10 @@ function when(iso) {
 function Stat({ icon, value, label, tone }) {
   return (
     <div className={`flex flex-col gap-1 rounded-2xl p-3 ${tone}`}>
-      <span className="flex items-center gap-1.5 text-[1.45rem] font-bold leading-none [font-variant-numeric:tabular-nums]">
-        <Icon name={icon} size={20} />
+      <span
+        className={`flex min-w-0 items-center gap-1.5 font-bold leading-none [font-variant-numeric:tabular-nums] ${String(value).length > 5 ? 'text-[1.1rem] tracking-[-0.02em]' : 'text-[1.45rem]'}`}
+      >
+        <Icon name={icon} size={18} className="shrink-0" />
         {value}
       </span>
       <span className="text-[0.95rem] font-bold leading-tight opacity-90">{label}</span>

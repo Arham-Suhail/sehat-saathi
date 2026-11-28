@@ -145,17 +145,19 @@ function AlertCard({ a, onRead, onReview }) {
               {busy ? t('common.loading') : t('alerts.read')}
             </button>
           )}
-          <Link to={`/carer/elder/${a.elder_id}`} className="app-btn app-btn--secondary">
+          <div className="grid grid-cols-2 gap-2">
+          <Link to={`/carer/elder/${a.elder_id}`} className="app-btn app-btn--secondary app-btn--sm">
             {t('alerts.open_dash')}
           </Link>
           <a
             href={`https://wa.me/?text=${encodeURIComponent(shareText(a))}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="app-btn app-btn--secondary"
+            className="app-btn app-btn--secondary app-btn--sm"
           >
-            {t('share.whatsapp')}
+            WhatsApp
           </a>
+          </div>
         </div>
       ) : (
         <p className="m-0 mt-3 text-[1rem] text-muted">{a.resolved_by ? t('alerts.done_by', { name: a.resolved_by }) : t('alerts.done')}</p>
