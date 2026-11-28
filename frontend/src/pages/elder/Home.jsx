@@ -188,7 +188,7 @@ export default function ElderHome() {
           {/* Top row: the live-call button and language switch sit in the top corner of the screen. */}
           <div className="flex items-center justify-end gap-2 rtl:justify-start">
             <CallChotuButton showLabel />
-            <ThemeToggle />
+            {isAppMode() ? null : <ThemeToggle />}
             <LangToggle />
           </div>
           <div className="flex items-center gap-3">

@@ -9,7 +9,9 @@ import Icon from './Icon';
 export default function VerifyEmailBanner() {
   const { user } = useAuth();
   const enabled = useEmailEnabled();
-  if (!enabled || !user || user.email_verified) return null;
+  // Reserved demo domains (*.example, RFC 2606) can never receive mail: no banner for demo accounts.
+  const demo = /\.example$/i.test(user?.email || '');
+  if (!enabled || !user || user.email_verified || demo) return null;
   return (
     <Link
       to="/account/verify"
