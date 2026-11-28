@@ -1,0 +1,6 @@
+# Only the Bubblewrap config and notes are tracked; the generated Android project,
+# the signing key and the built APK stay on the build machine.
+*
+!.gitignore
+!twa-manifest.json
+!README.md
