@@ -1,6 +1,7 @@
 """Care alerts for family / doctors (see services/care.py) and the prescriptions list (diagnosis as
 written). Elders never read alerts: a concern about them goes to their carers quietly."""
 
+import asyncio
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -53,22 +54,24 @@ async def list_alerts(
 ) -> list[dict]:
     """Open alerts first (urgent on top), then, if asked, the last 7 days of finished ones."""
     linked = list(user.get("linked_elder_ids") or [])
-    docs = await db.alerts.find(open_for(user)).sort("created_at", -1).to_list(length=200)
-    if include_done:
-        seen = {d["_id"] for d in docs}
-        recent = (
-            await db.alerts.find(
-                {
-                    "elder_id": {"$in": linked},
-                    "created_at": {"$gte": datetime.now(UTC) - RECENT},
-                    "$or": [{"data.for_user": {"$exists": False}}, {"data.for_user": user["_id"]}],
-                }
-            )
-            .sort("created_at", -1)
-            .to_list(length=200)
+    # The three reads are independent: run them together (~0.25 s per database round trip).
+    docs, recent, elders = await asyncio.gather(
+        db.alerts.find(open_for(user)).sort("created_at", -1).to_list(length=200),
+        db.alerts.find(
+            {
+                "elder_id": {"$in": linked},
+                "created_at": {"$gte": datetime.now(UTC) - RECENT},
+                "$or": [{"data.for_user": {"$exists": False}}, {"data.for_user": user["_id"]}],
+            }
         )
-        docs += [d for d in recent if d["_id"] not in seen]
-    elders = await db.users.find({"_id": {"$in": linked}}, {"name": 1}).to_list(length=50)
+        .sort("created_at", -1)
+        .to_list(length=200)
+        if include_done
+        else _empty(),
+        db.users.find({"_id": {"$in": linked}}, {"name": 1}).to_list(length=50),
+    )
+    seen = {d["_id"] for d in docs}
+    docs += [d for d in recent if d["_id"] not in seen]
     names = {e["_id"]: e["name"] for e in elders}
     order = {"urgent": 0, "important": 1, "normal": 2}
     out = [alert_out(d, user, names) for d in docs]
@@ -115,3 +118,7 @@ async def list_prescriptions(
         }
         for d in docs
     ]
+
+
+async def _empty() -> list:
+    return []
