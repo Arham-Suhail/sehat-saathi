@@ -22,10 +22,16 @@ from app.security import hash_password
 from app.services.schedule import PK_TZ
 
 DEMO_EMAILS = {
-    "elder": "demo.elder@sehatsaathi.example",
-    "family": "demo.family@sehatsaathi.example",
-    "doctor": "demo.doctor@sehatsaathi.example",
+    "elder": "elder@demo.example",
+    "family": "family@demo.example",
+    "doctor": "doctor@demo.example",
 }
+# Earlier demo addresses: --reset removes these too, so no stale demo accounts are left behind.
+LEGACY_EMAILS = [
+    "demo.elder@sehatsaathi.example",
+    "demo.family@sehatsaathi.example",
+    "demo.doctor@sehatsaathi.example",
+]
 NAMES = {"elder": "Amma Jaan (Demo)", "family": "Bilal (Demo)", "doctor": "Dr. Sana (Demo)"}
 
 MEDS = [
@@ -79,7 +85,8 @@ async def main(reset: bool) -> None:
     db = client[s.mongodb_db]
     await ensure_indexes(db)
 
-    existing = await db.users.find({"email": {"$in": list(DEMO_EMAILS.values())}}).to_list(length=10)
+    emails = [*DEMO_EMAILS.values(), *LEGACY_EMAILS]
+    existing = await db.users.find({"email": {"$in": emails}}).to_list(length=10)
     if existing and not reset:
         print("Demo users already exist. Re-run with --reset to recreate them.")
         await client.close()
