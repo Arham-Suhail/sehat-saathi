@@ -34,15 +34,16 @@ function when(iso) {
 }
 
 function Stat({ icon, value, label, tone }) {
+  const long = String(value).length > 4;
   return (
-    <div className={`flex flex-col gap-1 rounded-2xl p-3 ${tone}`}>
+    <div className={`flex min-w-0 flex-col gap-1 rounded-2xl p-3 ${tone}`}>
+      <Icon name={icon} size={18} />
       <span
-        className={`flex min-w-0 items-center gap-1.5 font-bold leading-none [font-variant-numeric:tabular-nums] ${String(value).length > 5 ? 'text-[1.1rem] tracking-[-0.02em]' : 'text-[1.45rem]'}`}
+        className={`font-bold leading-none tracking-[-0.02em] [font-variant-numeric:tabular-nums] ${long ? 'text-[1.15rem]' : 'text-[1.45rem]'}`}
       >
-        <Icon name={icon} size={18} className="shrink-0" />
         {value}
       </span>
-      <span className="text-[0.95rem] font-bold leading-tight opacity-90">{label}</span>
+      <span className="text-[0.92rem] font-bold leading-tight opacity-90">{label}</span>
     </div>
   );
 }
@@ -107,8 +108,8 @@ function ElderCard({ e }) {
               {initials(e.name)}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="m-0 truncate text-[1.35rem] font-bold leading-tight">{e.name}</p>
-              <p className="m-0 truncate text-[1.05rem] text-muted">
+              <p className="m-0 line-clamp-2 text-[1.3rem] font-bold leading-tight">{e.name}</p>
+              <p className="m-0 text-[1.02rem] leading-snug text-muted">
                 {last ? (
                   <>
                     {MOOD_EMOJI[last.mood]} {t(`mood.${last.mood}`)} · {when(last.created_at)}
@@ -117,7 +118,7 @@ function ElderCard({ e }) {
                   t('chart.no_checkins')
                 )}
               </p>
-              {d?.last_seen ? <p className="m-0 truncate text-[0.95rem] text-muted">{t('seen.label', { when: ago(d.last_seen) })}</p> : null}
+              {d?.last_seen ? <p className="m-0 text-[0.95rem] leading-snug text-muted">{t('seen.label', { when: ago(d.last_seen) })}</p> : null}
             </div>
             {concerns ? (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-danger-bg px-3 py-1 text-[1rem] font-bold text-danger">

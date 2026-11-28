@@ -3,13 +3,14 @@
    Android app each open alert is turned into repeating native notifications (until read). */
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
+import { readCache, writeCache } from '../lib/cache';
 import { cancelCareAlarms, syncCareAlarms } from '../lib/nativeAlarms';
 
 const Ctx = createContext({ alerts: null, open: 0, reload: () => {}, markRead: async () => {} });
 const POLL_MS = 30_000;
 
 export function CareAlertsProvider({ children }) {
-  const [alerts, setAlerts] = useState(null);
+  const [alerts, setAlerts] = useState(() => readCache('alerts', null));
   const [error, setError] = useState(null);
   const meetings = useRef([]);
 
@@ -17,6 +18,7 @@ export function CareAlertsProvider({ children }) {
     try {
       const list = await api('/alerts?include_done=true');
       setAlerts(list);
+      writeCache('alerts', list);
       setError(null);
       syncCareAlarms(list, meetings.current).catch(() => {});
       return list;

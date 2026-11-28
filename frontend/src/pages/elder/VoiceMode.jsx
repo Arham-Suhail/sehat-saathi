@@ -29,8 +29,9 @@ export default function VoiceMode() {
   }, [line]);
 
   return (
-    <main className="page flex min-h-[80dvh] flex-col items-center gap-6 text-center">
+    <main className="page flex min-h-[80dvh] flex-col gap-6">
       <TopBar back="/elder" title={t('home.voice')} />
+      <div className="flex flex-col items-center gap-6 text-center">
       <ChotuBoundary>
         <ChotuAgent size={200} state="speaking" />
       </ChotuBoundary>
@@ -43,6 +44,7 @@ export default function VoiceMode() {
       <button type="button" onClick={() => nav('/elder/checkin?call=1')} className="app-btn app-btn--primary pressable min-h-24 w-full text-[1.5rem]">
         🎤 {t('voice.talk')}
       </button>
+      </div>
     </main>
   );
 }

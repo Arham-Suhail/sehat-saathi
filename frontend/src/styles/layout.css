@@ -962,3 +962,28 @@
 html.is-app .page {
   animation: none;
 }
+
+/* Top bar title: up to two lines, smaller, centred; never cut with "...". */
+.topbar__title {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: clip;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+html[lang='ur'] .topbar__title {
+  line-height: 1.8;
+}
+/* Urdu (Nastaliq) needs room above and below: never clip it in clamped lines. */
+html[lang='ur'] .line-clamp-2 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}

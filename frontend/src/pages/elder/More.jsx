@@ -51,8 +51,8 @@ export default function More() {
                 {t(user?.role === 'doctor' ? 'auth.role.doctor' : 'auth.role.family')}
               </p>
             )}
-            <h1 className="m-0 truncate text-[1.6rem] leading-tight">{user?.name}</h1>
-            <p className="m-0 truncate text-[1.05rem] text-muted">{user?.email}</p>
+            <h1 className="m-0 line-clamp-2 text-[1.6rem] leading-tight [overflow-wrap:anywhere]">{user?.name}</h1>
+            <p className="m-0 text-[1.05rem] text-muted [overflow-wrap:anywhere]">{user?.email}</p>
           </div>
         </motion.header>
 

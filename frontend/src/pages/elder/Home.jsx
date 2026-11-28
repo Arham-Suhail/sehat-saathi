@@ -87,7 +87,7 @@ function Row({ to, href, icon, title, sub, tone = 'accent' }) {
       <span className={`row-icon row-icon--${tone}`}>{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-[1.3rem] font-bold leading-snug">{title}</span>
-        {sub ? <span className="block truncate text-[1.05rem] text-muted">{sub}</span> : null}
+        {sub ? <span className="line-clamp-2 block text-[1.05rem] leading-snug text-muted">{sub}</span> : null}
       </span>
       <Icon name="chevron" size={22} className="shrink-0 text-muted rtl:-scale-x-100" />
     </>

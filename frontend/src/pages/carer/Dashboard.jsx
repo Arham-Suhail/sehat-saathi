@@ -6,6 +6,7 @@ import { MotionConfig, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
+import { readCache, writeCache } from '../../lib/cache';
 import { useAuth } from '../../auth/AuthContext';
 import Alternatives from '../../components/Alternatives';
 import { AdherenceBars, AdherenceTrend, MoodChart, PctBars, SlotBars, VitalsChart } from '../../components/charts';
@@ -149,7 +150,7 @@ export default function Dashboard() {
   const [params] = useSearchParams();
   const { user } = useAuth();
   const care = useCareAlerts();
-  const [d, setD] = useState(null);
+  const [d, setD] = useState(() => readCache(`dash.${elderId}`, null));
   const [err, setErr] = useState(null);
   const [showVitalsForm, setShowVitalsForm] = useState(false);
   const [contact, setContact] = useState(null);
@@ -164,7 +165,9 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      setD(await api(`/dashboard/${encodeURIComponent(elderId)}?days=30`, { timeoutMs: 60000 }));
+      const fresh = await api(`/dashboard/${encodeURIComponent(elderId)}?days=30`, { timeoutMs: 60000 });
+      setD(fresh);
+      writeCache(`dash.${elderId}`, fresh);
       setErr(null);
     } catch (e) {
       setErr(e.message);

@@ -152,11 +152,11 @@ export default function Reminders() {
                 <li key={r.id} className="ios-row">
                   <span className="w-[5.6rem] shrink-0 text-[1.2rem] font-bold [font-variant-numeric:tabular-nums]">{fmtTime(r.scheduled_at)}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[1.2rem] font-semibold" dir="auto">
+                    <span className="line-clamp-2 block text-[1.2rem] font-semibold leading-snug" dir="auto">
                       {st(r.medicine_name)}
                     </span>
                     {r.dose || r.instructions ? (
-                      <span className="block truncate text-[1rem] text-muted" dir="auto">
+                      <span className="line-clamp-2 block text-[1rem] leading-snug text-muted" dir="auto">
                         {[r.dose, r.instructions ? st(r.instructions) : null].filter(Boolean).join(' · ')}
                       </span>
                     ) : null}

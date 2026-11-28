@@ -4,6 +4,7 @@ import { MotionConfig, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
+import { readCache, writeCache } from '../lib/cache';
 import { useAuth } from '../auth/AuthContext';
 import Icon from '../components/Icon';
 import { MeetingCard, NewMeetingSheet } from '../components/meetings';
@@ -15,7 +16,7 @@ export default function Meetings() {
   const { user } = useAuth();
   const [params] = useSearchParams();
   const carer = user.role !== 'elder';
-  const [list, setList] = useState(null);
+  const [list, setList] = useState(() => readCache('meetings', null));
   const [elders, setElders] = useState([]);
   const [open, setOpen] = useState(params.get('new') === '1');
   const [err, setErr] = useState(null);
@@ -25,10 +26,11 @@ export default function Meetings() {
     try {
       const m = await api('/meetings');
       setList(m);
+      writeCache('meetings', m);
       syncMeetingAlarms(m).catch(() => {});
     } catch (e) {
       setErr(e.message);
-      setList([]);
+      setList((x) => x || []);
     }
   }, []);
 

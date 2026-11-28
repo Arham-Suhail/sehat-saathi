@@ -1,24 +1,31 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api/client';
+import { readCache, writeCache } from '../lib/cache';
 
-/* Family / doctor: every linked elder with their dashboard (last 14 days), loaded in parallel.
-   Used by the app-mode carer home (summary cards) and the Alerts tab. */
+/* Family / doctor: every linked elder with their dashboard (last 14 days).
+   Last-known cards draw at once (cache); the list of elders shows as soon as it arrives and each
+   elder's numbers fill in when their dashboard answers (they no longer wait for each other). */
 export function useCarerOverview() {
-  const [elders, setElders] = useState(null); // [{ id, name, dash|null }]
+  const [elders, setElders] = useState(() => readCache('carer.overview', null)); // [{ id, name, dash|null }]
   const [error, setError] = useState(null);
   const load = useCallback(async () => {
     try {
       const list = await api('/carer/elders');
-      const withDash = await Promise.all(
+      setElders((prev) => list.map((e) => ({ ...e, dash: prev?.find((p) => p.id === e.id)?.dash ?? null })));
+      await Promise.all(
         list.map(async (e) => {
           try {
-            return { ...e, dash: await api(`/dashboard/${encodeURIComponent(e.id)}?days=14`, { timeoutMs: 60000 }) };
+            const dash = await api(`/dashboard/${encodeURIComponent(e.id)}?days=14`, { timeoutMs: 60000 });
+            setElders((cur) => {
+              const next = (cur || []).map((x) => (x.id === e.id ? { ...x, dash } : x));
+              writeCache('carer.overview', next);
+              return next;
+            });
           } catch {
-            return { ...e, dash: null };
+            /* keep the last known numbers */
           }
         }),
       );
-      setElders(withDash);
       setError(null);
     } catch (e) {
       setError(e.message);
