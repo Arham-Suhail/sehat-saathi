@@ -56,7 +56,8 @@ export function MessageElder({ elderId, name }) {
   if (!open)
     return (
       <button type="button" onClick={() => setOpen(true)} className="app-btn app-btn--secondary app-btn--sm">
-        ✉️ {done ? `✓ ${t('msg.sent')}` : t('msg.write', { name })}
+        <Icon name="chat" size={20} />
+        {done ? `✓ ${t('msg.sent')}` : t('msg.write', { name })}
       </button>
     );
   return (

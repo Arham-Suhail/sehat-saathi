@@ -845,5 +845,6 @@
   "week.compare": "This week {now}% · last week {before}%",
   "week.up": "{n} points better than last week",
   "week.down": "{n} points lower than last week",
-  "week.same": "Same as last week"
+  "week.same": "Same as last week",
+  "share.short": "Share"
 }

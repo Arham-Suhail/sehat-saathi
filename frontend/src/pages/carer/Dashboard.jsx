@@ -231,7 +231,7 @@ export default function Dashboard() {
             {reviews.length ? <span className="chip-ios chip-ios--warn">⚠ {t('dash.review.count', { n: reviews.length })}</span> : null}
             {d.concerns ? <span className="chip-ios chip-ios--danger">⚠ {t('dash.concerns', { n: d.concerns })}</span> : null}
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4 flex flex-col gap-2">
             <Link to={`/carer/meetings?new=1&elder=${encodeURIComponent(d.elder.id)}`} className="app-btn app-btn--primary app-btn--sm">
               <Icon name="calendar" size={20} />
               {doctor ? t('dash.call_meeting') : t('dash.meet_doctor')}

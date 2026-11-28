@@ -36,10 +36,10 @@ function when(iso) {
 function Stat({ icon, value, label, tone }) {
   const long = String(value).length > 4;
   return (
-    <div className={`flex min-w-0 flex-col gap-1 rounded-2xl p-3 ${tone}`}>
+    <div className={`flex min-w-0 flex-col gap-1 rounded-2xl px-2.5 py-3 ${tone}`}>
       <Icon name={icon} size={18} />
       <span
-        className={`nowrap font-bold leading-none tracking-[-0.02em] [font-variant-numeric:tabular-nums] ${long ? 'text-[min(1.2rem,5vw)]' : 'text-[min(1.45rem,6.5vw)]'}`}
+        className={`nowrap font-bold leading-none tracking-[-0.02em] [font-variant-numeric:tabular-nums] ${long ? 'text-[min(1.05rem,4.4vw)]' : 'text-[min(1.45rem,6.5vw)]'}`}
       >
         {value}
       </span>
@@ -130,7 +130,7 @@ function ElderCard({ e }) {
               </span>
             )}
           </div>
-          <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(6.6rem,1fr))] gap-2">
+          <div className="mt-4 grid grid-cols-3 gap-2">
             <Stat icon="check" value={pct == null ? '—' : `${pct}%`} label={t('carerapp.on_time')} tone="bg-accent-soft text-accent" />
             <Stat icon="flame" value={streak} label={t('carerapp.streak')} tone="bg-gold-soft text-gold-text" />
             <Stat icon="heart" value={bp ? `${bp.systolic}/${bp.diastolic}` : '—'} label={t('carerapp.bp')} tone="bg-danger-bg text-danger" />

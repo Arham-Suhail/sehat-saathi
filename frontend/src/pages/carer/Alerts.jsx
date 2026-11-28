@@ -145,7 +145,7 @@ function AlertCard({ a, onRead, onReview }) {
               {busy ? t('common.loading') : t('alerts.read')}
             </button>
           )}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-[1fr_auto] gap-2">
           <Link to={`/carer/elder/${a.elder_id}`} className="app-btn app-btn--secondary app-btn--sm">
             {t('alerts.open_dash')}
           </Link>
@@ -153,9 +153,11 @@ function AlertCard({ a, onRead, onReview }) {
             href={`https://wa.me/?text=${encodeURIComponent(shareText(a))}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="app-btn app-btn--secondary app-btn--sm"
+            aria-label={t('share.whatsapp')}
+            className="app-btn app-btn--secondary app-btn--sm px-4"
           >
-            WhatsApp
+            <Icon name="chat" size={20} />
+            {t('share.short')}
           </a>
           </div>
         </div>
