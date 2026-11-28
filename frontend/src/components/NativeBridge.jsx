@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { App } from '@capacitor/app';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { api } from '../api/client';
 import { isNative } from '../lib/native';
 import { cancelAlarm, snoozeAlarm } from '../lib/nativeAlarms';
@@ -21,14 +23,12 @@ export default function NativeBridge() {
     const subs = [];
     let alive = true;
     (async () => {
-      const { App } = await import('@capacitor/app');
       const back = await App.addListener('backButton', ({ canGoBack }) => {
         const p = path.current.replace(/\/$/, '') || '/';
         if (p === '/' || TAB_ROOTS.includes(p)) App.minimizeApp();
         else if (canGoBack) nav(-1);
         else nav('/', { replace: true });
       });
-      const { LocalNotifications } = await import('@capacitor/local-notifications');
       const action = await LocalNotifications.addListener('localNotificationActionPerformed', async ({ actionId, notification }) => {
         const extra = notification?.extra || {};
         if (actionId === 'taken' && extra.reminderId) {

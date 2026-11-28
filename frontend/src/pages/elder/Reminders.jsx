@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BigButton, ErrorText, Notice, TopBar, fmtDay, fmtTime } from '../../components/ui';
 import { isIosNotInstalled, usePush } from '../../hooks/usePush';
+import { isNative } from '../../lib/native';
+import { alarmPermission, ensureAlarmSetup } from '../../lib/nativeAlarms';
 import { notificationsSupported } from '../../hooks/useReminderEngine';
 import { t } from '../../i18n/useT';
 import { useReminders } from './ElderLayout';
@@ -21,8 +23,37 @@ function NotificationToggle() {
   );
 }
 
+// Android app: native alarms (scheduled by the reminder engine). Shows whether they can ring.
+function NativeAlarmStatus() {
+  const { refresh } = useReminders();
+  const [perm, setPerm] = useState('loading');
+  useEffect(() => {
+    alarmPermission().then(setPerm);
+  }, []);
+  if (perm === 'loading') return null;
+  if (perm === 'granted') return <Notice kind="success">🔔 {t('push.elder.enabled')}</Notice>;
+  if (perm === 'denied') return <Notice kind="warning">{t('native.denied')}</Notice>;
+  return (
+    <BigButton
+      variant="secondary"
+      onClick={async () => {
+        const ok = await ensureAlarmSetup(true);
+        setPerm(ok ? 'granted' : await alarmPermission());
+        if (ok) refresh();
+      }}
+    >
+      {t('push.elder.on')}
+    </BigButton>
+  );
+}
+
 // Web Push when available (alarm even with the app closed); otherwise in-app notifications.
 function AlarmToggle() {
+  if (isNative()) return <NativeAlarmStatus />;
+  return <WebAlarmToggle />;
+}
+
+function WebAlarmToggle() {
   const push = usePush();
   if (push.state === 'on') return <Notice kind="success">🔔 {t('push.elder.enabled')}</Notice>;
   if (push.state === 'denied') return <Notice kind="warning">{t('push.denied')}</Notice>;
@@ -85,7 +116,7 @@ export default function Reminders() {
       <h1>{t('rem.title')}</h1>
       {state?.saved ? <Notice kind="success">✓ {t('confirm.saved')}</Notice> : null}
       <AlarmToggle />
-      <p className="muted small">{t('rem.tab_note')}</p>
+      {isNative() ? null : <p className="muted small">{t('rem.tab_note')}</p>}
       <ErrorText>{err || error}</ErrorText>
 
       {reminders.length === 0 ? (

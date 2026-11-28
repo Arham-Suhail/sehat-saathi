@@ -474,5 +474,6 @@
   "native.channel": "دوا کے الارم",
   "native.channel.desc": "خوراک کا وقت ہونے پر بجتا ہے",
   "native.action.taken": "✓ لے لی",
-  "native.action.snooze": "10 منٹ بعد یاد دلائیں"
+  "native.action.snooze": "10 منٹ بعد یاد دلائیں",
+  "native.denied": "الارم بند ہیں۔ فون کی سیٹنگز ← ایپس ← صحت ساتھی ← نوٹیفکیشنز میں جا کر آن کریں۔"
 }

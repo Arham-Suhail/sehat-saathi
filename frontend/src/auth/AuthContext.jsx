@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { Navigate, useLocation } from 'react-router-dom';
 import { TOKEN_KEY, api, getToken, setToken, setUnauthorizedHandler } from '../api/client';
 import { disablePushForLogout } from '../hooks/usePush';
+import { cancelAllAlarms } from '../lib/nativeAlarms';
 
 const AuthContext = createContext(null);
 
@@ -21,10 +22,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  // Explicit logout also stops this browser's push alerts (shared phones). An expired token
-  // (401) only clears the session: an elder's dose alarms keep working until they log out.
+  // Explicit logout also stops this browser's push alerts and, in the Android app, every native dose
+  // alarm (shared phones). An expired token (401) only clears the session: an elder's dose alarms
+  // keep working until they log out.
   const logout = useCallback(() => {
-    disablePushForLogout().finally(clearSession);
+    Promise.allSettled([disablePushForLogout(), cancelAllAlarms()]).finally(clearSession);
   }, [clearSession]);
 
   useEffect(() => {

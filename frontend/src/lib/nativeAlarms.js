@@ -5,13 +5,16 @@
    "Remind me in 10 min" buttons. Website: does nothing (it uses Web Push instead). */
 import { st } from '../i18n/server';
 import { t } from '../i18n/useT';
+import { LocalNotifications as LN } from '@capacitor/local-notifications';
 import { isNative } from './native';
 
 const CHANNEL = 'doses';
 const MAX_ALARMS = 60; // Android allows ~500 per app; a week of doses is far below this
-let setup = null;
+// First sync after each app start re-creates every alarm: a force-stop, app update or some OEM
+// battery savers wipe Android's alarms while the plugin still lists them as pending.
+let fullResync = true;
 
-const plugin = () => import('@capacitor/local-notifications').then((m) => m.LocalNotifications);
+// NB: Capacitor plugin objects are proxies that look "thenable": never return one from a promise.
 
 /** Stable positive 31-bit id from a reminder id (Android notification ids are ints). */
 export function alarmId(reminderId) {
@@ -20,13 +23,34 @@ export function alarmId(reminderId) {
   return (Math.abs(h) % 2_000_000_000) + 1;
 }
 
-export function ensureAlarmSetup() {
-  if (!isNative()) return Promise.resolve(false);
-  if (!setup) {
-    setup = (async () => {
-      const LN = await plugin();
-      let perm = await LN.checkPermissions();
-      if (perm.display !== 'granted') perm = await LN.requestPermissions();
+/** 'granted' | 'denied' | 'prompt' (not asked yet / can ask again). */
+export async function alarmPermission() {
+  if (!isNative()) return 'denied';
+  try {
+    const p = await LN.checkPermissions();
+    return p.display === 'granted' ? 'granted' : p.display === 'denied' ? 'denied' : 'prompt';
+  } catch {
+    return 'denied';
+  }
+}
+
+let askedThisSession = false;
+let channelReady = false;
+
+/** True when alarms can ring. Asks for the notification permission at most once per app start
+    (or again when the user taps "turn on alarms"); re-checks every time, so turning it on later in
+    phone Settings starts the alarms on the next refresh. */
+export async function ensureAlarmSetup(again = false) {
+  if (!isNative()) return false;
+  try {
+    let perm = await LN.checkPermissions();
+    if (perm.display !== 'granted' && (again || !askedThisSession)) {
+      askedThisSession = true;
+      perm = await LN.requestPermissions();
+    }
+    if (perm.display !== 'granted') return false;
+    if (!channelReady) {
+      channelReady = true;
       await LN.createChannel({
         id: CHANNEL,
         name: t('native.channel'),
@@ -48,10 +72,11 @@ export function ensureAlarmSetup() {
           },
         ],
       }).catch(() => {});
-      return perm.display === 'granted';
-    })().catch(() => false);
+    }
+    return true;
+  } catch {
+    return false;
   }
-  return setup;
 }
 
 function toAlarm(r, at) {
@@ -74,30 +99,42 @@ function toAlarm(r, at) {
 export async function syncAlarms(reminders) {
   if (!isNative() || !Array.isArray(reminders)) return;
   if (!(await ensureAlarmSetup())) return;
-  const LN = await plugin();
   const now = Date.now();
   const wanted = reminders
     .filter((r) => r.status === 'pending' && new Date(r.scheduled_at).getTime() > now + 5_000)
     .slice(0, MAX_ALARMS);
   const wantedIds = new Set(wanted.map((r) => alarmId(r.id)));
   const { notifications: pending } = await LN.getPending();
-  const stale = pending.filter((n) => !wantedIds.has(n.id) && !n.extra?.snoozed).map((n) => ({ id: n.id }));
+  const stale = pending
+    .filter((n) => (fullResync || !wantedIds.has(n.id)) && !n.extra?.snoozed)
+    .map((n) => ({ id: n.id }));
   if (stale.length) await LN.cancel({ notifications: stale });
-  const have = new Set(pending.map((n) => n.id));
+  const have = fullResync ? new Set() : new Set(pending.map((n) => n.id));
+  fullResync = false;
   const add = wanted.filter((r) => !have.has(alarmId(r.id))).map((r) => toAlarm(r, new Date(r.scheduled_at)));
   if (add.length) await LN.schedule({ notifications: add });
 }
 
+/** Logout on a shared phone: no more dose alarms for the account that left. */
+export async function cancelAllAlarms() {
+  if (!isNative()) return;
+  try {
+    const { notifications } = await LN.getPending();
+    if (notifications.length) await LN.cancel({ notifications: notifications.map((n) => ({ id: n.id })) });
+  } catch {
+    /* nothing scheduled */
+  }
+  fullResync = true;
+}
+
 export async function cancelAlarm(reminderId) {
   if (!isNative()) return;
-  const LN = await plugin();
   await LN.cancel({ notifications: [{ id: alarmId(reminderId) }] }).catch(() => {});
 }
 
 /** "Remind me in 10 min" from the notification itself. */
 export async function snoozeAlarm(extra) {
   if (!isNative() || !extra?.reminderId) return;
-  const LN = await plugin();
   const r = { id: `${extra.reminderId}:snooze`, medicine_name: extra.name, dose: extra.dose };
   const n = toAlarm(r, new Date(Date.now() + 10 * 60_000));
   n.extra = { ...extra, snoozed: true };

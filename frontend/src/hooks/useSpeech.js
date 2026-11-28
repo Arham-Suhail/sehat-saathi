@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toRoman } from '../i18n/translit';
 import { getLang, t } from '../i18n/useT';
+import { SpeechRecognition as SRN } from '@capacitor-community/speech-recognition';
 import { isNative } from '../lib/native';
 
 const SPEECH_LANG = { ur: 'ur-PK', en: 'en-IN' };
@@ -13,7 +14,6 @@ const SPEECH_LANG = { ur: 'ur-PK', en: 'en-IN' };
 const SR = typeof window !== 'undefined' ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 
 const NATIVE = typeof window !== 'undefined' && isNative();
-const nativeSR = () => import('@capacitor-community/speech-recognition').then((m) => m.SpeechRecognition);
 
 export function speechSupported() {
   return NATIVE || Boolean(SR);
@@ -33,8 +33,7 @@ export function useSpeech({ lang, onFinal } = {}) {
   const [nativeOk, setNativeOk] = useState(NATIVE);
   useEffect(() => {
     if (!NATIVE) return;
-    nativeSR()
-      .then((SRN) => SRN.available())
+    SRN.available()
       .then((r) => setNativeOk(Boolean(r?.available)))
       .catch(() => setNativeOk(false));
   }, []);
@@ -42,7 +41,6 @@ export function useSpeech({ lang, onFinal } = {}) {
   const startNative = useCallback(async () => {
     setError(null);
     try {
-      const SRN = await nativeSR();
       const perm = await SRN.requestPermissions();
       if (perm?.speechRecognition && perm.speechRecognition !== 'granted') {
         setError(t('mic.denied'));

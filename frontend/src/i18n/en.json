@@ -474,5 +474,6 @@
   "native.channel": "Medicine alarms",
   "native.channel.desc": "Rings when it is time for a dose",
   "native.action.taken": "✓ Taken",
-  "native.action.snooze": "Remind in 10 min"
+  "native.action.snooze": "Remind in 10 min",
+  "native.denied": "Alarms are blocked. Open phone Settings → Apps → Sehat Saathi → Notifications and turn them on."
 }
