@@ -18,6 +18,8 @@ const rise = (delay) => ({
 });
 
 export default function AppWelcome() {
+  // Short screens or large phone font sizes: a smaller Chotu so everything fits without scrolling.
+  const chotuSize = typeof window !== 'undefined' && window.innerHeight < 820 ? 124 : 168;
   const chips = [
     ['alarm', t('app.welcome.chip.reminders')],
     ['chat', t('app.welcome.chip.checkin')],
@@ -25,7 +27,7 @@ export default function AppWelcome() {
   ];
   return (
     <MotionConfig reducedMotion="user">
-      <main className="app-screen relative isolate flex h-dvh flex-col overflow-hidden bg-bg px-5 text-ink">
+      <main className="app-screen relative isolate flex min-h-dvh flex-col overflow-x-hidden bg-bg px-5 text-ink">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute left-1/2 top-[22%] h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,var(--glow-teal),transparent_68%)]" />
           <div className="absolute -right-24 top-[46%] h-72 w-72 rounded-full bg-[radial-gradient(circle,var(--glow-gold),transparent_70%)]" />
@@ -36,14 +38,14 @@ export default function AppWelcome() {
           <LangToggle />
         </header>
 
-        <section className="flex flex-1 flex-col items-center justify-center text-center">
+        <section className="flex flex-1 flex-col items-center justify-center py-4 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 160, damping: 16, delay: 0.05 }}
           >
             <ChotuBoundary>
-              <ChotuAgent state="idle" size={168} />
+              <ChotuAgent state="idle" size={chotuSize} />
             </ChotuBoundary>
           </motion.div>
           <motion.h1 {...rise(0.2)} className="m-0 mt-2 font-serif text-[2.6rem] font-semibold leading-tight text-ink">
@@ -52,7 +54,7 @@ export default function AppWelcome() {
           <motion.p {...rise(0.3)} className="m-0 mt-2 max-w-[22rem] text-balance text-[1.3rem] leading-snug text-muted">
             {t('app.tagline')}
           </motion.p>
-          <motion.ul {...rise(0.4)} className="m-0 mt-6 flex list-none flex-wrap justify-center gap-2 p-0">
+          <motion.ul {...rise(0.4)} className="m-0 mt-5 flex list-none flex-wrap justify-center gap-2 p-0">
             {chips.map(([icon, text]) => (
               <li key={icon} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[1.05rem] font-bold text-accent shadow-soft">
                 <Icon name={icon} size={18} />
