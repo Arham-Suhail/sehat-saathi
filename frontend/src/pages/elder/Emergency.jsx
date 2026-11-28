@@ -6,6 +6,7 @@ import Icon from '../../components/Icon';
 import { BigButton, ErrorText, Field, Notice, TopBar } from '../../components/ui';
 import { useEmergencyContact } from '../../hooks/useElderData';
 import { t } from '../../i18n/useT';
+import { EmergencyNumbers, NearbyFinder, ShareLocation } from '../../components/EmergencyExtras';
 
 const PHONE_RE = /^\+?[0-9][0-9 -]{5,18}[0-9]$/;
 
@@ -13,12 +14,15 @@ export default function Emergency() {
   const { contact, setContact } = useEmergencyContact();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [name2, setName2] = useState('');
+  const [phone2, setPhone2] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [msg, setMsg] = useState(null);
 
   const digits = phone.replace(/\D/g, '').length;
-  const valid = name.trim().length > 0 && PHONE_RE.test(phone.trim()) && digits >= 7 && digits <= 15;
+  const ok2 = !phone2.trim() || (PHONE_RE.test(phone2.trim()) && phone2.replace(/\D/g, '').length >= 7);
+  const valid = name.trim().length > 0 && PHONE_RE.test(phone.trim()) && digits >= 7 && digits <= 15 && ok2;
 
   const save = async (e) => {
     e.preventDefault();
@@ -27,7 +31,7 @@ export default function Emergency() {
     setErr(null);
     setMsg(null);
     try {
-      const c = await api('/emergency-contact', { method: 'PUT', json: { name: name.trim(), phone: phone.trim() } });
+      const c = await api('/emergency-contact', { method: 'PUT', json: { name: name.trim(), phone: phone.trim(), ...(phone2.trim() ? { phone2: phone2.trim(), name2: name2.trim() || null } : {}) } });
       setContact(c);
       // The saved number is shown in the card above; empty the form for a next change.
       setName('');
@@ -83,6 +87,11 @@ export default function Emergency() {
             <p className="m-0 whitespace-nowrap text-[1.3rem] font-bold text-ink" dir="ltr">
               {contact.phone}
             </p>
+            {contact.phone2 ? (
+              <p className="m-0 mt-1 text-[1.1rem] text-ink">
+                {t('em.second')}: <span dir="auto">{contact.name2}</span> <span dir="ltr">{contact.phone2}</span>
+              </p>
+            ) : null}
           </div>
         </section>
       ) : null}
@@ -115,6 +124,24 @@ export default function Emergency() {
             onChange={(e) => setPhone(e.target.value)}
           />
         </Field>
+        <p className="m-0 mt-2 text-[1.15rem] font-bold">{t('em.second.title')}</p>
+        <p className="m-0 text-[1rem] text-muted">{t('em.second.hint')}</p>
+        <Field id="em-name2" label={t('emergency.name')}>
+          <input id="em-name2" className="input" value={name2} maxLength={40} onChange={(e) => setName2(e.target.value)} />
+        </Field>
+        <Field id="em-phone2" label={t('emergency.phone')}>
+          <input
+            id="em-phone2"
+            className="input"
+            dir="ltr"
+            type="tel"
+            inputMode="tel"
+            value={phone2}
+            maxLength={20}
+            aria-invalid={!ok2}
+            onChange={(e) => setPhone2(e.target.value)}
+          />
+        </Field>
         <div aria-live="polite">
           {msg ? <Notice kind="success">{msg}</Notice> : null}
           <ErrorText>{err}</ErrorText>
@@ -129,6 +156,9 @@ export default function Emergency() {
           {t('emergency.remove')}
         </BigButton>
       ) : null}
+      <ShareLocation contact={contact} />
+      <EmergencyNumbers />
+      <NearbyFinder />
       <Notice kind="info">{t('emergency.note')}</Notice>
     </main>
   );

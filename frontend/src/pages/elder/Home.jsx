@@ -23,6 +23,8 @@ import { getLang, t } from '../../i18n/useT';
 import { isAppMode } from '../../lib/appMode';
 import { dayOffset } from '../../lib/days';
 import { useReminders } from './ElderLayout';
+import { ImOkCard, MessagesCard, TipOfDay, Tutorial, WeekSummary } from '../../components/HomeExtras';
+import { usePrefs } from '../../lib/prefs';
 
 const pkDate = (d) =>
   new Intl.DateTimeFormat(getLang() === 'ur' ? 'ur-PK' : 'en-PK', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Karachi' }).format(d);
@@ -112,6 +114,7 @@ export default function ElderHome() {
   const { contact } = useEmergencyContact();
   const [meds, setMeds] = useState([]);
   const [meetings, setMeetings] = useState([]);
+  const { simple } = usePrefs(); // Simple mode: only the dose, Chotu and Help
 
   useEffect(() => {
     api('/medicines').then(setMeds).catch(() => {});
@@ -129,6 +132,7 @@ export default function ElderHome() {
   const checking = meds.filter((m) => m.review_state === 'open');
   const meeting = meetings.find((m) => m.status === 'scheduled' && new Date(m.starts_at).getTime() > now - 3_600_000);
   const tel = contact?.phone?.replace(/[^\d+]/g, '');
+  const tel2 = contact?.phone2?.replace(/[^\d+]/g, '');
 
   return (
     <MotionConfig reducedMotion="user">
@@ -147,7 +151,9 @@ export default function ElderHome() {
 
         <motion.div variants={item}>
           {due ? (
-            <DoseCard reminder={due} onAct={act} />
+            <div className="dose-pulse">
+              <DoseCard reminder={due} onAct={act} />
+            </div>
           ) : (
             <section className="card-ios p-5" aria-labelledby="next-h">
               <h2 id="next-h" className="m-0 text-[1.05rem] font-semibold text-muted">
@@ -174,7 +180,13 @@ export default function ElderHome() {
           )}
         </motion.div>
 
-        {checking.length ? (
+        {!simple ? (
+          <motion.div variants={item}>
+            <MessagesCard />
+          </motion.div>
+        ) : null}
+
+        {checking.length && !simple ? (
           <motion.div variants={item} role="status" className="flex items-start gap-3 rounded-[22px] bg-warning-bg px-4 py-4 text-warning-text">
             <Icon name="family" size={26} className="shrink-0" />
             <p className="m-0 text-[1.15rem] font-semibold leading-snug">
@@ -183,7 +195,7 @@ export default function ElderHome() {
           </motion.div>
         ) : null}
 
-        {meeting ? (
+        {meeting && !simple ? (
           <motion.div variants={item}>
             <MeetingMini meeting={meeting} to="/elder/meetings" />
           </motion.div>
@@ -206,8 +218,28 @@ export default function ElderHome() {
           ) : (
             <Row to="/elder/emergency" tone="danger" icon={<Icon name="phone" size={24} />} title={t('home.madad.setup')} sub={t('home.madad.setup.sub')} />
           )}
-          <Row to="/elder/upload" tone="neutral" icon={<Icon name="camera" size={24} />} title={t('home.upload')} sub={t('home.upload.sub')} />
+          {tel2 ? (
+            <Row href={`tel:${tel2}`} tone="neutral" icon={<Icon name="phone" size={24} />} title={t('home.madad2')} sub={t('home.madad.to', { name: contact.name2 })} />
+          ) : null}
+          {!simple ? (
+            <Row to="/elder/upload" tone="neutral" icon={<Icon name="camera" size={24} />} title={t('home.upload')} sub={t('home.upload.sub')} />
+          ) : null}
         </motion.div>
+
+        {!simple ? (
+          <>
+            <motion.div variants={item}>
+              <ImOkCard />
+            </motion.div>
+            <motion.div variants={item}>
+              <WeekSummary userId={user.id} />
+            </motion.div>
+            <motion.div variants={item}>
+              <TipOfDay />
+            </motion.div>
+          </>
+        ) : null}
+        <Tutorial />
 
         {isAppMode() ? (
           <motion.div variants={item}>

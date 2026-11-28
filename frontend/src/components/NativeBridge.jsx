@@ -49,6 +49,14 @@ export default function NativeBridge() {
           nav('/carer/alerts');
           return;
         }
+        if (extra.kind === 'vitals') {
+          nav('/elder/vitals');
+          return;
+        }
+        if (extra.kind === 'test') {
+          nav('/elder');
+          return;
+        }
         if (extra.kind === 'meeting') {
           nav(path.current.startsWith('/carer') ? '/carer/meetings' : '/elder/meetings');
           return;

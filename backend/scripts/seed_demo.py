@@ -93,7 +93,17 @@ async def main(reset: bool) -> None:
         return
     if existing:
         ids = [u["_id"] for u in existing]
-        for coll in ("medicines", "reminders", "checkins", "vitals", "invites", "alerts", "prescriptions"):
+        for coll in (
+            "medicines",
+            "reminders",
+            "checkins",
+            "vitals",
+            "invites",
+            "alerts",
+            "prescriptions",
+            "messages",
+            "views",
+        ):
             await db[coll].delete_many({"elder_id": {"$in": ids}})
         await db.meetings.delete_many({"member_ids": {"$in": ids}})
         await db.users.delete_many({"_id": {"$in": ids}})
@@ -337,6 +347,75 @@ async def _seed_care(db, users: dict, now: datetime) -> None:
             "status": "scheduled",
             "responses": {str(family): "accepted"},
             "created_at": now,
+        }
+    )
+    # A note from the doctor on the elder's Home, a medicine running low (refill), a BP reading above
+    # the general range (vitals alert) and an audit entry.
+    await db.messages.insert_one(
+        {
+            "elder_id": elder_id,
+            "text": "Roz shaam 15 minute walk karein. Shabash, dawai waqt par le rahi hain!",
+            "from_id": doctor,
+            "from_name": NAMES["doctor"],
+            "from_role": "doctor",
+            "hearted_at": None,
+            "created_at": now - timedelta(hours=3),
+        }
+    )
+    panadol = await db.medicines.find_one({"elder_id": elder_id, "name": {"$regex": "^Panadol"}})
+    if panadol:
+        await db.medicines.update_one(
+            {"_id": panadol["_id"]},
+            {
+                "$set": {"doses_left": 5, "stock_set_at": now, "refill_alerted": True},
+                "$push": {
+                    "notes": {
+                        "text": "Khane ke baad lene se pet theek rehta hai",
+                        "by_name": NAMES["family"],
+                        "by_role": "family",
+                        "at": now - timedelta(days=1),
+                    }
+                },
+            },
+        )
+        await raise_alert(
+            db,
+            elder_id,
+            "refill",
+            {"medicine_id": panadol["_id"], "medicine_name": panadol["name"], "doses_left": 5},
+            dedupe_key=f"refill:{panadol['_id']}:seed",
+            now=now - timedelta(minutes=30),
+        )
+    vit = await db.vitals.insert_one(
+        {
+            "elder_id": elder_id,
+            "type": "bp",
+            "systolic": 168,
+            "diastolic": 102,
+            "value": None,
+            "unit": "mmHg",
+            "measured_at": now - timedelta(hours=2),
+            "note": None,
+            "entered_by": elder_id,
+            "entered_by_role": "elder",
+            "created_at": now - timedelta(hours=2),
+        }
+    )
+    await raise_alert(
+        db,
+        elder_id,
+        "vitals",
+        {"vital_id": vit.inserted_id, "type": "bp", "flag": "high", "value": "168/102 mmHg"},
+        dedupe_key=f"vitals:{vit.inserted_id}",
+        now=now - timedelta(hours=2),
+    )
+    await db.views.insert_one(
+        {
+            "elder_id": elder_id,
+            "viewer_id": doctor,
+            "viewer_name": NAMES["doctor"],
+            "viewer_role": "doctor",
+            "at": now - timedelta(hours=5),
         }
     )
 

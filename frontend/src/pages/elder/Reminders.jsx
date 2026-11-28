@@ -11,6 +11,13 @@ import { useReminders } from './ElderLayout';
 import { st } from '../../i18n/server';
 import MyMedicines from '../../components/MyMedicines';
 import { dayOffset } from '../../lib/days';
+import { speak } from '../../lib/speak';
+
+const SLOT = (iso) => {
+  const h = Number(new Date(iso).toLocaleString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Asia/Karachi' }));
+  return h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 16 ? 'afternoon' : h >= 16 && h < 20 ? 'evening' : 'night';
+};
+
 
 function NotificationToggle() {
   const [perm, setPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'unsupported'));
@@ -80,8 +87,10 @@ function groupByDay(reminders) {
     const offset = dayOffset(r.scheduled_at);
     const label = offset === 0 ? t('home.date.today') : offset === 1 ? t('day.tomorrow') : fmtDay(r.scheduled_at);
     const last = groups[groups.length - 1];
-    if (last && last.label === label) last.items.push(r);
-    else groups.push({ offset, label, items: [r] });
+    // Today is split into Morning / Afternoon / Evening / Night (like a pill box).
+    const full = offset === 0 ? `${label} · ${t(`slot.${SLOT(r.scheduled_at)}`)}` : label;
+    if (last && last.label === full) last.items.push(r);
+    else groups.push({ offset, label: full, items: [r] });
   }
   return groups;
 }
@@ -110,7 +119,24 @@ export default function Reminders() {
   return (
     <main className="page flex flex-col gap-4">
       <TopBar back="/elder" title={t('rem.title')} />
-      <h1 className="m-0">{t('rem.title')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="m-0">{t('rem.title')}</h1>
+        <button
+          type="button"
+          onClick={() => {
+            const left = reminders.filter((r) => r.status === 'pending' && dayOffset(r.scheduled_at) === 0);
+            speak(
+              left.length
+                ? t('speak.list', { list: left.map((r) => `${fmtTime(r.scheduled_at)} ${st(r.medicine_name)}`).join(', ') })
+                : t('speak.list.none'),
+              { force: true },
+            );
+          }}
+          className="app-btn app-btn--secondary app-btn--sm pressable shrink-0 whitespace-nowrap"
+        >
+          🔊 {t('rem.read')}
+        </button>
+      </div>
       {state?.saved === 'asked' ? <Notice kind="success">✓ {t('confirm.asked')}</Notice> : state?.saved ? <Notice kind="success">✓ {t('confirm.saved')}</Notice> : null}
       <ErrorText>{error}</ErrorText>
       {due ? <DoseCard reminder={due} onAct={act} /> : null}

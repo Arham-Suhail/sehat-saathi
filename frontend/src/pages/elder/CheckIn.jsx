@@ -38,6 +38,17 @@ export default function CheckIn() {
   const [err, setErr] = useState(null);
   const [result, setResult] = useState(null);
   const [usedSpeech, setUsedSpeech] = useState(false);
+  // Chotu remembers today only: "Earlier today you said you felt tired" (facts from today's check-in).
+  const [earlier, setEarlier] = useState(null);
+  useEffect(() => {
+    api('/checkins?limit=10')
+      .then((list) => {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+        const c = list.find((x) => x.channel !== 'ok' && new Date(x.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }) === today);
+        if (c) setEarlier(c.mood);
+      })
+      .catch(() => {});
+  }, []);
 
   const onFinal = useCallback((t) => {
     setUsedSpeech(true);
@@ -102,7 +113,9 @@ export default function CheckIn() {
       </div>
 
       <div className="bubbles" aria-live="polite">
-        <div className="bubble bubble--ai">{vapi.live && vapi.assistantLine ? script(vapi.assistantLine) : t('checkin.greeting')}</div>
+        <div className="bubble bubble--ai">
+          {vapi.live && vapi.assistantLine ? script(vapi.assistantLine) : earlier ? t(`checkin.earlier.${earlier}`) : t('checkin.greeting')}
+        </div>
         {vapi.transcript
           .filter((x) => x.role === 'elder')
           .slice(-1)
@@ -134,6 +147,19 @@ export default function CheckIn() {
           placeholder={t('checkin.placeholder')}
           disabled={vapiBusy}
         />
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('checkin.quick')}>
+          {['good', 'tired', 'unwell'].map((k) => (
+            <button
+              key={k}
+              type="button"
+              disabled={vapiBusy || busy}
+              onClick={() => setText(t(`checkin.chip.${k}`))}
+              className="chip-ios pressable min-h-12 px-4 text-[1.1rem]"
+            >
+              {t(`checkin.chip.${k}`)}
+            </button>
+          ))}
+        </div>
         {speech.listening && speech.interim ? <p className="muted">🎤 {speech.interim}</p> : null}
         <ErrorText>{speech.error}</ErrorText>
         {speech.supported ? (

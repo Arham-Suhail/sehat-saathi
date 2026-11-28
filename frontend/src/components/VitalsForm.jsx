@@ -3,7 +3,8 @@ import { api } from '../api/client';
 import { t } from '../i18n/useT';
 import { BigButton, ErrorText, Field, Notice } from './ui';
 
-const TYPES = ['bp', 'sugar', 'heart_rate'];
+const TYPES = ['bp', 'sugar', 'heart_rate', 'weight', 'spo2', 'temperature'];
+const PH = { sugar: '110', heart_rate: '72', weight: '65', spo2: '97', temperature: '98.6' };
 
 /** Manual vitals entry. elderId is passed when a family member enters for a linked elder. */
 export default function VitalsForm({ elderId, onSaved }) {
@@ -14,6 +15,7 @@ export default function VitalsForm({ elderId, onSaved }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [ok, setOk] = useState(false);
+  const [flag, setFlag] = useState(null);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -31,6 +33,7 @@ export default function VitalsForm({ elderId, onSaved }) {
       setDia('');
       setValue('');
       setOk(true);
+      setFlag(saved.flag || null);
       onSaved?.(saved);
     } catch (e2) {
       setErr(e2.message);
@@ -64,13 +67,14 @@ export default function VitalsForm({ elderId, onSaved }) {
           </Field>
         </div>
       ) : (
-        <Field id="val" label={type === 'sugar' ? t('vitals.sugar') : t('vitals.pulse')}>
+        <Field id="val" label={type === 'sugar' ? t('vitals.sugar') : type === 'heart_rate' ? t('vitals.pulse') : t(`vitals.label.${type}`)}>
           <input id="val" className="input" type="number" inputMode="decimal" min={10} max={600} value={value}
-            onChange={(e) => setValue(e.target.value)} placeholder={type === 'sugar' ? '110' : '72'} />
+            onChange={(e) => setValue(e.target.value)} placeholder={PH[type]} />
         </Field>
       )}
       <ErrorText>{err}</ErrorText>
       {ok ? <Notice kind="success">✓ {t('vitals.saved')}</Notice> : null}
+      {flag ? <Notice kind="warning">⚠️ {t('vitals.flag', { dir: t(`vitals.flag.${flag}`) })}</Notice> : null}
       <BigButton type="submit" disabled={busy || !ready}>
         {busy ? t('common.saving') : t('common.save')}
       </BigButton>

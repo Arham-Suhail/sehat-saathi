@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect } from 'react';
 import DoseCard from './DoseCard';
 import { t } from '../i18n/useT';
+import { st } from '../i18n/server';
+import { speak, stopSpeaking } from '../lib/speak';
 
 export default function ReminderAlert({ reminder, onAct, onClose }) {
   useEffect(() => {
@@ -15,6 +17,9 @@ export default function ReminderAlert({ reminder, onAct, onClose }) {
     } catch {
       /* ignore */
     }
+    // Chotu says it out loud, for elders who can't read the screen well.
+    speak(t('speak.dose', { name: st(reminder.medicine_name), dose: reminder.dose || '' }));
+    return () => stopSpeaking();
   }, [reminder?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return createPortal(

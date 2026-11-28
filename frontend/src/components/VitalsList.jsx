@@ -15,6 +15,11 @@ export default function VitalsList({ vitals }) {
         <li key={v.id} className="spaced" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
           <span>
             <strong>{t(`vitals.short.${v.type}`)}</strong> {vitalText(v)}
+            {v.flag ? (
+              <span className="ms-2 rounded-full bg-warning-bg px-2 py-0.5 text-[0.95rem] font-semibold text-warning-text">
+                {t(`vitals.flag.${v.flag}`)} · {t('vitals.flag.guide')}
+              </span>
+            ) : null}
           </span>
           <span className="muted small">
             {fmtDay(v.measured_at)} {fmtTime(v.measured_at)}

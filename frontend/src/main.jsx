@@ -14,10 +14,12 @@ import { applyAppMode } from './lib/appMode';
 import { applyTheme, watchSystemTheme } from './lib/theme';
 import { handOverSplash, setupNativeChrome } from './lib/native';
 import { applyTextSize } from './lib/textSize';
+import { applyPrefs } from './lib/prefs';
 
 applyLang(getLang()); // set <html lang dir> before the first paint
 applyTheme(); // light / dark, before the first paint (no flash)
 watchSystemTheme();
+applyPrefs(); // high contrast
 applyTextSize(); // Normal / Large / Extra large (More)
 applyAppMode(); // html.is-app inside the Android app / installed PWA
 setupNativeChrome(); // Android app: status bar follows light/dark

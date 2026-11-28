@@ -92,6 +92,16 @@ export default function Landing() {
 
           <FeatureTabs />
           <DayWithChotu />
+          <section aria-labelledby="why-h" className="mx-auto max-w-3xl px-5 py-10 text-center">
+            <h2 id="why-h" className="m-0 text-[1.6rem] font-bold">{t('impact.title')}</h2>
+            <p className="m-0 mt-3 text-[1.25rem]">{t('impact.stat')}</p>
+            <p className="m-0 mt-2 text-[1rem] text-muted">
+              {t('impact.source')}{' '}
+              <a href="https://iris.who.int/handle/10665/42682" target="_blank" rel="noopener noreferrer">
+                WHO, 2003
+              </a>
+            </p>
+          </section>
           <FinalCta />
         </main>
         <LandingFooter />

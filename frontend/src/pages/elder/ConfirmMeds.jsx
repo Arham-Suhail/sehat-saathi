@@ -298,6 +298,8 @@ function toBody(m) {
   };
 }
 
+import { duplicateNames, interactionWarnings } from '../../components/MedExtras';
+
 export default function ConfirmMeds() {
   const { state } = useLocation();
   const nav = useNavigate();
@@ -310,14 +312,19 @@ export default function ConfirmMeds() {
   const [showErrors, setShowErrors] = useState(false);
   const [diagnosis, setDiagnosis] = useState(extraction?.diagnosis_text || '');
 
+  const [existing, setExisting] = useState([]);
   useEffect(() => {
     api('/medicines/schedule-options').then(setOptions).catch(() => setOptions([]));
+    api('/medicines').then(setExisting).catch(() => {});
   }, []);
 
   const update = (key) => (nm) => setMeds((list) => list.map((x) => (x.key === key ? nm : x)));
   const remove = (key) => () => setMeds((list) => list.filter((x) => x.key !== key));
   const active = meds.filter((m) => m.status !== 'stopped');
   const stopped = meds.filter((m) => m.status === 'stopped');
+  // "You already have this" (same name twice) and the small "ask your pharmacist" pair list.
+  const dups = duplicateNames(active.filter((m) => m.name.trim()), existing);
+  const mixes = interactionWarnings([...existing, ...active.filter((m) => m.name.trim())]);
 
   // "I'm not sure": save as it is, no alarms yet; the family / doctor checks and sets the times.
   const save = async (askFamily = false) => {
@@ -368,6 +375,10 @@ export default function ConfirmMeds() {
         </small>
       </div>
 
+      {dups.length ? <Notice kind="warning">⚠️ {t('confirm.duplicate', { names: dups.join(', ') })}</Notice> : null}
+      {mixes.map((w) => (
+        <Notice key={w} kind="warning">⚠️ {w}</Notice>
+      ))}
       {meds.length === 0 ? <p className="muted">{t('confirm.empty')}</p> : null}
       {active.map((m, i) => (
         <MedicineCard key={m.key} med={m} index={i} options={options} onChange={update(m.key)}

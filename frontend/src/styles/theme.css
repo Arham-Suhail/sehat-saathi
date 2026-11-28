@@ -112,3 +112,21 @@
   --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.35), 0 18px 40px rgb(0 0 0 / 0.45);
 }
+
+/* High contrast (More -> High contrast): beyond AA for weak eyesight. Pure white / black, a darker
+   accent and stronger borders. Light theme only (dark is already high contrast). */
+:root[data-contrast]:not([data-theme='dark']) {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #ececec;
+  --text: #000000;
+  --text-muted: #2b2b2b;
+  --accent: #123d32;
+  --accent-soft: #dfe9e5;
+  --success: #0d4d26;
+  --danger: #8c0f08;
+  --warning-text: #4a3100;
+  --border: #4a4a4a;
+  --hairline: rgb(0 0 0 / 0.45);
+  --focus: #000000;
+}

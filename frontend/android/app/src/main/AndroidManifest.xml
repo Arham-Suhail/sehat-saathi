@@ -49,6 +49,11 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- Prescription photo -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Ask (once, user decides) to exempt the app from battery optimisation so alarms ring on time. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- "Send my location" with the Help button (asked only when the elder taps it). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- Android 11+: allow finding the speech recogniser -->

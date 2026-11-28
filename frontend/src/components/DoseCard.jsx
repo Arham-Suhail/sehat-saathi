@@ -46,6 +46,11 @@ export default function DoseCard({ reminder, onAct, label, className = '' }) {
       </h2>
       {reminder.dose || reminder.instructions ? (
         <p className="m-0 mt-1 text-[1.2rem] text-muted" dir="auto">
+          {reminder.meal_timing && ['before', 'after', 'with'].includes(reminder.meal_timing) ? (
+            <span className="me-2 inline-flex rounded-full bg-gold-soft px-2.5 py-0.5 text-[1rem] font-semibold text-gold-text">
+              🍽️ {t(`food.${reminder.meal_timing}`)}
+            </span>
+          ) : null}
           {[reminder.dose, reminder.instructions ? st(reminder.instructions) : null].filter(Boolean).join(' · ')}
         </p>
       ) : null}

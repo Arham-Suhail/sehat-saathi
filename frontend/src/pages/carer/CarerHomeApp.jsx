@@ -45,6 +45,50 @@ function Stat({ icon, value, label, tone }) {
   );
 }
 
+/** "Last active 2 hours ago" from the elder's last app use. */
+function ago(iso) {
+  if (!iso) return null;
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
+  if (m < 10) return t('seen.now');
+  if (m < 60) return t('seen.min', { n: m });
+  if (m < 48 * 60) return t('seen.hours', { n: Math.round(m / 60) });
+  return t('seen.days', { n: Math.round(m / 1440) });
+}
+
+/** Call the elder: their number is saved once on this phone (the server doesn't store it). */
+function CallElder({ e }) {
+  const key = `ss.elderphone.${e.id}`;
+  const [phone, setPhone] = useState(() => localStorage.getItem(key) || '');
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  if (editing)
+    return (
+      <form
+        className="mt-3 flex gap-2"
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          const v = draft.replace(/[^\d+]/g, '');
+          if (v.replace(/\D/g, '').length < 7) return;
+          localStorage.setItem(key, v);
+          setPhone(v);
+          setEditing(false);
+        }}
+      >
+        <input className="input flex-1" type="tel" dir="ltr" inputMode="tel" value={draft} onChange={(ev) => setDraft(ev.target.value)} aria-label={t('call.elder.number', { name: e.name })} placeholder="03xx xxxxxxx" />
+        <button type="submit" className="app-btn app-btn--primary app-btn--sm">{t('common.save')}</button>
+      </form>
+    );
+  return phone ? (
+    <a href={`tel:${phone}`} className="app-btn app-btn--secondary app-btn--sm mt-3 no-underline">
+      <Icon name="phone" size={20} /> {t('call.elder', { name: firstName(e.name) })}
+    </a>
+  ) : (
+    <button type="button" onClick={() => setEditing(true)} className="app-btn app-btn--secondary app-btn--sm mt-3">
+      <Icon name="phone" size={20} /> {t('call.elder.add')}
+    </button>
+  );
+}
+
 function ElderCard({ e }) {
   const d = e.dash;
   const last = d?.checkins?.[0];
@@ -71,6 +115,7 @@ function ElderCard({ e }) {
                   t('chart.no_checkins')
                 )}
               </p>
+              {d?.last_seen ? <p className="m-0 truncate text-[0.95rem] text-muted">{t('seen.label', { when: ago(d.last_seen) })}</p> : null}
             </div>
             {concerns ? (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-danger-bg px-3 py-1 text-[1rem] font-bold text-danger">
@@ -93,8 +138,17 @@ function ElderCard({ e }) {
           </p>
         </Link>
       </motion.div>
+      <CallElder e={e} />
     </motion.li>
   );
+}
+
+// Needs attention first: open urgent alerts, then any open alert, then the rest (name order).
+function sortByAttention(elders, alerts) {
+  if (!elders) return [];
+  const score = (id) =>
+    (alerts || []).filter((a) => a.open && a.elder_id === id).reduce((s, a) => s + (a.severity === 'urgent' ? 100 : 1), 0);
+  return [...elders].sort((a, b) => score(b.id) - score(a.id) || a.name.localeCompare(b.name));
 }
 
 export default function CarerHomeApp() {
@@ -162,7 +216,7 @@ export default function CarerHomeApp() {
           {elders === null ? <div className="h-48 animate-pulse rounded-[28px] bg-surface-alt" aria-label={t('common.loading')} /> : null}
           {elders?.length === 0 ? <p className="m-0 text-[1.15rem] text-muted">{t('carer.none')}</p> : null}
           <motion.ul variants={list} className="m-0 flex list-none flex-col gap-4 p-0">
-            {elders?.map((e) => (
+            {sortByAttention(elders, alerts).map((e) => (
               <ElderCard key={e.id} e={e} />
             ))}
           </motion.ul>

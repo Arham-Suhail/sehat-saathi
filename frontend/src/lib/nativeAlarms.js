@@ -12,14 +12,38 @@ import { isNative } from './native';
 const CHANNEL = 'doses';
 const CARE_CHANNEL = 'care';
 const MAX_ALARMS = 90; // Android allows ~500 per app
-const FOLLOW_UPS = [0, 15, 30]; // minutes after the dose time
+// Minutes after the dose time: rings again every 5 minutes until marked (3 repeats), once more at 30.
+const FOLLOW_UPS = [0, 5, 10, 15, 30];
 // Minutes after an alert first reaches this phone at which it rings (until read / resolved).
 const CARE_REPEAT = {
   concern: [0, 10, 20, 30, 45, 60, 90, 120, 180, 240],
   med_review: [0, 30, 60, 120, 240],
   missed_dose: [0, 30, 90],
   meeting: [0],
+  vitals: [0, 60],
+  low_mood: [0, 240],
+  inactive: [0, 120, 240],
+  refill: [0, 720],
 };
+const URGENT_KINDS = new Set(['concern']);
+
+/** Carer quiet hours (More): non-urgent alerts that fall 22:00-07:00 ring at 07:00 instead. */
+function outOfQuiet(ms) {
+  let quiet = false;
+  try {
+    quiet = JSON.parse(localStorage.getItem('ss_prefs') || '{}').quiet;
+  } catch {
+    /* off */
+  }
+  if (!quiet) return ms;
+  const d = new Date(ms);
+  const h = d.getHours();
+  if (h >= 22) {
+    d.setDate(d.getDate() + 1);
+    d.setHours(7, 0, 0, 0);
+  } else if (h < 7) d.setHours(7, 0, 0, 0);
+  return d.getTime();
+}
 // First sync after each app start re-creates every alarm: a force-stop, app update or some OEM
 // battery savers wipe Android's alarms while the plugin still lists them as pending.
 let fullResync = true;
@@ -167,8 +191,9 @@ export async function syncCareAlarms(alerts, meetings = [], { meetingsOnly = fal
     const start = careSeen.get(a.id);
     const name = a.elder_name || t('alerts.elder');
     (CARE_REPEAT[a.kind] || [0]).forEach((m, k) => {
-      const due = start + m * 60_000;
+      let due = start + m * 60_000;
       if (k > 0 && due < now) return; // that repeat already rang
+      if (!URGENT_KINDS.has(a.kind)) due = outOfQuiet(Math.max(due, now + 3_000));
       wanted.push({
         id: alarmId(`care:${a.id}:${k}`),
         title: t(`native.care.${a.kind}.title`),
@@ -184,6 +209,19 @@ export async function syncCareAlarms(alerts, meetings = [], { meetingsOnly = fal
     });
   }
   for (const m of meetings.filter((x) => x.status === 'scheduled' && x.my_response !== 'declined')) {
+    const dayBefore = new Date(m.starts_at).getTime() - 24 * 3_600_000;
+    if (dayBefore > now + 5_000)
+      wanted.push({
+        id: alarmId(`meet1d:${m.id}`),
+        title: t('native.meeting.tomorrow'),
+        body: t('native.meeting.body', { who: m.organiser?.name || '' }),
+        schedule: { at: new Date(dayBefore), allowWhileIdle: true },
+        channelId: CARE_CHANNEL,
+        smallIcon: 'ic_stat_notify',
+        iconColor: '#2C5F51',
+        autoCancel: true,
+        extra: { kind: 'meeting', meetingId: m.id },
+      });
     const at = new Date(m.starts_at).getTime() - 15 * 60_000;
     if (at <= now + 5_000) continue;
     wanted.push({
@@ -240,4 +278,42 @@ export async function cancelAlarm(reminderId) {
   if (!isNative()) return;
   const ids = FOLLOW_UPS.map((_, k) => ({ id: alarmId(k ? `${reminderId}#${k}` : reminderId) }));
   await LN.cancel({ notifications: ids }).catch(() => {});
+}
+
+/** Demo / test: a real dose alarm in 10 seconds (for the next pending dose, or a sample one), so a
+    judge can see it ring live. Website: returns false (the in-app sheet is shown instead). */
+export async function testAlarmIn10s(reminder) {
+  if (!isNative()) return false;
+  if (!(await ensureAlarmSetup(true))) return false;
+  const r = reminder || { id: 'test', medicine_name: t('demo.sample_med'), dose: '1' };
+  const n = toAlarm({ ...r, id: `test-${Date.now()}` }, new Date(Date.now() + 10_000));
+  n.extra = { kind: 'test' }; // the dose sync leaves it alone; its buttons do nothing on the server
+  await LN.schedule({ notifications: [n] });
+  return true;
+}
+
+/** Daily "measure your BP / sugar" reminder at a fixed time (Vitals screen). null = off. */
+export async function setVitalsReminder(hhmm) {
+  if (!isNative()) return false;
+  const id = alarmId('vitals-daily');
+  await LN.cancel({ notifications: [{ id }] }).catch(() => {});
+  if (!hhmm) return true;
+  if (!(await ensureAlarmSetup(true))) return false;
+  const [hour, minute] = hhmm.split(':').map(Number);
+  await LN.schedule({
+    notifications: [
+      {
+        id,
+        title: t('native.vitals.title'),
+        body: t('native.vitals.body'),
+        schedule: { on: { hour, minute }, repeats: true, allowWhileIdle: true },
+        channelId: CHANNEL,
+        smallIcon: 'ic_stat_notify',
+        iconColor: '#2C5F51',
+        autoCancel: true,
+        extra: { kind: 'vitals' },
+      },
+    ],
+  });
+  return true;
 }

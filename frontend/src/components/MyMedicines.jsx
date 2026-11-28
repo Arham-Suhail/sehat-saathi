@@ -12,6 +12,7 @@ import Alternatives from './Alternatives';
 import SafeBoundary from './SafeBoundary';
 import Icon from './Icon';
 import MedicineEditor from './MedicineEditor';
+import { MedExtras, RxHistory, interactionWarnings } from './MedExtras';
 import { BigButton, ErrorText, Notice, fmtHHMM } from './ui';
 
 function scheduleText(m) {
@@ -90,6 +91,9 @@ export default function MyMedicines({ onChanged }) {
       {meds === null ? <p className="muted">{t('common.loading')}</p> : null}
       {meds?.length === 0 ? <p className="muted">{t('meds.none')}</p> : null}
 
+      {meds?.length ? interactionWarnings(meds).map((w) => (
+        <Notice key={w} kind="warning">⚠️ {w}</Notice>
+      )) : null}
       <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {meds?.map((m) => (
           <li key={m.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
@@ -165,6 +169,7 @@ export default function MyMedicines({ onChanged }) {
             ) : null}
             {asking !== m.id && editing !== m.id ? (
               <SafeBoundary>
+                <MedExtras med={m} onChanged={load} />
                 <Alternatives medicine={m} />
               </SafeBoundary>
             ) : null}
@@ -195,6 +200,9 @@ export default function MyMedicines({ onChanged }) {
       <BigButton variant="secondary" onClick={() => nav('/elder/upload')}>
         📷 {t('meds.add.photo')}
       </BigButton>
+      <SafeBoundary>
+        <RxHistory />
+      </SafeBoundary>
     </section>
   );
 }

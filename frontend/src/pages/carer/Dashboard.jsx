@@ -13,6 +13,8 @@ import Icon from '../../components/Icon';
 import ReviewSheet from '../../components/ReviewSheet';
 import SafeBoundary from '../../components/SafeBoundary';
 import Segmented from '../../components/Segmented';
+import { ExportBar, MessageElder, PrintHeader, WeekCompare } from '../../components/DashExtras';
+import { MedExtras } from '../../components/MedExtras';
 import { BigButton, Disclaimer, ErrorText, TopBar, fmtDay, fmtHHMM, fmtTime } from '../../components/ui';
 import VitalsForm from '../../components/VitalsForm';
 import VitalsList from '../../components/VitalsList';
@@ -94,7 +96,7 @@ function schedule(m) {
   return m.timings.map(fmtHHMM).join(', ');
 }
 
-function MedRow({ m, onReview }) {
+function MedRow({ m, onReview, elderId, onChanged }) {
   return (
     <li className="flex flex-col gap-2 border-b border-[var(--hairline)] py-4 last:border-b-0">
       <div className="flex items-start gap-3">
@@ -135,6 +137,7 @@ function MedRow({ m, onReview }) {
         </p>
       ) : null}
       <SafeBoundary>
+        <MedExtras med={m} elderId={elderId} onChanged={onChanged} />
         <Alternatives medicine={m} />
       </SafeBoundary>
     </li>
@@ -241,6 +244,13 @@ export default function Dashboard() {
           </div>
         </section>
 
+        <PrintHeader d={d} />
+        {d.last_seen ? (
+          <p className="m-0 px-1 text-[1rem] text-muted">{t('seen.label', { when: `${fmtDay(d.last_seen)} ${fmtTime(d.last_seen)}` })}</p>
+        ) : null}
+        <MessageElder elderId={d.elder.id} name={d.elder.name} />
+        <ExportBar d={d} />
+
         {app ? (
           <Segmented
             id="dash"
@@ -264,6 +274,7 @@ export default function Dashboard() {
               <Kpi value={streak} label={t('report.kpi.streak')} tone="text-gold-text" />
               <Kpi value={tot.missed + tot.skipped} label={t('report.kpi.missed')} tone={tot.missed + tot.skipped ? 'text-danger' : 'text-ink'} />
             </motion.div>
+            <WeekCompare w={d.week_compare} />
             {care.open ? (
               <Link to="/carer/alerts" className="flex items-center gap-3 rounded-[20px] bg-danger-bg px-4 py-3 font-semibold text-danger no-underline">
                 <Icon name="bell" size={22} />
@@ -350,7 +361,7 @@ export default function Dashboard() {
               {d.medicines.length === 0 ? <p className="m-0 text-muted">{t('dash.no_meds')}</p> : null}
               <ul className="m-0 list-none p-0">
                 {[...reviews, ...d.medicines.filter((m) => m.review_state !== 'open')].map((m) => (
-                  <MedRow key={m.id} m={m} onReview={setReview} />
+                  <MedRow key={m.id} m={m} onReview={setReview}  elderId={d.elder.id} onChanged={load} />
                 ))}
               </ul>
               <Disclaimer />

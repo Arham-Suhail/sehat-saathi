@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireRole } from './auth/AuthContext';
 import AccountSwitchedNotice from './components/AccountSwitchedNotice';
 import NativeBridge from './components/NativeBridge';
+import PinLock from './components/PinLock';
 import { ForgotPassword, Login, Register } from './pages/Auth';
 import AppWelcome from './pages/AppWelcome';
 import { isAppMode } from './lib/appMode';
@@ -31,6 +32,8 @@ const DeleteAccount = lazy(() => import('./pages/DeleteAccount'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 // Charts (Recharts) only load for carers.
 const Dashboard = lazy(() => import('./pages/carer/Dashboard'));
+const VoiceMode = lazy(() => import('./pages/elder/VoiceMode'));
+const Demo = lazy(() => import('./pages/Demo'));
 
 // Fetch the other screens' code while the phone is idle, so the first tap on a tab is instant.
 if (typeof window !== 'undefined') {
@@ -51,12 +54,14 @@ export default function App() {
     <>
       <AccountSwitchedNotice />
       <NativeBridge />
+      <PinLock />
       <Suspense fallback={<PageSkeleton />}>
       <Routes>
         <Route path="/" element={<StartScreen />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/demo" element={<Demo />} />
         <Route
           path="/account/verify"
           element={
@@ -86,6 +91,7 @@ export default function App() {
           <Route path="emergency" element={<Emergency />} />
           <Route path="alternatives" element={<AlternativesPage />} />
           <Route path="meetings" element={<Meetings />} />
+          <Route path="voice" element={<VoiceMode />} />
         </Route>
 
         <Route

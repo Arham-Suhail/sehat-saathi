@@ -21,14 +21,41 @@ const TONE = {
   med_review: { icon: 'pill', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
   missed_dose: { icon: 'alarm', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
   meeting: { icon: 'calendar', ring: '', chip: 'bg-accent-soft text-accent' },
+  vitals: { icon: 'heart', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
+  low_mood: { icon: 'chat', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
+  inactive: { icon: 'bell', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
+  refill: { icon: 'pill', ring: '', chip: 'bg-accent-soft text-accent' },
 };
+
+/** One-tap WhatsApp share of an alert (generic text, no symptom details). */
+function shareText(a) {
+  return `${t('share.prefix')} ${a.elder_name}: ${t(`share.${a.kind}`)} (${fmtDay(a.created_at)} ${fmtTime(a.created_at)})`;
+}
 
 function AlertBody({ a }) {
   const d = a.data || {};
+  if (a.kind === 'vitals')
+    return (
+      <p className="m-0 text-[1.15rem]">
+        <span className="font-bold">{t(`vitals.short.${d.type}`)}</span> {d.value}{' '}
+        <span className="text-muted">· {t(`vitals.flag.${d.flag}`)}</span>
+        <span className="block text-[1rem] text-muted">{t('alerts.vitals.note')}</span>
+      </p>
+    );
+  if (a.kind === 'low_mood') return <p className="m-0 text-[1.15rem]">{t('alerts.low_mood')}</p>;
+  if (a.kind === 'inactive') return <p className="m-0 text-[1.15rem]">{t('alerts.inactive')}</p>;
+  if (a.kind === 'refill')
+    return (
+      <p className="m-0 text-[1.15rem]">
+        <span className="font-bold" dir="auto">{d.medicine_name}</span> · {t('alerts.refill', { n: d.doses_left })}
+      </p>
+    );
   if (a.kind === 'concern')
     return (
       <>
-        <p className="m-0 text-[1.15rem] font-bold text-danger">{d.reason ? st(d.reason) : t('alerts.concern')}</p>
+        <p className="m-0 text-[1.15rem] font-bold text-danger">
+          {d.reason === 'fall' ? t('alerts.fall') : d.reason ? st(d.reason) : t('alerts.concern')}
+        </p>
         {d.said ? (
           <p className="m-0 mt-1 text-[1.1rem] italic text-muted" dir="auto">
             “{toUrdu(d.said)}”
@@ -121,6 +148,14 @@ function AlertCard({ a, onRead, onReview }) {
           <Link to={`/carer/elder/${a.elder_id}`} className="app-btn app-btn--secondary">
             {t('alerts.open_dash')}
           </Link>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(shareText(a))}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="app-btn app-btn--secondary"
+          >
+            {t('share.whatsapp')}
+          </a>
         </div>
       ) : (
         <p className="m-0 mt-3 text-[1rem] text-muted">{a.resolved_by ? t('alerts.done_by', { name: a.resolved_by }) : t('alerts.done')}</p>

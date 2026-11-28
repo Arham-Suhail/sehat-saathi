@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect } from 'react';
 import { api } from '../../api/client';
 import AppTabBar from '../../components/AppTabBar';
 import PageTransition from '../../components/PageTransition';
+import FallCheck from '../../hooks/useFallCheck';
 import { Toast } from '../../components/ui';
 import ReminderAlert from '../../components/ReminderAlert';
 import { registerServiceWorker, useReminderEngine } from '../../hooks/useReminderEngine';
@@ -30,6 +31,7 @@ export default function ElderLayout() {
     <ReminderContext.Provider value={engine}>
       <PageTransition />
       <Toast text={engine.actError} />
+      <FallCheck />
       <AppTabBar />
       <ReminderAlert reminder={engine.due} onAct={(id, action) => engine.act(id, action)} onClose={() => engine.due && engine.snooze(engine.due.id)} />
     </ReminderContext.Provider>

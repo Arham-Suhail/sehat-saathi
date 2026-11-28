@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import Icon from '../../components/Icon';
 import ThemeToggle from '../../components/ThemeToggle';
 import { Disclaimer } from '../../components/ui';
+import { AlarmSettings, DisplaySettings, PrivacySettings, VersionRow } from '../../components/Settings';
 import { usePush } from '../../hooks/usePush';
 import { LangToggle } from '../../i18n/LangProvider';
 import { t } from '../../i18n/useT';
@@ -17,6 +18,7 @@ const TOOLS = [
   { to: '/elder/invite', key: 'home.invite', icon: 'family', tint: 'bg-gold-soft text-gold-text' },
   { to: '/elder/alternatives', key: 'home.alternatives', icon: 'swap', tint: 'bg-accent-soft text-accent' },
   { to: '/elder/emergency', key: 'home.emergency', icon: 'phone', tint: 'bg-danger-bg text-danger' },
+  { to: '/elder/voice', key: 'home.voice', icon: 'chat', tint: 'bg-accent-soft text-accent' },
 ];
 const CARER_TOOLS = [{ to: '/carer/meetings', key: 'home.meetings', icon: 'calendar', tint: 'bg-accent-soft text-accent' }];
 
@@ -105,6 +107,12 @@ export default function More() {
           </motion.ul>
         </section>
 
+        <motion.div variants={item} className="flex flex-col gap-5">
+          <DisplaySettings elder={elder} />
+          {elder ? <AlarmSettings /> : null}
+          <PrivacySettings elder={elder} />
+        </motion.div>
+
         <section aria-labelledby="more-account">
           <h2 id="more-account" className="m-0 mb-2 px-1 text-[1.1rem] font-bold uppercase tracking-wide text-muted">{t('more.section.account')}</h2>
           <motion.ul variants={list} className="m-0 list-none overflow-hidden rounded-3xl border border-line bg-surface p-0 shadow-soft">
@@ -127,8 +135,9 @@ export default function More() {
           </motion.ul>
         </section>
 
-        <motion.div variants={item}>
+        <motion.div variants={item} className="flex flex-col gap-2">
           <Disclaimer />
+          <VersionRow />
         </motion.div>
       </motion.main>
     </MotionConfig>

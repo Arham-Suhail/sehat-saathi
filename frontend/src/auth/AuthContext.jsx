@@ -35,7 +35,9 @@ export function AuthProvider({ children }) {
   // alarm (shared phones). An expired token (401) only clears the session: an elder's dose alarms
   // keep working until they log out.
   const logout = useCallback(() => {
-    Promise.allSettled([disablePushForLogout(), cancelAllAlarms()]).finally(clearSession);
+    // Also revoke this token on the server, so a copied token stops working too.
+    const revoke = api('/auth/logout', { method: 'POST', timeoutMs: 8000 }).catch(() => {});
+    Promise.allSettled([disablePushForLogout(), cancelAllAlarms(), revoke]).finally(clearSession);
   }, [clearSession]);
 
   useEffect(() => {
