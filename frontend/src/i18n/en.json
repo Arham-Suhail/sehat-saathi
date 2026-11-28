@@ -445,7 +445,7 @@
   "carerapp.on_time": "on time",
   "carerapp.streak": "day streak",
   "carerapp.bp": "latest BP",
-  "carerapp.attention": "{n} check-ins need your attention",
+  "carerapp.attention": "Needs your attention: {n} check-in(s) in the last 3 days",
   "carerapp.all_ok": "All good. Nothing needs attention right now.",
   "carerapp.patients": "My patients",
   "carerapp.cancel": "Cancel",
