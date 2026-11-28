@@ -4,7 +4,7 @@
    - <GetAppHero/>   landing hero / final CTA: Download for Android (+ QR code on big screens)
    - <AndroidAppBanner/>  thin strip for people who open the website on an Android phone */
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { t } from '../i18n/useT';
 import { isAppMode } from '../lib/appMode';
 import { isNative } from '../lib/native';
@@ -24,7 +24,7 @@ export function GetAppHero({ center = false }) {
     <div className={`flex w-full max-w-md flex-col gap-3 ${center ? 'items-center' : 'items-center md:items-start'}`}>
       <div className="flex w-full items-center gap-4">
         <a href={APK_URL} className="btn btn--primary btn--block shadow-lift no-underline" download>
-          <span className="inline-flex items-center justify-center gap-2.5">
+          <span className="nowrap inline-flex items-center justify-center gap-2.5">
             <AndroidLogo />
             {t('getapp.download')}
           </span>
@@ -42,11 +42,11 @@ export function GetAppHero({ center = false }) {
       </p>
       <p className="m-0 text-[1.1rem]">
         {t('getapp.web')}{' '}
-        <Link to="/login" className="font-bold">
+        <Link to="/login" className="nowrap font-bold">
           {t('getapp.web.login')}
         </Link>{' '}
         ·{' '}
-        <Link to="/register" className="font-bold">
+        <Link to="/register" className="nowrap font-bold">
           {t('getapp.web.register')}
         </Link>
       </p>
@@ -56,6 +56,7 @@ export function GetAppHero({ center = false }) {
 
 /** Android phone + website (not the app): a small, dismissible "get the app" strip. */
 export function AndroidAppBanner() {
+  const { pathname } = useLocation();
   const [hidden, setHidden] = useState(() => {
     try {
       return Number(localStorage.getItem('ss_appbanner') || 0) > Date.now();
@@ -63,7 +64,8 @@ export function AndroidAppBanner() {
       return false;
     }
   });
-  if (hidden || !isAndroidWeb() || isAppMode()) return null;
+  // The landing page already leads with the download button.
+  if (hidden || pathname === '/' || !isAndroidWeb() || isAppMode()) return null;
   const close = () => {
     try {
       localStorage.setItem('ss_appbanner', String(Date.now() + 7 * 86_400_000));
