@@ -846,5 +846,15 @@
   "week.up": "{n} points better than last week",
   "week.down": "{n} points lower than last week",
   "week.same": "Same as last week",
-  "share.short": "Share"
+  "share.short": "Share",
+  "getapp.download": "Download the Android app",
+  "getapp.note": "Free · Alarms ring even when the phone is locked.",
+  "getapp.scan": "Or scan the code with your phone.",
+  "getapp.qr": "QR code to download the Sehat Saathi Android app",
+  "getapp.web": "iPhone or laptop? Use it in the browser:",
+  "getapp.web.login": "Log in",
+  "getapp.web.register": "Sign up",
+  "getapp.banner": "Get the app: medicine alarms that ring even when the phone is locked.",
+  "getapp.get": "Get app",
+  "getapp.close": "Close"
 }

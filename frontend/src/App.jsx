@@ -4,6 +4,7 @@ import { RequireRole } from './auth/AuthContext';
 import AccountSwitchedNotice from './components/AccountSwitchedNotice';
 import NativeBridge from './components/NativeBridge';
 import PinLock from './components/PinLock';
+import { AndroidAppBanner } from './components/GetApp';
 import { ForgotPassword, Login, Register } from './pages/Auth';
 import AppWelcome from './pages/AppWelcome';
 import { isAppMode } from './lib/appMode';
@@ -53,6 +54,7 @@ export default function App() {
   return (
     <>
       <AccountSwitchedNotice />
+      <AndroidAppBanner />
       <NativeBridge />
       <PinLock />
       <Suspense fallback={<PageSkeleton />}>

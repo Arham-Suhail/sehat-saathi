@@ -4,7 +4,7 @@
 import { motion, useReducedMotion } from 'motion/react';
 import ChotuAgent from '../chotu/ChotuAgent';
 import ChotuBoundary from '../chotu/ChotuBoundary';
-import { BigButton } from '../ui';
+import { GetAppHero } from '../GetApp';
 import Icon from '../Icon';
 import { useReveal } from './motion';
 import { t } from '../../i18n/useT';
@@ -62,13 +62,8 @@ export default function FinalCta() {
           ))}
         </ul>
 
-        <div className="mx-auto mt-8 flex w-full max-w-md flex-col gap-3">
-          <BigButton to="/login" className="shadow-lift">
-            {t('common.login')}
-          </BigButton>
-          <BigButton to="/register" variant="secondary">
-            {t('common.register')}
-          </BigButton>
+        <div className="mx-auto mt-8 flex w-full max-w-md justify-center">
+          <GetAppHero center />
         </div>
         <p aria-hidden="true" className="m-0 mt-6 font-script text-[clamp(1.6rem,6vw,2.2rem)] text-gold-text">
           {t('landing.script')}

@@ -16,7 +16,7 @@ import LandingNav from '../components/landing/LandingNav';
 import RevealText from '../components/landing/RevealText';
 import ScrollBuddy from '../components/landing/ScrollBuddy';
 import { useReveal } from '../components/landing/motion';
-import { BigButton } from '../components/ui';
+import { GetAppHero } from '../components/GetApp';
 import { getLang, t } from '../i18n/useT';
 
 /* Stage B landing, kept to the point: four sections (hero, features, a day with Chotu, CTA).
@@ -75,13 +75,8 @@ export default function Landing() {
                 {t('app.tagline')}
               </motion.p>
 
-              <motion.div {...fadeUp(0.9)} className="mt-8 flex w-full max-w-md flex-col gap-3">
-                <BigButton to="/login" className="shadow-lift">
-                  {t('common.login')}
-                </BigButton>
-                <BigButton to="/register" variant="secondary">
-                  {t('common.register')}
-                </BigButton>
+              <motion.div {...fadeUp(0.9)} className="mt-8 flex w-full justify-center md:justify-start">
+                <GetAppHero />
               </motion.div>
             </div>
 
