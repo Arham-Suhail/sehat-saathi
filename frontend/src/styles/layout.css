@@ -993,3 +993,14 @@ html[data-textsize] .topbar__title,
 html[lang='ur'] .topbar__title {
   display: none;
 }
+
+/* Room for the bottom action bar = its measured height (BottomBar sets --bottom-bar-h) + a gap. */
+.page--with-bar {
+  padding-bottom: calc(var(--bottom-bar-h, 180px) + 24px);
+}
+/* A solid bar: content scrolling under it never shows through the buttons. */
+.bottom-bar {
+  background: var(--surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}

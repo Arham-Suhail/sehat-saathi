@@ -1,4 +1,5 @@
 /* Small reusable building blocks. Stage B restyles these via CSS only. */
+import { useLayoutEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import CallChotuButton from './CallChotuButton';
 import { TAB_ROOTS } from './AppTabBar';
@@ -46,9 +47,25 @@ export function Notice({ kind = 'info', children }) {
   );
 }
 
+/** Sticky bottom action bar. It measures itself and publishes its real height as --bottom-bar-h,
+    so the page always leaves exactly that much room (2 buttons, big text, Urdu: nothing hides). */
 export function BottomBar({ children }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const root = document.documentElement;
+    const set = () => root.style.setProperty('--bottom-bar-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    set();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(set) : null;
+    ro?.observe(el);
+    return () => {
+      ro?.disconnect();
+      root.style.removeProperty('--bottom-bar-h');
+    };
+  }, []);
   return (
-    <div className="bottom-bar">
+    <div className="bottom-bar" ref={ref}>
       <div className="bottom-bar__inner">{children}</div>
     </div>
   );
