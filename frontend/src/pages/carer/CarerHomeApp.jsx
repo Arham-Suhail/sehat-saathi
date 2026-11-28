@@ -22,6 +22,9 @@ const initials = (name) =>
 const list = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } } };
 
+// "Dr. Sana (Demo)" -> "Sana": skip titles so the greeting uses the person's name.
+const firstName = (name) => name.split(/\s+/).find((w) => !/^(dr|mr|mrs|ms|prof)\.?$/i.test(w)) || name;
+
 function when(iso) {
   const off = dayOffset(iso);
   if (off === 0) return `${t('day.today')} · ${fmtTime(iso)}`;
@@ -131,7 +134,7 @@ export default function CarerHomeApp() {
             <Icon name={doctor ? 'stethoscope' : 'family'} size={18} />
             {t(doctor ? 'auth.role.doctor' : 'auth.role.family')}
           </p>
-          <h1 className="m-0 mt-2 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: user.name.split(' ')[0] })}</h1>
+          <h1 className="m-0 mt-2 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: firstName(user.name) })}</h1>
         </motion.header>
 
         {elders ? (
