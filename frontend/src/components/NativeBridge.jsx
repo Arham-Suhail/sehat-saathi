@@ -8,8 +8,8 @@ import { cancelAlarm, snoozeAlarm } from '../lib/nativeAlarms';
 import { TAB_ROOTS } from './AppTabBar';
 
 /* Android app only (renders nothing):
-   - hardware Back: goes back inside the app; on a tab screen / the start screen it minimises the app
-     (like native apps) instead of closing it or leaving a blank page;
+   - hardware Back: deeper screen -> back one step; another tab -> Home tab; Home / start screen ->
+     minimise the app (like native apps) instead of closing it or leaving a blank page;
    - dose alarm buttons: "Taken" marks the dose taken (no need to open anything), "10 min" snoozes,
      tapping the alarm itself opens Today's medicines. */
 export default function NativeBridge() {
@@ -25,9 +25,13 @@ export default function NativeBridge() {
     (async () => {
       const back = await App.addListener('backButton', ({ canGoBack }) => {
         const p = path.current.replace(/\/$/, '') || '/';
-        if (p === '/' || TAB_ROOTS.includes(p)) App.minimizeApp();
+        const home = p.startsWith('/carer') ? '/carer' : '/elder';
+        // Like native apps: Back on another tab goes to the Home tab; Back on Home (or the start
+        // screen) minimises the app; on deeper screens it goes back one step.
+        if (p === '/' || p === home) App.minimizeApp();
+        else if (TAB_ROOTS.includes(p)) nav(home, { replace: true });
         else if (canGoBack) nav(-1);
-        else nav('/', { replace: true });
+        else nav(home, { replace: true });
       });
       const action = await LocalNotifications.addListener('localNotificationActionPerformed', async ({ actionId, notification }) => {
         const extra = notification?.extra || {};
