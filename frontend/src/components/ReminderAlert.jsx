@@ -1,67 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
+/* Dose-time sheet (in-app alarm): slides up from the bottom like a native sheet, with only the two
+   big answers ("Taken" / "Not taken"). If the elder doesn't answer, the alarm rings again 15 and 30
+   minutes later (native / push follow-ups) and after an hour the family is told. */
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect } from 'react';
+import DoseCard from './DoseCard';
 import { t } from '../i18n/useT';
-import { BigButton, ErrorText, fmtTime } from './ui';
-import { st } from '../i18n/server';
 
-/** Large, focused modal shown when a dose is due (in-app alert). */
-export default function ReminderAlert({ reminder, onTaken, onSkip, onSnooze }) {
-  const firstBtn = useRef(null);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState(null);
-
+export default function ReminderAlert({ reminder, onAct, onClose }) {
   useEffect(() => {
-    firstBtn.current?.focus();
-    // gentle vibration on phones that support it
+    if (!reminder) return;
     try {
-      navigator.vibrate?.([300, 150, 300]);
+      navigator.vibrate?.([300, 150, 300]); // gentle vibration on phones that support it
     } catch {
       /* ignore */
     }
-  }, [reminder?.id]);
+  }, [reminder?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!reminder) return null;
-  const run = async (fn) => {
-    setBusy(true);
-    setErr(null);
-    try {
-      await fn();
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="modal-backdrop">
-      <div className="modal stack" role="alertdialog" aria-modal="true" aria-labelledby="rem-title" aria-describedby="rem-body">
-        <div className="center">
-          <span className="alarm-badge" aria-hidden="true">
-            ⏰
-          </span>
-        </div>
-        <h2 id="rem-title" className="center">
-          {t('rem.alert.title')}
-        </h2>
-        <div id="rem-body" className="center">
-          <p className="big" style={{ marginBottom: 4 }}>
-            {st(reminder.medicine_name)}
-          </p>
-          {reminder.dose ? <p style={{ marginBottom: 4 }}>{reminder.dose}</p> : null}
-          {reminder.instructions ? <p className="muted">{reminder.instructions}</p> : null}
-          <span className="alarm-time">{fmtTime(reminder.scheduled_at)}</span>
-        </div>
-        <ErrorText>{err}</ErrorText>
-        <BigButton ref={firstBtn} variant="success" disabled={busy} onClick={() => run(() => onTaken(reminder.id))}>
-          ✓ {t('rem.taken')}
-        </BigButton>
-        <BigButton variant="secondary" disabled={busy} onClick={() => onSnooze(reminder.id)}>
-          {t('rem.alert.later')}
-        </BigButton>
-        <BigButton variant="danger" disabled={busy} onClick={() => run(() => onSkip(reminder.id))}>
-          {t('rem.skip')}
-        </BigButton>
-      </div>
-    </div>
+  return createPortal(
+    <AnimatePresence>
+      {reminder ? (
+        <motion.div
+          key="sheet"
+          className="sheet-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          <motion.div
+            role="alertdialog"
+            aria-modal="true"
+            aria-label={t('rem.alert.title')}
+            className="sheet"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 380, damping: 38 }}
+          >
+            <span className="sheet__grabber" aria-hidden="true" />
+            <DoseCard reminder={reminder} onAct={onAct} label={t('rem.alert.title')} className="dose-card--flat" />
+            <button type="button" onClick={onClose} className="sheet__close">
+              {t('dose.later')}
+            </button>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>,
+    document.body,
   );
 }

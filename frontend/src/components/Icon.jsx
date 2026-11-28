@@ -2,6 +2,37 @@
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
 const PATHS = {
+  calendar: (
+    <>
+      <rect x="4" y="5.5" width="16" height="14.5" rx="3" />
+      <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" />
+      <circle cx="9" cy="14.5" r="1" fill="currentColor" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3.5" y="6.5" width="12" height="11" rx="3" />
+      <path d="m15.5 10.5 5-3v9l-5-3z" />
+    </>
+  ),
+  chart: (
+    <>
+      <path d="M4 20h16" />
+      <path d="M7 16v-4M12 16V7M17 16v-6" />
+    </>
+  ),
+  doc: (
+    <>
+      <path d="M7 3.5h6.5L18 8v12a.5.5 0 0 1-.5.5h-10A1.5 1.5 0 0 1 6 19V5A1.5 1.5 0 0 1 7 3.5z" />
+      <path d="M13 3.5V8h5M9 12.5h6M9 16h4" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 21s-6-5.3-6-10.5a6 6 0 0 1 12 0C18 15.7 12 21 12 21z" />
+      <circle cx="12" cy="10.5" r="2.2" />
+    </>
+  ),
   camera: (
     <>
       <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.3-2h5.2l1.3 2h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" />

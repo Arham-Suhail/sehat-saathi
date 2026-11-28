@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import DoseCard from '../../components/DoseCard';
 import { useLocation } from 'react-router-dom';
 import { BigButton, ErrorText, Notice, TopBar, fmtDay, fmtTime } from '../../components/ui';
 import { isIosNotInstalled, usePush } from '../../hooks/usePush';
@@ -85,83 +86,67 @@ function groupByDay(reminders) {
   return groups;
 }
 
-const DOSE_CLASS = { taken: 'dose--done', missed: 'dose--missed', skipped: 'dose--missed' };
+const TAG = {
+  taken: 'bg-success-bg text-success',
+  missed: 'bg-danger-bg text-danger',
+  skipped: 'bg-surface-alt text-muted',
+  pending: 'bg-accent-soft text-accent',
+};
 
 export default function Reminders() {
   const { state } = useLocation();
   const { reminders, refresh, act, error } = useReminders();
-  const [busyId, setBusyId] = useState(null);
-  const [err, setErr] = useState(null);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  const run = async (id, action) => {
-    setBusyId(id);
-    setErr(null);
-    try {
-      await act(id, action);
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setBusyId(null);
-    }
-  };
-
   const now = Date.now();
+  // The dose to answer now: from 10 minutes before until 3 hours after its time.
+  const due = reminders.find((r) => {
+    const at = new Date(r.scheduled_at).getTime();
+    return r.status === 'pending' && at - now <= 10 * 60_000 && now - at <= 3 * 3_600_000;
+  });
   return (
-    <main className="page stack">
+    <main className="page flex flex-col gap-4">
       <TopBar back="/elder" title={t('rem.title')} />
-      <h1>{t('rem.title')}</h1>
-      {state?.saved ? <Notice kind="success">✓ {t('confirm.saved')}</Notice> : null}
-      <AlarmToggle />
-      {isNative() ? null : <p className="muted small">{t('rem.tab_note')}</p>}
-      <ErrorText>{err || error}</ErrorText>
+      <h1 className="m-0">{t('rem.title')}</h1>
+      {state?.saved === 'asked' ? <Notice kind="success">✓ {t('confirm.asked')}</Notice> : state?.saved ? <Notice kind="success">✓ {t('confirm.saved')}</Notice> : null}
+      <ErrorText>{error}</ErrorText>
+      {due ? <DoseCard reminder={due} onAct={act} /> : null}
 
       {reminders.length === 0 ? (
-        <p className="muted">{t('rem.none')}</p>
+        <p className="m-0 text-muted">{t('rem.none')}</p>
       ) : (
         groupByDay(reminders).map(({ offset, label, items }) => (
-          <section key={label} className="stack" aria-label={label}>
-            <h2 className={offset === 0 ? '' : 'muted'}>{label}</h2>
-            <ul className="list">
-              {items.map((r) => {
-                const at = new Date(r.scheduled_at).getTime();
-                const actionable = r.status === 'pending' && at - now < 60 * 60_000;
-                return (
-                  <li key={r.id} className={`card stack ${DOSE_CLASS[r.status] || ''}`}>
-                    <div className="dose">
-                      <div className="dose__time">
-                        <strong>{fmtTime(r.scheduled_at)}</strong>
-                      </div>
-                      <div className="stack" style={{ gap: 6 }}>
-                        <p className="dose__name">{st(r.medicine_name)}</p>
-                        {r.dose ? <p className="muted" dir="auto" style={{ margin: 0 }}>{r.dose}</p> : null}
-                        {r.instructions ? <p className="muted small" style={{ margin: 0 }}>{st(r.instructions)}</p> : null}
-                        <span className={`tag tag--${r.status === 'skipped' ? 'missed' : r.status}`} style={{ justifySelf: 'start' }}>
-                          {r.status === 'pending' && offset > 0 ? t('rem.status.upcoming') : t(`rem.status.${r.status}`)}
-                        </span>
-                      </div>
-                    </div>
-                    {actionable ? (
-                      <div className="grid-2">
-                        <BigButton variant="success" disabled={busyId === r.id} onClick={() => run(r.id, 'taken')}>
-                          ✓ {t('rem.taken')}
-                        </BigButton>
-                        <BigButton variant="danger" disabled={busyId === r.id} onClick={() => run(r.id, 'skipped')}>
-                          {t('rem.skip')}
-                        </BigButton>
-                      </div>
+          <section key={label} className="flex flex-col gap-2" aria-label={label}>
+            <h2 className="section-label">{label}</h2>
+            <ul className="ios-group m-0 list-none p-0">
+              {items.map((r) => (
+                <li key={r.id} className="ios-row">
+                  <span className="w-[5.6rem] shrink-0 text-[1.2rem] font-bold [font-variant-numeric:tabular-nums]">{fmtTime(r.scheduled_at)}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[1.2rem] font-semibold" dir="auto">
+                      {st(r.medicine_name)}
+                    </span>
+                    {r.dose || r.instructions ? (
+                      <span className="block truncate text-[1rem] text-muted" dir="auto">
+                        {[r.dose, r.instructions ? st(r.instructions) : null].filter(Boolean).join(' · ')}
+                      </span>
                     ) : null}
-                  </li>
-                );
-              })}
+                  </span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[0.9rem] font-bold ${TAG[r.status] || TAG.pending}`}>
+                    {r.status === 'pending' && offset > 0 ? t('rem.status.upcoming') : t(`rem.status.${r.status}`)}
+                  </span>
+                </li>
+              ))}
             </ul>
           </section>
         ))
       )}
 
+      <AlarmToggle />
+      {isNative() ? null : <p className="m-0 text-[1rem] text-muted">{t('rem.tab_note')}</p>}
       <MyMedicines onChanged={refresh} />
     </main>
   );

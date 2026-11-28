@@ -897,3 +897,64 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ================================================================
+   Nov 28 premium pass: calm, iOS-like surfaces for every legacy screen.
+   ================================================================ */
+.card {
+  border-radius: 24px;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow);
+}
+.btn {
+  border-radius: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  transition: transform 0.25s var(--ease-ios), box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn--primary {
+  box-shadow: 0 8px 20px rgb(44 95 81 / 0.2);
+}
+.btn--secondary {
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.btn--danger {
+  border-width: 1px;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.input,
+.textarea,
+.select {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.notice {
+  border-width: 0;
+  border-radius: 18px;
+}
+.disclaimer {
+  background: transparent;
+  padding: 4px 4px;
+  font-size: 0.95rem;
+}
+.topbar {
+  min-height: 52px;
+}
+.topbar .btn--small {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent);
+  padding-inline: 4px;
+  font-size: 1.1rem;
+}
+.topbar__title {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}

@@ -29,6 +29,21 @@ export default function MyMedicines({ onChanged }) {
   const [removed, setRemoved] = useState(null);
   const [editing, setEditing] = useState(null); // id whose alarm is being edited
   const [saved, setSaved] = useState(null);
+  const [asked, setAsked] = useState(null);
+
+  const askFamily = async (m) => {
+    setBusy(m.id);
+    setErr(null);
+    try {
+      await api(`/medicines/${encodeURIComponent(m.id)}/ask`, { method: 'POST', json: {} });
+      setAsked(m.name);
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -68,6 +83,7 @@ export default function MyMedicines({ onChanged }) {
       <div aria-live="polite">
         {removed ? <Notice kind="success">✓ {t('meds.removed', { name: removed })}</Notice> : null}
         {saved ? <Notice kind="success">✓ {t('meds.edit.saved', { name: saved })}</Notice> : null}
+        {asked ? <Notice kind="success">✓ {t('meds.asked', { name: asked })}</Notice> : null}
         <ErrorText>{err}</ErrorText>
       </div>
 
@@ -87,7 +103,13 @@ export default function MyMedicines({ onChanged }) {
                   {m.dose_text && m.frequency_label ? ' · ' : null}
                   {m.frequency_label ? st(m.frequency_label) : null}
                 </p>
-                <p className="m-0 text-[1.25rem]">{scheduleText(m)}</p>
+                <p className="m-0 text-[1.25rem]">{m.on_hold ? t('meds.on_hold') : scheduleText(m)}</p>
+                {m.review_state === 'open' ? (
+                  <p className="m-0 mt-1 inline-flex rounded-full bg-warning-bg px-3 py-1 text-[1rem] font-semibold text-warning-text">{t('meds.checking')}</p>
+                ) : null}
+                {m.review_state === 'done' && m.reviewed_by ? (
+                  <p className="m-0 mt-1 text-[1rem] font-semibold text-success">✓ {t('dash.review.done', { name: m.reviewed_by })}</p>
+                ) : null}
               </div>
               {asking !== m.id ? (
                 <button
@@ -129,6 +151,17 @@ export default function MyMedicines({ onChanged }) {
                   await onChanged?.();
                 }}
               />
+            ) : null}
+            {asking !== m.id && editing !== m.id && m.review_state !== 'open' ? (
+              <button
+                type="button"
+                disabled={busy === m.id}
+                onClick={() => askFamily(m)}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-line bg-surface px-4 text-[1.15rem] font-semibold text-ink"
+              >
+                <Icon name="family" size={20} />
+                {t('meds.ask')}
+              </button>
             ) : null}
             {asking !== m.id && editing !== m.id ? (
               <SafeBoundary>

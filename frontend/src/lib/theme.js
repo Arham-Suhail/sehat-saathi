@@ -1,8 +1,8 @@
 /* Light / dark theme. The user's choice is kept on this device (localStorage "ss_theme") and set as
-   <html data-theme>. With no choice saved, the phone's own setting decides (theme.css media query).
+   <html data-theme>. With no choice saved the app is light.
    Also keeps <meta name="theme-color"> in step, so the phone's status bar matches the app. */
 const KEY = 'ss_theme';
-const BAR = { light: '#FBF6EC', dark: '#111514' };
+const BAR = { light: '#F3F2EE', dark: '#111514' };
 
 export function getThemeChoice() {
   try {
@@ -13,10 +13,9 @@ export function getThemeChoice() {
   }
 }
 
-const systemDark = () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
-
+// Light by default (elders, family, doctors): dark only when chosen in More.
 export function effectiveTheme() {
-  return getThemeChoice() || (systemDark() ? 'dark' : 'light');
+  return getThemeChoice() || 'light';
 }
 
 export function applyTheme() {
@@ -39,11 +38,5 @@ export function setTheme(value) {
   window.dispatchEvent(new Event('ss-theme'));
 }
 
-/** Call once at start-up: follow the phone if it switches light/dark while the app is open. */
-export function watchSystemTheme() {
-  if (typeof matchMedia !== 'function') return;
-  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
-    applyTheme();
-    window.dispatchEvent(new Event('ss-theme'));
-  });
-}
+/** Kept for callers; the app no longer follows the phone's dark setting. */
+export function watchSystemTheme() {}

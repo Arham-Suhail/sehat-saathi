@@ -9,9 +9,9 @@ import Icon from './Icon';
 
 /* App-mode bottom navigation (Android app / installed PWA only; the website keeps its own navigation).
    Elders: Home, Medicines, Chotu (raised middle button -> check-in), Progress, More.
-   Family / doctor: Home, Alerts, More. Shown on the tab screens only; deeper screens keep Back. */
+   Family / doctor: Home, Alerts, Meetings, More. Shown on the tab screens only; deeper screens keep Back. */
 export const ELDER_TABS = ['/elder', '/elder/reminders', '/elder/progress', '/elder/more'];
-export const CARER_TABS = ['/carer', '/carer/alerts', '/carer/more'];
+export const CARER_TABS = ['/carer', '/carer/alerts', '/carer/meetings', '/carer/more'];
 export const TAB_ROOTS = [...ELDER_TABS, ...CARER_TABS];
 
 const HomeIcon = () => (
@@ -36,6 +36,7 @@ const ELDER = [
 const CARER = [
   { to: '/carer', label: 'tab.home', icon: <HomeIcon /> },
   { to: '/carer/alerts', label: 'tab.alerts', icon: <Icon name="bell" size={26} /> },
+  { to: '/carer/meetings', label: 'tab.meetings', icon: <Icon name="calendar" size={26} /> },
   { to: '/carer/more', label: 'tab.more', icon: <MoreIcon /> },
 ];
 

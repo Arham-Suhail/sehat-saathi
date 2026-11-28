@@ -26,6 +26,7 @@ import More from './pages/elder/More';
 import Reminders from './pages/elder/Reminders';
 import Upload from './pages/elder/Upload';
 import Vitals from './pages/elder/Vitals';
+import Meetings from './pages/Meetings';
 import { t } from './i18n/useT';
 
 // Charts (Recharts) only load for carers.
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="more" element={<More />} />
           <Route path="emergency" element={<Emergency />} />
           <Route path="alternatives" element={<AlternativesPage />} />
+          <Route path="meetings" element={<Meetings />} />
         </Route>
 
         <Route
@@ -81,6 +83,7 @@ export default function App() {
         >
           <Route index element={isAppMode() ? <CarerHomeApp /> : <CarerHome />} />
           <Route path="alerts" element={<Alerts />} />
+          <Route path="meetings" element={<Meetings />} />
           <Route path="more" element={<More />} />
           <Route
             path="elder/:elderId"

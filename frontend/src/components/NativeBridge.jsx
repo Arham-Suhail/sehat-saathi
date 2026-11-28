@@ -4,14 +4,15 @@ import { App } from '@capacitor/app';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { api } from '../api/client';
 import { isNative } from '../lib/native';
-import { cancelAlarm, snoozeAlarm } from '../lib/nativeAlarms';
+import { cancelAlarm, cancelCareAlarms } from '../lib/nativeAlarms';
 import { TAB_ROOTS } from './AppTabBar';
 
 /* Android app only (renders nothing):
    - hardware Back: deeper screen -> back one step; another tab -> Home tab; Home / start screen ->
      minimise the app (like native apps) instead of closing it or leaving a blank page;
-   - dose alarm buttons: "Taken" marks the dose taken (no need to open anything), "10 min" snoozes,
-     tapping the alarm itself opens Today's medicines. */
+   - dose alarm buttons: "Taken" / "Not taken" mark the dose without opening anything; tapping the
+     alarm itself opens Today's medicines;
+   - care alerts (family / doctor): "Mark as read" stops the repeats; tapping opens Alerts. */
 export default function NativeBridge() {
   const nav = useNavigate();
   const { pathname } = useLocation();
@@ -35,16 +36,31 @@ export default function NativeBridge() {
       });
       const action = await LocalNotifications.addListener('localNotificationActionPerformed', async ({ actionId, notification }) => {
         const extra = notification?.extra || {};
-        if (actionId === 'taken' && extra.reminderId) {
+        if (extra.kind === 'care') {
+          if (actionId === 'read' && extra.alertId) {
+            try {
+              await api(`/alerts/${encodeURIComponent(extra.alertId)}/read`, { method: 'POST' });
+              cancelCareAlarms(extra.alertId);
+            } catch {
+              /* offline: it rings again and stays in Alerts */
+            }
+            return;
+          }
+          nav('/carer/alerts');
+          return;
+        }
+        if (extra.kind === 'meeting') {
+          nav(path.current.startsWith('/carer') ? '/carer/meetings' : '/elder/meetings');
+          return;
+        }
+        if ((actionId === 'taken' || actionId === 'skipped') && extra.reminderId) {
           try {
-            await api(`/reminders/${encodeURIComponent(extra.reminderId)}/taken`, { method: 'POST' });
+            await api(`/reminders/${encodeURIComponent(extra.reminderId)}/${actionId}`, { method: 'POST' });
             cancelAlarm(extra.reminderId);
           } catch {
             /* offline or too early: the dose stays pending and shows in the app */
           }
-          nav('/elder/reminders');
-        } else if (actionId === 'snooze') {
-          snoozeAlarm(extra).catch(() => {});
+          if (actionId === 'taken') nav('/elder/reminders');
         } else {
           nav('/elder/reminders');
         }

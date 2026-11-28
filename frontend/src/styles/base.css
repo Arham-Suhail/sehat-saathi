@@ -16,15 +16,15 @@ body {
   margin: 0;
   min-height: 100dvh;
   background: var(--bg);
-  /* Stage B: a soft, still glow at the top of every screen (no animation on app screens) */
-  background-image: radial-gradient(60rem 28rem at 15% -10%, var(--glow-gold), transparent 70%),
-    radial-gradient(50rem 26rem at 110% 0%, var(--glow-teal), transparent 70%);
-  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--font-body);
   /* 20px base, grows gently on large screens */
   font-size: clamp(1.25rem, 1.15rem + 0.35vw, 1.375rem);
   line-height: 1.5;
+  letter-spacing: -0.011em;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
 }
 
@@ -36,11 +36,9 @@ h3 {
 }
 h1 {
   font-size: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
-  /* Stage B: page titles are section headings, so the serif is allowed (CLAUDE.md); body text,
-     medicine info and buttons stay in Atkinson Hyperlegible. */
-  font-family: var(--font-serif);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  /* iOS-style large title: bold sans, tight tracking. */
+  font-weight: 750;
+  letter-spacing: -0.025em;
 }
 h2 {
   font-size: clamp(1.4rem, 1.3rem + 0.5vw, 1.65rem);

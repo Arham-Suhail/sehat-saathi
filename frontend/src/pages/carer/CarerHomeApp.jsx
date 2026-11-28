@@ -5,7 +5,8 @@ import { api } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import Icon from '../../components/Icon';
 import { ErrorText, Notice, fmtTime } from '../../components/ui';
-import { concernsFrom, useCarerOverview } from '../../hooks/useCarerData';
+import { useCarerOverview } from '../../hooks/useCarerData';
+import { useCareAlerts } from '../../hooks/useCareAlerts';
 import { t } from '../../i18n/useT';
 import { onlyDigits } from '../../lib/digits';
 import { karachiToday, progressFrom } from '../../lib/streaks';
@@ -54,7 +55,7 @@ function ElderCard({ e }) {
   return (
     <motion.li variants={item}>
       <motion.div whileTap={{ scale: 0.98 }}>
-        <Link to={`/carer/elder/${e.id}`} className="block rounded-[28px] border border-line bg-surface p-4 text-ink no-underline shadow-lift">
+        <Link to={`/carer/elder/${e.id}`} className="card-ios block p-5 text-ink no-underline">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-[1.35rem] font-bold text-accent-text">
               {initials(e.name)}
@@ -105,7 +106,8 @@ export default function CarerHomeApp() {
   const [err, setErr] = useState(null);
   const [ok, setOk] = useState(null);
   const doctor = user.role === 'doctor';
-  const attention = concernsFrom(elders).filter((c) => dayOffset(c.created_at) >= -2).length;
+  const { open: attention, alerts } = useCareAlerts();
+  const urgent = (alerts || []).some((a) => a.open && a.severity === 'urgent');
 
   const redeem = async (ev) => {
     ev.preventDefault();
@@ -137,11 +139,11 @@ export default function CarerHomeApp() {
           <h1 className="m-0 mt-2 text-[clamp(1.7rem,6vw,2.2rem)] leading-tight">{t('home.greeting', { name: firstName(user.name) })}</h1>
         </motion.header>
 
-        {elders ? (
+        {alerts ? (
           <motion.div variants={item}>
             <Link
               to="/carer/alerts"
-              className={`flex items-center gap-3 rounded-3xl p-4 no-underline ${attention ? 'bg-danger-bg text-danger' : 'bg-success-bg text-success'}`}
+              className={`flex items-center gap-3 rounded-[22px] p-4 no-underline ${attention ? (urgent ? 'bg-danger-bg text-danger' : 'bg-warning-bg text-warning-text') : 'bg-success-bg text-success'}`}
             >
               <Icon name={attention ? 'bell' : 'check'} size={26} />
               <span className="flex-1 text-[1.2rem] font-bold leading-snug">

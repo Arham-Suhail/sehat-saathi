@@ -1,80 +1,183 @@
-import { MotionConfig, motion } from 'motion/react';
+/* Alerts tab (family / doctor). Everything that needs a look, urgent first:
+   - concern     (red)   the elder mentioned a symptom: rings again and again until "Mark as read"
+   - med_review  (amber) a medicine the elder couldn't confirm: closes only when someone confirms it
+   - missed_dose (amber) a dose was missed or "not taken"
+   - meeting             someone asked you to a meeting
+   The elder is never shown these. "Done" lists the last 7 days. */
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../../components/Icon';
-import { TopBar, fmtDay, fmtTime } from '../../components/ui';
-import { concernsFrom, useCarerOverview } from '../../hooks/useCarerData';
+import ReviewSheet from '../../components/ReviewSheet';
+import { ErrorText, TopBar, fmtDay, fmtTime } from '../../components/ui';
+import { useCareAlerts } from '../../hooks/useCareAlerts';
+import { st } from '../../i18n/server';
 import { toUrdu } from '../../i18n/toUrdu';
 import { t } from '../../i18n/useT';
+import { haptic } from '../../lib/native';
 
-/* Alerts tab (family / doctor): everything that needs a look, across all linked elders:
-   check-ins flagged as a concern, and doses missed today. Tapping opens that elder's dashboard. */
-const list = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
-const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
+const TONE = {
+  concern: { icon: 'heart', ring: 'alert--urgent', chip: 'bg-danger-bg text-danger' },
+  med_review: { icon: 'pill', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
+  missed_dose: { icon: 'alarm', ring: 'alert--important', chip: 'bg-warning-bg text-warning-text' },
+  meeting: { icon: 'calendar', ring: '', chip: 'bg-accent-soft text-accent' },
+};
+
+function AlertBody({ a }) {
+  const d = a.data || {};
+  if (a.kind === 'concern')
+    return (
+      <>
+        <p className="m-0 text-[1.15rem] font-bold text-danger">{d.reason ? st(d.reason) : t('alerts.concern')}</p>
+        {d.said ? (
+          <p className="m-0 mt-1 text-[1.1rem] italic text-muted" dir="auto">
+            “{toUrdu(d.said)}”
+          </p>
+        ) : null}
+      </>
+    );
+  if (a.kind === 'missed_dose')
+    return (
+      <p className="m-0 text-[1.15rem]">
+        <span className="font-bold" dir="auto">
+          {st(d.medicine_name)}
+        </span>
+        {d.dose ? <span className="text-muted"> · {d.dose}</span> : null}
+        <span className="block text-muted">
+          {d.scheduled_at ? fmtTime(d.scheduled_at) : ''} · {t(d.outcome === 'skipped' ? 'alerts.skipped' : 'alerts.missed')}
+        </span>
+      </p>
+    );
+  if (a.kind === 'med_review')
+    return (
+      <p className="m-0 text-[1.15rem]">
+        <span className="font-bold" dir="auto">
+          {d.medicine_name} {d.strength ? <span className="font-normal text-muted">{d.strength}</span> : null}
+        </span>
+        <span className="block text-muted">{t(d.reason === 'asked' ? 'alerts.review.asked' : 'alerts.review.unclear')}</span>
+      </p>
+    );
+  return (
+    <p className="m-0 text-[1.15rem]">
+      {t('alerts.meeting', { who: d.organiser || '' })}
+      {d.starts_at ? <span className="block text-muted">{fmtDay(d.starts_at)} · {fmtTime(d.starts_at)}</span> : null}
+    </p>
+  );
+}
+
+function AlertCard({ a, onRead, onReview }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const tone = TONE[a.kind] || TONE.meeting;
+  const read = async () => {
+    setBusy(true);
+    setErr(null);
+    haptic();
+    try {
+      await onRead(a.id);
+    } catch (e) {
+      setErr(e.message);
+      setBusy(false);
+    }
+  };
+  return (
+    <motion.li layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }} className={`alert-card ${a.open ? tone.ring : 'opacity-70'}`}>
+      <div className="flex items-start gap-3">
+        <span className={`row-icon ${tone.chip}`}>
+          <Icon name={tone.icon} size={24} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+            <span className="text-[1.2rem] font-bold">{a.elder_name}</span>
+            <span className="text-[0.95rem] text-muted">
+              {fmtDay(a.created_at)} · {fmtTime(a.created_at)}
+            </span>
+          </div>
+          {a.severity === 'urgent' && a.open ? <span className="mt-1 inline-flex rounded-full bg-danger px-2.5 py-0.5 text-[0.85rem] font-bold uppercase tracking-wide text-accent-text">{t('alerts.urgent')}</span> : null}
+          <div className="mt-1">
+            <AlertBody a={a} />
+          </div>
+        </div>
+      </div>
+      <ErrorText>{err}</ErrorText>
+      {a.open ? (
+        <div className="mt-4 flex flex-col gap-2">
+          {a.kind === 'med_review' ? (
+            <button type="button" onClick={() => onReview(a)} className="app-btn app-btn--primary">
+              <Icon name="check" size={22} />
+              {t('alerts.review.cta')}
+            </button>
+          ) : a.kind === 'meeting' ? (
+            <Link to="/carer/meetings" className="app-btn app-btn--primary">
+              <Icon name="calendar" size={22} />
+              {t('alerts.meeting.cta')}
+            </Link>
+          ) : (
+            <button type="button" disabled={busy} onClick={read} className={`app-btn ${a.severity === 'urgent' ? 'app-btn--danger' : 'app-btn--primary'}`}>
+              <Icon name="check" size={22} />
+              {busy ? t('common.loading') : t('alerts.read')}
+            </button>
+          )}
+          <Link to={`/carer/elder/${a.elder_id}`} className="app-btn app-btn--secondary">
+            {t('alerts.open_dash')}
+          </Link>
+        </div>
+      ) : (
+        <p className="m-0 mt-3 text-[1rem] text-muted">{a.resolved_by ? t('alerts.done_by', { name: a.resolved_by }) : t('alerts.done')}</p>
+      )}
+    </motion.li>
+  );
+}
 
 export default function Alerts() {
-  const { elders, error } = useCarerOverview();
-  const concerns = concernsFrom(elders).slice(0, 30);
-  const missedToday = (elders || [])
-    .map((e) => {
-      const today = e.dash?.adherence?.at(-1);
-      return { elder: e, n: today?.missed || 0 };
-    })
-    .filter((x) => x.n > 0);
+  const { alerts, error, markRead, reload } = useCareAlerts();
+  const [review, setReview] = useState(null);
+  const open = (alerts || []).filter((a) => a.open);
+  const done = (alerts || []).filter((a) => !a.open).slice(0, 20);
 
   return (
     <MotionConfig reducedMotion="user">
       <main className="page flex flex-col gap-4">
         <TopBar title={t('tab.alerts')} />
         <h1 className="m-0">{t('alerts.title')}</h1>
-        {error ? <p className="text-danger">{error}</p> : null}
-        {elders === null ? <p className="text-muted">{t('common.loading')}</p> : null}
-        {elders && !concerns.length && !missedToday.length ? (
-          <div className="flex flex-col items-center gap-2 rounded-3xl border border-line bg-surface p-8 text-center shadow-soft">
+        <ErrorText>{error}</ErrorText>
+        {alerts === null ? <div className="h-40 animate-pulse rounded-[24px] bg-surface-alt" aria-label={t('common.loading')} /> : null}
+        {alerts && !open.length ? (
+          <div className="card-ios flex flex-col items-center gap-3 p-8 text-center">
             <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-success-bg text-success">
               <Icon name="check" size={34} />
             </span>
             <p className="m-0 text-[1.3rem] font-bold">{t('alerts.none')}</p>
+            <p className="m-0 text-[1.05rem] text-muted">{t('alerts.none.sub')}</p>
           </div>
         ) : null}
-        <motion.ul variants={list} initial="hidden" animate="show" className="m-0 flex list-none flex-col gap-3 p-0">
-          {missedToday.map(({ elder, n }) => (
-            <motion.li key={`m-${elder.id}`} variants={item}>
-              <Link to={`/carer/elder/${elder.id}`} className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-4 text-ink no-underline shadow-soft">
-                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-warning-bg text-warning-text">
-                  <Icon name="pill" size={24} />
-                </span>
-                <span className="flex-1">
-                  <span className="block text-[1.2rem] font-bold">{elder.name}</span>
-                  <span className="text-[1.1rem] text-muted">{t('alerts.missed_today', { n })}</span>
-                </span>
-                <Icon name="chevron" size={22} className="text-muted rtl:-scale-x-100" />
-              </Link>
-            </motion.li>
-          ))}
-          {concerns.map((c) => (
-            <motion.li key={c.id} variants={item}>
-              <Link to={`/carer/elder/${c.elder.id}`} className="flex gap-4 rounded-3xl border border-danger bg-surface p-4 text-ink no-underline shadow-soft">
-                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-danger-bg text-danger">
-                  <Icon name="heart" size={24} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-baseline justify-between gap-x-2">
-                    <span className="text-[1.2rem] font-bold">{c.elder.name}</span>
-                    <span className="text-[1rem] text-muted">
-                      {fmtDay(c.created_at)} · {fmtTime(c.created_at)}
-                    </span>
-                  </span>
-                  <span className="block text-[1.1rem] font-bold text-danger">{c.concern_reason || t('dash.attention')}</span>
-                  {c.transcript?.filter((x) => x.role === 'elder').slice(0, 1).map((x, i) => (
-                    <span key={i} className="mt-1 block text-[1.05rem] italic text-muted" dir="auto">
-                      “{toUrdu(x.text)}”
-                    </span>
-                  ))}
-                </span>
-              </Link>
-            </motion.li>
-          ))}
-        </motion.ul>
+        <ul className="m-0 flex list-none flex-col gap-3 p-0">
+          <AnimatePresence initial={false}>
+            {open.map((a) => (
+              <AlertCard key={a.id} a={a} onRead={markRead} onReview={setReview} />
+            ))}
+          </AnimatePresence>
+        </ul>
+        {done.length ? (
+          <section className="flex flex-col gap-3" aria-labelledby="done-h">
+            <h2 id="done-h" className="section-label">
+              {t('alerts.done_title')}
+            </h2>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              {done.map((a) => (
+                <AlertCard key={a.id} a={a} onRead={markRead} onReview={setReview} />
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        <ReviewSheet
+          open={!!review}
+          alert={review}
+          elderId={review?.elder_id}
+          medicineId={review?.data?.medicine_id}
+          onClose={() => setReview(null)}
+          onDone={reload}
+        />
       </main>
     </MotionConfig>
   );

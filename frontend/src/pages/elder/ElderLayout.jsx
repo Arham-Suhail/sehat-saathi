@@ -1,9 +1,11 @@
 import { MotionConfig, motion } from 'motion/react';
 import { createContext, useContext, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { api } from '../../api/client';
 import AppTabBar from '../../components/AppTabBar';
 import ReminderAlert from '../../components/ReminderAlert';
 import { registerServiceWorker, useReminderEngine } from '../../hooks/useReminderEngine';
+import { syncMeetingAlarms } from '../../lib/nativeAlarms';
 
 const ReminderContext = createContext(null);
 
@@ -19,6 +21,10 @@ export default function ElderLayout() {
 
   useEffect(() => {
     registerServiceWorker();
+    // Android app: a reminder 15 minutes before each meeting.
+    api('/meetings')
+      .then((m) => syncMeetingAlarms(m))
+      .catch(() => {});
   }, []);
 
   return (
@@ -26,20 +32,15 @@ export default function ElderLayout() {
       <MotionConfig reducedMotion="user">
         <motion.div
           key={pathname}
-          initial={{ opacity: 0, y: 14 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
         >
           <Outlet />
         </motion.div>
       </MotionConfig>
       <AppTabBar />
-      <ReminderAlert
-        reminder={engine.due}
-        onTaken={(id) => engine.act(id, 'taken')}
-        onSkip={(id) => engine.act(id, 'skipped')}
-        onSnooze={engine.snooze}
-      />
+      <ReminderAlert reminder={engine.due} onAct={(id, action) => engine.act(id, action)} onClose={() => engine.due && engine.snooze(engine.due.id)} />
     </ReminderContext.Provider>
   );
 }

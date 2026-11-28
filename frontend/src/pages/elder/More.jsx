@@ -12,11 +12,13 @@ import { t } from '../../i18n/useT';
    (language, light/dark, urgent alerts for carers) and account, as a native-style list. 64px rows. */
 const TOOLS = [
   { to: '/elder/upload', key: 'home.upload', icon: 'camera', tint: 'bg-accent-soft text-accent' },
+  { to: '/elder/meetings', key: 'home.meetings', icon: 'calendar', tint: 'bg-accent-soft text-accent' },
   { to: '/elder/vitals', key: 'home.vitals', icon: 'heart', tint: 'bg-danger-bg text-danger' },
   { to: '/elder/invite', key: 'home.invite', icon: 'family', tint: 'bg-gold-soft text-gold-text' },
   { to: '/elder/alternatives', key: 'home.alternatives', icon: 'swap', tint: 'bg-accent-soft text-accent' },
   { to: '/elder/emergency', key: 'home.emergency', icon: 'phone', tint: 'bg-danger-bg text-danger' },
 ];
+const CARER_TOOLS = [{ to: '/carer/meetings', key: 'home.meetings', icon: 'calendar', tint: 'bg-accent-soft text-accent' }];
 
 const list = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } } };
@@ -37,26 +39,25 @@ export default function More() {
   return (
     <MotionConfig reducedMotion="user">
       <motion.main className="page flex flex-col gap-5" variants={list} initial="hidden" animate="show">
-        <motion.header variants={item} className="flex items-center gap-4 rounded-3xl bg-accent p-5 text-accent-text shadow-lift">
-          <span aria-hidden="true" className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-surface text-[1.8rem] font-bold text-accent">
+        <motion.header variants={item} className="card-ios flex items-center gap-4 p-5">
+          <span aria-hidden="true" className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent text-[1.8rem] font-bold text-accent-text">
             {initial}
           </span>
           <div className="min-w-0">
             {elder ? null : (
-              <p className="m-0 mb-1 inline-flex rounded-full bg-surface px-3 py-0.5 text-[1rem] font-bold text-accent">
+              <p className="m-0 mb-1 inline-flex rounded-full bg-accent-soft px-3 py-0.5 text-[1rem] font-bold text-accent">
                 {t(user?.role === 'doctor' ? 'auth.role.doctor' : 'auth.role.family')}
               </p>
             )}
             <h1 className="m-0 truncate text-[1.6rem] leading-tight">{user?.name}</h1>
-            <p className="m-0 truncate text-[1.05rem] opacity-90">{user?.email}</p>
+            <p className="m-0 truncate text-[1.05rem] text-muted">{user?.email}</p>
           </div>
         </motion.header>
 
-        {elder ? (
         <section aria-labelledby="more-tools">
           <h2 id="more-tools" className="m-0 mb-2 px-1 text-[1.1rem] font-bold uppercase tracking-wide text-muted">{t('more.section.tools')}</h2>
           <motion.ul variants={list} className="m-0 list-none overflow-hidden rounded-3xl border border-line bg-surface p-0 shadow-soft">
-            {TOOLS.map((x) => (
+            {(elder ? TOOLS : CARER_TOOLS).map((x) => (
               <Row key={x.to}>
                 <Link to={x.to} className="flex min-h-16 items-center gap-4 px-4 py-2 text-ink no-underline active:bg-surface-alt">
                   <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${x.tint}`}>
@@ -69,7 +70,6 @@ export default function More() {
             ))}
           </motion.ul>
         </section>
-        ) : null}
 
         <section aria-labelledby="more-settings">
           <h2 id="more-settings" className="m-0 mb-2 px-1 text-[1.1rem] font-bold uppercase tracking-wide text-muted">{t('more.section.settings')}</h2>

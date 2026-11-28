@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
+import Icon from '../../components/Icon';
 import { BigButton, BottomBar, Disclaimer, ErrorText, Field, Notice, PharmacistBanner, TopBar } from '../../components/ui';
 import { st } from '../../i18n/server';
 import { t } from '../../i18n/useT';
@@ -307,6 +308,7 @@ export default function ConfirmMeds() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [showErrors, setShowErrors] = useState(false);
+  const [diagnosis, setDiagnosis] = useState(extraction?.diagnosis_text || '');
 
   useEffect(() => {
     api('/medicines/schedule-options').then(setOptions).catch(() => setOptions([]));
@@ -317,17 +319,29 @@ export default function ConfirmMeds() {
   const active = meds.filter((m) => m.status !== 'stopped');
   const stopped = meds.filter((m) => m.status === 'stopped');
 
-  const save = async () => {
+  // "I'm not sure": save as it is, no alarms yet; the family / doctor checks and sets the times.
+  const save = async (askFamily = false) => {
     setErr(null);
-    setShowErrors(true);
+    setShowErrors(!askFamily);
     if (meds.some((m) => !m.name.trim())) return setErr(t('confirm.need_name'));
-    if (active.some((m) => viewMode(m) === 'times' && !m.timings.some((x) => HHMM.test(x))))
+    if (!askFamily && active.some((m) => viewMode(m) === 'times' && !m.timings.some((x) => HHMM.test(x))))
       return setErr(t('confirm.need_time'));
-    setBusy(true);
+    setBusy(askFamily ? 'ask' : 'save');
     try {
-      await api('/medicines/confirm', { method: 'POST', json: { medicines: meds.map(toBody) } });
+      const medicines = meds.map(toBody).map((b) =>
+        askFamily && !(b.timings || []).some((x) => HHMM.test(x)) ? { ...b, timings: ['08:00'] } : b,
+      );
+      await api('/medicines/confirm', {
+        method: 'POST',
+        json: {
+          medicines,
+          diagnosis_text: diagnosis.trim() || null,
+          diagnosis_unclear: Boolean(extraction?.diagnosis_unclear),
+          ask_family: askFamily,
+        },
+      });
       await refresh();
-      nav('/elder/reminders', { replace: true, state: { saved: true } });
+      nav('/elder/reminders', { replace: true, state: { saved: askFamily ? 'asked' : true } });
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -342,6 +356,17 @@ export default function ConfirmMeds() {
       <p>{t('confirm.help')}</p>
       {extraction?.needs_pharmacist ? <PharmacistBanner /> : null}
       <Disclaimer />
+
+      <div className="card-ios flex flex-col gap-2 p-4">
+        <label htmlFor="dx" className="text-[1.15rem] font-bold">
+          {t('confirm.diagnosis')}
+        </label>
+        <input id="dx" className="input" dir="auto" maxLength={300} value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} placeholder={t('confirm.diagnosis.ph')} />
+        <small className="text-[0.95rem] text-muted">
+          {extraction?.diagnosis_unclear ? `⚠ ${t('confirm.diagnosis.unclear')} ` : ''}
+          {t('confirm.diagnosis.hint')}
+        </small>
+      </div>
 
       {meds.length === 0 ? <p className="muted">{t('confirm.empty')}</p> : null}
       {active.map((m, i) => (
@@ -363,10 +388,21 @@ export default function ConfirmMeds() {
         </details>
       ) : null}
 
+      <section className="card-ios flex flex-col gap-3 p-5" aria-labelledby="ask-h">
+        <h2 id="ask-h" className="m-0 flex items-center gap-2 text-[1.2rem] font-bold">
+          <Icon name="family" size={24} className="text-accent" />
+          {t('confirm.ask.title')}
+        </h2>
+        <p className="m-0 text-[1.1rem] text-muted">{t('confirm.ask.body')}</p>
+        <BigButton variant="secondary" onClick={() => save(true)} disabled={!!busy || meds.length === 0}>
+          {busy === 'ask' ? t('common.loading') : t('confirm.ask.cta')}
+        </BigButton>
+      </section>
+
       <BottomBar>
         <ErrorText>{err}</ErrorText>
-        <BigButton onClick={save} disabled={busy || meds.length === 0}>
-          {busy ? t('common.loading') : `✓ ${t('confirm.save')}`}
+        <BigButton onClick={() => save(false)} disabled={!!busy || meds.length === 0}>
+          {busy === 'save' ? t('common.loading') : `✓ ${t('confirm.save')}`}
         </BigButton>
       </BottomBar>
     </main>

@@ -1,7 +1,6 @@
 /* Small reusable building blocks. Stage B restyles these via CSS only. */
 import { Link, useLocation } from 'react-router-dom';
 import CallChotuButton from './CallChotuButton';
-import ThemeToggle from './ThemeToggle';
 import { TAB_ROOTS } from './AppTabBar';
 import { isAppMode } from '../lib/appMode';
 import { LangToggle } from '../i18n/LangProvider';
@@ -74,7 +73,6 @@ export function TopBar({ title, back: backTo, right }) {
       {right || (
         <span className="flex shrink-0 items-center gap-2">
           {elder ? <CallChotuButton /> : null}
-          <ThemeToggle />
           <LangToggle />
         </span>
       )}

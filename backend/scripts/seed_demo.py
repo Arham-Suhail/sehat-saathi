@@ -93,8 +93,9 @@ async def main(reset: bool) -> None:
         return
     if existing:
         ids = [u["_id"] for u in existing]
-        for coll in ("medicines", "reminders", "checkins", "vitals", "invites"):
+        for coll in ("medicines", "reminders", "checkins", "vitals", "invites", "alerts", "prescriptions"):
             await db[coll].delete_many({"elder_id": {"$in": ids}})
+        await db.meetings.delete_many({"member_ids": {"$in": ids}})
         await db.users.delete_many({"_id": {"$in": ids}})
         print("Removed previous demo data.")
 
@@ -234,12 +235,110 @@ async def main(reset: bool) -> None:
             ]
         )
 
+    await _seed_care(db, users, now)
     await client.close()
     print("Demo data created (FAKE). Logins:")
     for role, email in DEMO_EMAILS.items():
         print(f"  {role:7} {email}")
     if not os.environ.get("SEED_PASSWORD"):
         print(f"  password (all three): {password}   <- shown once, not stored anywhere")
+
+
+async def _seed_care(db, users: dict, now: datetime) -> None:
+    """Care features for the demo: the prescription's diagnosis, the unclear Amlodipine line waiting
+    for a family / doctor check, an urgent concern alert, a missed-dose alert and a meeting."""
+    import secrets as _secrets
+
+    from app.services.care import raise_alert
+
+    elder_id = users["elder"]["_id"]
+    meds = await db.medicines.find({"elder_id": elder_id}).to_list(length=10)
+    await db.prescriptions.insert_one(
+        {
+            "elder_id": elder_id,
+            "diagnosis_text": "Dx: HTN, Acid reflux (GERD)",
+            "diagnosis_unclear": False,
+            "ask_family": False,
+            "medicine_ids": [m["_id"] for m in meds],
+            "created_at": now - timedelta(days=14),
+        }
+    )
+    amlo = next(m for m in meds if m["name"] == "Amlodipine")
+    review = {"state": "open", "reason": "unclear", "hold": False, "requested_at": now - timedelta(hours=3)}
+    await db.medicines.update_one({"_id": amlo["_id"]}, {"$set": {"review": review}})
+    await raise_alert(
+        db,
+        elder_id,
+        "med_review",
+        {
+            "medicine_id": amlo["_id"],
+            "medicine_name": amlo["name"],
+            "strength": amlo.get("strength_text"),
+            "dose": None,
+            "original_text": amlo.get("original_text"),
+            "reason": "unclear",
+            "diagnosis": "Dx: HTN, Acid reflux (GERD)",
+            "note": None,
+        },
+        dedupe_key=f"review:{amlo['_id']}:seed",
+        now=now - timedelta(hours=3),
+    )
+    concern = await db.checkins.find_one(
+        {"elder_id": elder_id, "concern_flag": True}, sort=[("created_at", -1)]
+    )
+    if concern:
+        await raise_alert(
+            db,
+            elder_id,
+            "concern",
+            {
+                "checkin_id": concern["_id"],
+                "reason": concern.get("concern_reason"),
+                "said": next((t["text"] for t in concern["transcript"] if t["role"] == "elder"), None),
+                "channel": concern.get("channel"),
+            },
+            dedupe_key=f"concern:{concern['_id']}",
+            now=now - timedelta(minutes=40),
+        )
+    missed = await db.reminders.find_one(
+        {"elder_id": elder_id, "status": {"$in": ["missed", "skipped"]}}, sort=[("scheduled_at", -1)]
+    )
+    if missed:
+        med = next((m for m in meds if m["_id"] == missed["medicine_id"]), {})
+        await raise_alert(
+            db,
+            elder_id,
+            "missed_dose",
+            {
+                "reminder_id": missed["_id"],
+                "medicine_id": missed["medicine_id"],
+                "medicine_name": med.get("name", "Dawai"),
+                "dose": med.get("dose_text"),
+                "scheduled_at": missed["scheduled_at"],
+                "outcome": missed["status"],
+            },
+            dedupe_key=f"dose:{missed['_id']}",
+            now=now - timedelta(hours=1),
+        )
+    doctor, family = users["doctor"]["_id"], users["family"]["_id"]
+    starts = (now + timedelta(days=1)).astimezone(PK_TZ).replace(hour=11, minute=0, second=0, microsecond=0)
+    await db.meetings.insert_one(
+        {
+            "elder_id": elder_id,
+            "created_by": doctor,
+            "participant_ids": [elder_id, family],
+            "member_ids": [doctor, elder_id, family],
+            "starts_at": starts.astimezone(UTC),
+            "duration_min": 30,
+            "mode": "video",
+            "reason": "BP follow-up / BP ka follow-up",
+            "location": None,
+            "link": f"https://meet.jit.si/SehatSaathi-{_secrets.token_urlsafe(12)}",
+            "status": "scheduled",
+            "responses": {str(family): "accepted"},
+            "created_at": now,
+        }
+    )
 
 
 if __name__ == "__main__":

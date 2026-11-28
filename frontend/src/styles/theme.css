@@ -1,6 +1,6 @@
 /* ============================================================
    THEME — the ONLY file that defines colours and fonts.
-   Stage B: warm, calm palette (cream, deep teal, soft gold). Tailwind's colours are mapped
+   Calm premium light palette (warm neutral, white cards, deep pine accent). Tailwind's colours are mapped
    to these variables in index.css, so a Tailwind class can never introduce a new colour.
 
    Contrast (WCAG 2.x, computed):
@@ -16,62 +16,65 @@
    ============================================================ */
 :root {
   color-scheme: light;
-  --bg: #fbf6ec;
+  /* Calm, premium light theme (Nov 28): warm neutral grouped background, white cards, one quiet
+     deep-pine accent. No bright tints: soft fills are barely-there greys/greens. */
+  --bg: #f3f2ee;
   --surface: #ffffff;
-  --surface-alt: #f4ecdd;
-  --text: #1f1b16;
-  --text-muted: #574e43;
-  --accent: #0e5b56;
+  --surface-alt: #ebeae5;
+  --text: #1c1c1e;
+  --text-muted: #5c5b57;
+  --accent: #2c5f51;
   --accent-text: #ffffff;
-  --accent-soft: #ddefec;
-  --success: #1e6b3a;
-  --success-bg: #e4f3e8;
-  --warning-text: #6e4600;
-  --warning-bg: #fff2cc;
-  --warning-border: #c98a00;
-  --danger: #a61b1b;
-  --danger-bg: #fbe5e5;
-  --border: #d8cbb5;
-  --focus: #0e5b56;
-  --overlay: rgb(31 27 22 / 0.55);
+  --accent-soft: #e9efec;
+  --success: #2c6e46;
+  --success-bg: #e8f1eb;
+  --warning-text: #6f4b00;
+  --warning-bg: #f8f0dd;
+  --warning-border: #d3a443;
+  --danger: #b3261e;
+  --danger-bg: #f9e9e7;
+  --border: #e2e0da;
+  --hairline: rgb(60 60 67 / 0.12);
+  --focus: #2c5f51;
+  --overlay: rgb(28 28 30 / 0.4);
 
-  /* Stage B decoration (landing hero / section headings only) */
-  --gold: #e3a93c;
-  --gold-soft: #f6e3b8;
-  --gold-text: #8a5a00;
-  --glow-gold: rgb(227 169 60 / 0.38);
-  --glow-teal: rgb(14 91 86 / 0.22);
-  --glow-peach: rgb(240 150 110 / 0.28);
-  --glass: rgb(255 255 255 / 0.62);
-  --glass-border: rgb(255 255 255 / 0.75);
-  --dot: rgb(31 27 22 / 0.09);
+  --gold: #c8a15a;
+  --gold-soft: #f3ecdd;
+  --gold-text: #75561a;
+  --glow-gold: rgb(200 161 90 / 0.1);
+  --glow-teal: rgb(44 95 81 / 0.07);
+  --glow-peach: rgb(220 170 140 / 0.1);
+  --glass: rgb(255 255 255 / 0.78);
+  --glass-border: rgb(255 255 255 / 0.9);
+  --dot: rgb(28 28 30 / 0.06);
 
   /* Chotu (mascot): a medicine capsule in the brand colours. Decoration only. */
-  --chotu-cap: #0e5b56;
-  --chotu-shell: #fbf6ec;
-  --chotu-line: #1f1b16;
-  --chotu-eye: #1f1b16;
-  --chotu-plus: #e3a93c;
-  --chotu-cheek: #f3a6a0;
-  --chotu-shadow: rgb(31 27 22 / 0.14);
-  --chotu-ring: rgb(14 91 86 / 0.35);
+  --chotu-cap: #2c5f51;
+  --chotu-shell: #fffdf8;
+  --chotu-line: #1c1c1e;
+  --chotu-eye: #1c1c1e;
+  --chotu-plus: #e2b65a;
+  --chotu-cheek: #f0b4ac;
+  --chotu-shadow: rgb(28 28 30 / 0.12);
+  --chotu-ring: rgb(44 95 81 / 0.3);
 
-  /* Latin glyphs come from Atkinson; Urdu glyphs fall through to Noto Nastaliq Urdu (the iOS Urdu font). */
-  --font-body: 'Atkinson Hyperlegible', 'Noto Nastaliq Urdu', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  /* Display/script fonts: ONLY the landing hero and section headings (never medical info or buttons). */
+  /* Inter for Latin (clean, iOS-like), Noto Nastaliq Urdu for Urdu glyphs. */
+  --font-body: 'Inter Variable', 'Noto Nastaliq Urdu', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Display/script fonts: ONLY the website landing hero and section headings. */
   --font-serif: 'Fraunces', 'Noto Nastaliq Urdu', Georgia, 'Times New Roman', serif;
   --font-display: 'Anton', 'Noto Nastaliq Urdu', Impact, 'Arial Narrow', sans-serif;
   --font-script: 'Yellowtail', 'Noto Nastaliq Urdu', 'Brush Script MT', cursive;
 
-  --radius: 14px;
-  --radius-sm: 10px;
-  --shadow: 0 1px 2px rgb(31 27 22 / 0.06), 0 4px 14px rgb(31 27 22 / 0.06);
-  --shadow-lg: 0 2px 6px rgb(31 27 22 / 0.06), 0 18px 40px rgb(31 27 22 / 0.10);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.04), 0 16px 40px rgb(0 0 0 / 0.08);
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ============================================================
-   DARK MODE. Chosen with the toggle (html[data-theme]) or, with no choice saved, by the phone's
-   setting. Contrast (computed): text on bg 15.8, muted on surface 9.1, accent on surface 7.9,
+   DARK MODE. Only when chosen with the toggle in More (html[data-theme]); the app is light by
+   default for elders, whatever the phone's setting. Contrast (computed): text on bg 15.8, muted on surface 9.1, accent on surface 7.9,
    accent-text on accent 8.2, success / danger on surface 9.5 / 8.1, warning text on its bg 10.3.
    ============================================================ */
 :root[data-theme='dark'] {
@@ -108,41 +111,4 @@
   --chotu-ring: rgb(92 196 184 / 0.4);
   --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.35), 0 18px 40px rgb(0 0 0 / 0.45);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-    --bg: #111514;
-    --surface: #1a201f;
-    --surface-alt: #222a28;
-    --text: #f3ede2;
-    --text-muted: #c9bfae;
-    --accent: #5cc4b8;
-    --accent-text: #0a1f1d;
-    --accent-soft: #173835;
-    --success: #7bd897;
-    --success-bg: #14301f;
-    --warning-text: #ffd27a;
-    --warning-bg: #33270a;
-    --warning-border: #c98a00;
-    --danger: #ff9b91;
-    --danger-bg: #3a1715;
-    --border: #36403d;
-    --focus: #8fe0d6;
-    --overlay: rgb(0 0 0 / 0.62);
-    --gold-soft: #3a2f17;
-    --gold-text: #f0c46a;
-    --glow-gold: rgb(227 169 60 / 0.16);
-    --glow-teal: rgb(92 196 184 / 0.14);
-    --glow-peach: rgb(240 150 110 / 0.12);
-    --glass: rgb(26 32 31 / 0.72);
-    --glass-border: rgb(255 255 255 / 0.08);
-    --dot: rgb(255 255 255 / 0.06);
-    --chotu-shell: #f3ede2;
-    --chotu-line: #f3ede2;
-    --chotu-shadow: rgb(0 0 0 / 0.4);
-    --chotu-ring: rgb(92 196 184 / 0.4);
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.35), 0 18px 40px rgb(0 0 0 / 0.45);
-  }
 }

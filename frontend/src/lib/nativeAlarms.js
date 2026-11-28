@@ -1,25 +1,35 @@
-/* Native dose alarms for the Android app (Capacitor Local Notifications).
-   The app schedules one Android notification per pending dose for the next 7 days, so alarms ring
-   even if the app is closed, the phone is locked or offline. Re-synced on every reminder refresh:
-   taken / skipped / stopped doses are cancelled, new ones added. Each alarm has "Taken" and
-   "Remind me in 10 min" buttons. Website: does nothing (it uses Web Push instead). */
+/* Native alarms for the Android app (Capacitor Local Notifications).
+   Elders: one alarm per pending dose for the next 7 days, plus "still not taken?" follow-ups 15 and
+   30 minutes later (cancelled as soon as the dose is marked), so alarms ring even if the app is
+   closed, the phone is locked or offline. Each alarm has two buttons: "Taken" and "Not taken".
+   Family / doctor: every open care alert rings again and again (urgent ones every 10 minutes) until
+   it is marked read; meetings ring 15 minutes before. Website: does nothing (it uses Web Push). */
 import { st } from '../i18n/server';
 import { t } from '../i18n/useT';
 import { LocalNotifications as LN } from '@capacitor/local-notifications';
 import { isNative } from './native';
 
 const CHANNEL = 'doses';
-const MAX_ALARMS = 60; // Android allows ~500 per app; a week of doses is far below this
+const CARE_CHANNEL = 'care';
+const MAX_ALARMS = 90; // Android allows ~500 per app
+const FOLLOW_UPS = [0, 15, 30]; // minutes after the dose time
+// Minutes after an alert first reaches this phone at which it rings (until read / resolved).
+const CARE_REPEAT = {
+  concern: [0, 10, 20, 30, 45, 60, 90, 120, 180, 240],
+  med_review: [0, 30, 60, 120, 240],
+  missed_dose: [0, 30, 90],
+  meeting: [0],
+};
 // First sync after each app start re-creates every alarm: a force-stop, app update or some OEM
 // battery savers wipe Android's alarms while the plugin still lists them as pending.
 let fullResync = true;
 
 // NB: Capacitor plugin objects are proxies that look "thenable": never return one from a promise.
 
-/** Stable positive 31-bit id from a reminder id (Android notification ids are ints). */
-export function alarmId(reminderId) {
+/** Stable positive 31-bit id from a string id (Android notification ids are ints). */
+export function alarmId(key) {
   let h = 0;
-  for (const c of String(reminderId)) h = (Math.imul(h, 31) + c.charCodeAt(0)) | 0;
+  for (const c of String(key)) h = (Math.imul(h, 31) + c.charCodeAt(0)) | 0;
   return (Math.abs(h) % 2_000_000_000) + 1;
 }
 
@@ -59,7 +69,17 @@ export async function ensureAlarmSetup(again = false) {
         visibility: 1,
         vibration: true,
         lights: true,
-        lightColor: '#0E5B56',
+        lightColor: '#2C5F51',
+      }).catch(() => {});
+      await LN.createChannel({
+        id: CARE_CHANNEL,
+        name: t('native.care.channel'),
+        description: t('native.care.channel.desc'),
+        importance: 5,
+        visibility: 0,
+        vibration: true,
+        lights: true,
+        lightColor: '#B3261E',
       }).catch(() => {});
       await LN.registerActionTypes({
         types: [
@@ -67,9 +87,17 @@ export async function ensureAlarmSetup(again = false) {
             id: 'DOSE',
             actions: [
               { id: 'taken', title: t('native.action.taken'), foreground: true },
-              { id: 'snooze', title: t('native.action.snooze') },
+              { id: 'skipped', title: t('native.action.skipped') },
             ],
           },
+          {
+            id: 'CARE',
+            actions: [
+              { id: 'read', title: t('native.action.read') },
+              { id: 'open', title: t('native.action.open'), foreground: true },
+            ],
+          },
+          { id: 'CARE_REVIEW', actions: [{ id: 'open', title: t('native.action.open'), foreground: true }] },
         ],
       }).catch(() => {});
     }
@@ -79,43 +107,122 @@ export async function ensureAlarmSetup(again = false) {
   }
 }
 
-function toAlarm(r, at) {
+function toAlarm(r, at, k = 0) {
+  const text = `${st(r.medicine_name)}${r.dose ? ` — ${r.dose}` : ''}`;
   return {
-    id: alarmId(r.id),
-    title: t('rem.alert.title'),
-    body: `${st(r.medicine_name)}${r.dose ? ` — ${r.dose}` : ''}`,
-    largeBody: `${st(r.medicine_name)}${r.dose ? ` — ${r.dose}` : ''}${r.instructions ? `\n${st(r.instructions)}` : ''}`,
+    id: alarmId(k ? `${r.id}#${k}` : r.id),
+    title: k ? t('native.dose.again') : t('rem.alert.title'),
+    body: text,
+    largeBody: `${text}${r.instructions ? `\n${st(r.instructions)}` : ''}`,
     schedule: { at, allowWhileIdle: true },
     channelId: CHANNEL,
     actionTypeId: 'DOSE',
     smallIcon: 'ic_stat_notify',
-    iconColor: '#0E5B56',
+    iconColor: '#2C5F51',
     autoCancel: true,
-    extra: { reminderId: r.id, name: r.medicine_name, dose: r.dose || '' },
+    extra: { kind: 'dose', reminderId: r.id, name: r.medicine_name, dose: r.dose || '' },
   };
 }
 
-/** Make the scheduled alarms match the pending doses in `reminders`. */
+/** Every alarm of one dose: the dose time and the follow-ups that are still in the future. */
+function doseAlarms(r, now) {
+  const at = new Date(r.scheduled_at).getTime();
+  return FOLLOW_UPS.map((m, k) => ({ k, at: at + m * 60_000 }))
+    .filter((x) => x.at > now + 5_000)
+    .map((x) => toAlarm(r, new Date(x.at), x.k));
+}
+
+/** Make the scheduled dose alarms match the pending doses in `reminders`. */
 export async function syncAlarms(reminders) {
   if (!isNative() || !Array.isArray(reminders)) return;
   if (!(await ensureAlarmSetup())) return;
   const now = Date.now();
   const wanted = reminders
-    .filter((r) => r.status === 'pending' && new Date(r.scheduled_at).getTime() > now + 5_000)
+    .filter((r) => r.status === 'pending')
+    .flatMap((r) => doseAlarms(r, now))
+    .sort((a, b) => a.schedule.at - b.schedule.at)
     .slice(0, MAX_ALARMS);
-  const wantedIds = new Set(wanted.map((r) => alarmId(r.id)));
+  const wantedIds = new Set(wanted.map((n) => n.id));
   const { notifications: pending } = await LN.getPending();
-  const stale = pending
-    .filter((n) => (fullResync || !wantedIds.has(n.id)) && !n.extra?.snoozed)
-    .map((n) => ({ id: n.id }));
+  const doses = pending.filter((n) => (n.extra?.kind || 'dose') === 'dose');
+  const stale = doses.filter((n) => fullResync || !wantedIds.has(n.id)).map((n) => ({ id: n.id }));
   if (stale.length) await LN.cancel({ notifications: stale });
-  const have = fullResync ? new Set() : new Set(pending.map((n) => n.id));
+  const have = fullResync ? new Set() : new Set(doses.map((n) => n.id));
   fullResync = false;
-  const add = wanted.filter((r) => !have.has(alarmId(r.id))).map((r) => toAlarm(r, new Date(r.scheduled_at)));
+  const add = wanted.filter((n) => !have.has(n.id));
   if (add.length) await LN.schedule({ notifications: add });
 }
 
-/** Logout on a shared phone: no more dose alarms for the account that left. */
+const careSeen = new Map(); // alert id -> when this phone first saw it (repeats count from then)
+
+/** Family / doctor: repeating notifications for every open alert until it is read or resolved, and
+    a reminder 15 minutes before each upcoming meeting. Called whenever alerts / meetings load. */
+export async function syncCareAlarms(alerts, meetings = [], { meetingsOnly = false } = {}) {
+  if (!isNative() || !Array.isArray(alerts)) return;
+  if (!(await ensureAlarmSetup())) return;
+  const now = Date.now();
+  const wanted = [];
+  for (const a of alerts.filter((x) => x.open).slice(0, 20)) {
+    if (!careSeen.has(a.id)) careSeen.set(a.id, now);
+    const start = careSeen.get(a.id);
+    const name = a.elder_name || t('alerts.elder');
+    (CARE_REPEAT[a.kind] || [0]).forEach((m, k) => {
+      const due = start + m * 60_000;
+      if (k > 0 && due < now) return; // that repeat already rang
+      wanted.push({
+        id: alarmId(`care:${a.id}:${k}`),
+        title: t(`native.care.${a.kind}.title`),
+        body: t(`native.care.${a.kind}.body`, { name }),
+        schedule: { at: new Date(Math.max(due, now + 3_000)), allowWhileIdle: true },
+        channelId: CARE_CHANNEL,
+        actionTypeId: a.kind === 'med_review' ? 'CARE_REVIEW' : 'CARE',
+        smallIcon: 'ic_stat_notify',
+        iconColor: a.severity === 'urgent' ? '#B3261E' : '#2C5F51',
+        autoCancel: true,
+        extra: { kind: 'care', alertId: a.id, elderId: a.elder_id, alertKind: a.kind },
+      });
+    });
+  }
+  for (const m of meetings.filter((x) => x.status === 'scheduled' && x.my_response !== 'declined')) {
+    const at = new Date(m.starts_at).getTime() - 15 * 60_000;
+    if (at <= now + 5_000) continue;
+    wanted.push({
+      id: alarmId(`meet:${m.id}`),
+      title: t('native.meeting.title'),
+      body: t('native.meeting.body', { who: m.organiser?.name || '' }),
+      schedule: { at: new Date(at), allowWhileIdle: true },
+      channelId: CARE_CHANNEL,
+      smallIcon: 'ic_stat_notify',
+      iconColor: '#2C5F51',
+      autoCancel: true,
+      extra: { kind: 'meeting', meetingId: m.id },
+    });
+  }
+  const ids = new Set(wanted.map((n) => n.id));
+  const { notifications: pending } = await LN.getPending();
+  const kinds = meetingsOnly ? ['meeting'] : ['care', 'meeting'];
+  const mine = pending.filter((n) => kinds.includes(n.extra?.kind));
+  const stale = mine.filter((n) => !ids.has(n.id)).map((n) => ({ id: n.id }));
+  if (stale.length) await LN.cancel({ notifications: stale });
+  const have = new Set(mine.map((n) => n.id));
+  const add = wanted.filter((n) => !have.has(n.id));
+  if (add.length) await LN.schedule({ notifications: add });
+}
+
+/** Meetings only (elders, or the Meetings screen): a reminder 15 minutes before each one. */
+export async function syncMeetingAlarms(meetings) {
+  if (!isNative()) return;
+  await syncCareAlarms([], meetings, { meetingsOnly: true });
+}
+
+export async function cancelCareAlarms(alertId) {
+  if (!isNative()) return;
+  const n = Math.max(...Object.values(CARE_REPEAT).map((x) => x.length));
+  const ids = Array.from({ length: n }, (_, k) => ({ id: alarmId(`care:${alertId}:${k}`) }));
+  await LN.cancel({ notifications: ids }).catch(() => {});
+}
+
+/** Logout on a shared phone: no more alarms for the account that left. */
 export async function cancelAllAlarms() {
   if (!isNative()) return;
   try {
@@ -124,19 +231,13 @@ export async function cancelAllAlarms() {
   } catch {
     /* nothing scheduled */
   }
+  careSeen.clear();
   fullResync = true;
 }
 
+/** A dose was marked: cancel its alarm and both follow-ups. */
 export async function cancelAlarm(reminderId) {
   if (!isNative()) return;
-  await LN.cancel({ notifications: [{ id: alarmId(reminderId) }] }).catch(() => {});
-}
-
-/** "Remind me in 10 min" from the notification itself. */
-export async function snoozeAlarm(extra) {
-  if (!isNative() || !extra?.reminderId) return;
-  const r = { id: `${extra.reminderId}:snooze`, medicine_name: extra.name, dose: extra.dose };
-  const n = toAlarm(r, new Date(Date.now() + 10 * 60_000));
-  n.extra = { ...extra, snoozed: true };
-  await LN.schedule({ notifications: [n] });
+  const ids = FOLLOW_UPS.map((_, k) => ({ id: alarmId(k ? `${reminderId}#${k}` : reminderId) }));
+  await LN.cancel({ notifications: ids }).catch(() => {});
 }

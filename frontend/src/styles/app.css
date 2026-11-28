@@ -207,3 +207,311 @@ html.has-tabbar .page {
 .segmented__label {
   position: relative;
 }
+
+/* ============================================================
+   Premium, calm UI kit (Nov 28): iOS-like grouped cards, sheets, rows and big dose buttons.
+   Only theme tokens; motion is transform/opacity (Motion springs in the components).
+   ============================================================ */
+.app-tabbar__list--3 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 30rem;
+}
+
+/* Segmented control: soft grey track, white sliding pill, dark label (iOS feel). */
+.segmented {
+  background: rgb(118 118 128 / 0.12);
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+}
+.segmented__btn {
+  min-height: 44px;
+  font-weight: 600;
+  color: var(--text);
+}
+.segmented__btn[aria-selected='true'] {
+  color: var(--text);
+}
+.segmented__pill {
+  background: var(--surface);
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 1px 1px rgb(0 0 0 / 0.04);
+}
+
+/* Tab bar: frosted glass, hairline edge. */
+.app-tabbar__list {
+  background: rgb(255 255 255 / 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.08);
+}
+:root[data-theme='dark'] .app-tabbar__list {
+  background: rgb(26 32 31 / 0.82);
+}
+.app-tabbar__label {
+  font-weight: 600;
+}
+
+.card-ios {
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--hairline);
+}
+.section-label {
+  margin: 8px 4px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+html[lang='ur'] .section-label {
+  text-transform: none;
+  font-size: 1.05rem;
+}
+
+/* Grouped list (Settings-style): rows separated by inset hairlines. */
+.ios-group {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  border-radius: 24px;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow);
+}
+.ios-group > * + * {
+  position: relative;
+}
+.ios-group > * + *::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline-start: 72px;
+  inset-inline-end: 0;
+  height: 1px;
+  background: var(--hairline);
+}
+.ios-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface);
+  transition: background-color 0.2s ease;
+}
+.ios-row:active {
+  background: var(--surface-alt);
+}
+a.ios-row,
+label.ios-row {
+  -webkit-tap-highlight-color: transparent;
+}
+.card-ios > .ios-row,
+.ios-row.card-ios {
+  border-radius: 24px;
+}
+.row-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+.row-icon--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.row-icon--danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.row-icon--neutral {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+.ios-check {
+  width: 28px;
+  height: 28px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.chip-ios {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.chip-ios--warn {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.chip-ios--danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ---------- The dose card: two big answers ---------- */
+.dose-card {
+  padding: 22px;
+  background: var(--surface);
+  border-radius: 28px;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-lg);
+}
+.dose-card--flat {
+  padding: 4px 2px 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.dose-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 72px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 22px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+.dose-btn:disabled {
+  opacity: 0.6;
+}
+.dose-btn--yes {
+  background: var(--success);
+  color: #fff;
+  box-shadow: 0 8px 22px rgb(44 110 70 / 0.28);
+}
+.dose-btn--no {
+  min-height: 64px;
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+/* ---------- Bottom sheet ---------- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--overlay);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 36rem;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 10px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-radius: 30px 30px 0 0;
+  box-shadow: 0 -10px 40px rgb(0 0 0 / 0.15);
+  overscroll-behavior: contain;
+}
+.sheet--tall {
+  min-height: 70dvh;
+}
+.sheet__grabber {
+  align-self: center;
+  width: 40px;
+  height: 5px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  background: rgb(60 60 67 / 0.3);
+}
+.sheet__close {
+  min-height: 48px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.form-row > .input,
+.form-row > select,
+.form-row > textarea {
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* ---------- Alerts ---------- */
+.alert-card {
+  padding: 18px;
+  background: var(--surface);
+  border-radius: 24px;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow);
+}
+.alert--urgent {
+  border: 2px solid var(--danger);
+  box-shadow: 0 10px 30px rgb(179 38 30 / 0.14);
+}
+.alert--important {
+  border-inline-start: 5px solid var(--warning-border);
+}
+
+/* More button variants */
+.app-btn {
+  border: 0;
+  cursor: pointer;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  transition:
+    transform 0.25s var(--ease-ios),
+    opacity 0.2s ease;
+}
+.app-btn--primary {
+  box-shadow: 0 8px 20px rgb(44 95 81 / 0.22);
+}
+.app-btn--secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.app-btn--success {
+  background: var(--success);
+  color: #fff;
+}
+.app-btn--danger {
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 8px 20px rgb(179 38 30 / 0.22);
+}
+.app-btn--sm {
+  min-height: 52px;
+  font-size: 1.08rem;
+  border-radius: 16px;
+  padding: 0 12px;
+}
