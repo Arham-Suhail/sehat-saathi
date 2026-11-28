@@ -1,6 +1,7 @@
 """Password hashing, JWT issuing/verification and authorisation dependencies."""
 
 import secrets
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
@@ -74,6 +75,32 @@ _UNAUTH = HTTPException(
 )
 
 
+# "Not revoked" answers are remembered for 60 s (one database round trip less on almost every
+# request). A logout on this server marks the token revoked here at once (remember_revoked).
+_not_revoked: dict[str, float] = {}
+_revoked_here: set[str] = set()
+
+
+async def is_revoked(db: Any, jti: str) -> bool:
+    if jti in _revoked_here:
+        return True
+    now = time.monotonic()
+    if _not_revoked.get(jti, 0) > now:
+        return False
+    if await db.revoked_tokens.find_one({"jti": jti}, {"_id": 1}):
+        _revoked_here.add(jti)
+        return True
+    if len(_not_revoked) > 5000:
+        _not_revoked.clear()
+    _not_revoked[jti] = now + 60
+    return False
+
+
+def remember_revoked(jti: str) -> None:
+    _not_revoked.pop(jti, None)
+    _revoked_here.add(jti)
+
+
 async def get_current_user(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
@@ -96,7 +123,7 @@ async def get_current_user(
         raise _UNAUTH
     # Logout revokes this one token server-side (revoked_tokens, TTL = token expiry).
     jti = payload.get("jti")
-    if jti and await db.revoked_tokens.find_one({"jti": jti}, {"_id": 1}):
+    if jti and await is_revoked(db, jti):
         raise _UNAUTH
     request.state.user_id = sub
     request.state.token = payload

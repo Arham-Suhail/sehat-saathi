@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
@@ -46,9 +47,12 @@ async def upcoming(
     The Android app asks for up to 7 days so it can schedule native alarms that ring even if the
     app isn't opened for a few days."""
     now = datetime.now(UTC)
-    await top_up(db, user["_id"], now)
-    await mark_missed(db, user["_id"], now)
-    stopped = await db.medicines.distinct("_id", {"elder_id": user["_id"], "status": "stopped"})
+    # Independent: run together (each database round trip is ~0.25 s from the server).
+    _, _, stopped = await asyncio.gather(
+        top_up(db, user["_id"], now),
+        mark_missed(db, user["_id"], now),
+        db.medicines.distinct("_id", {"elder_id": user["_id"], "status": "stopped"}),
+    )
     docs = (
         await db.reminders.find(
             {

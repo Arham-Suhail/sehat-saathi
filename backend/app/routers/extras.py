@@ -162,6 +162,9 @@ async def fall_alert(
 async def logout(request: Request, user: dict = Depends(get_current_user), db: Any = Depends(get_db)) -> None:
     p = getattr(request.state, "token", None) or {}
     if p.get("jti"):
+        from app.security import remember_revoked
+
+        remember_revoked(p["jti"])
         exp = datetime.fromtimestamp(int(p.get("exp") or 0), UTC)
         await db.revoked_tokens.update_one(
             {"jti": p["jti"]}, {"$setOnInsert": {"jti": p["jti"], "expires_at": exp}}, upsert=True

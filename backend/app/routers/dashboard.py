@@ -1,5 +1,6 @@
 """Read-only carer dashboard data (also usable by the elder for themselves)."""
 
+import asyncio
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -33,16 +34,25 @@ async def dashboard(
     db: Any = Depends(get_db),
 ) -> dict:
     target = resolve_elder_access(user, elder_id, "read")
-    elder = await db.users.find_one({"_id": target, "role": "elder"})
-    await log_view(db, user, target)
     now = datetime.now(UTC)
     since = now - timedelta(days=days)
-    await mark_missed(db, target, now)
-
-    checkins = (
-        await db.checkins.find({"elder_id": target, "created_at": {"$gte": since}})
+    # Every database round trip costs ~0.25 s from the server, so independent reads run together
+    # (this took ~4 s when they ran one after another).
+    (elder, _, _, discontinued, checkins, vitals, meds, all_meds, rx, open_alerts) = await asyncio.gather(
+        db.users.find_one({"_id": target, "role": "elder"}),
+        log_view(db, user, target),
+        mark_missed(db, target, now),
+        db.medicines.distinct("_id", {"elder_id": target, "discontinued": True}),
+        db.checkins.find({"elder_id": target, "created_at": {"$gte": since}})
         .sort("created_at", -1)
-        .to_list(length=200)
+        .to_list(length=200),
+        db.vitals.find({"elder_id": target}).sort("measured_at", -1).to_list(length=50),
+        db.medicines.find({"elder_id": target, "status": "confirmed"}).to_list(length=50),
+        db.medicines.find({"elder_id": target}).to_list(length=200),
+        db.prescriptions.find({"elder_id": target}).sort("created_at", -1).to_list(length=10),
+        db.alerts.count_documents(open_for(user) | {"elder_id": target})
+        if user["role"] != "elder"
+        else _zero(),
     )
 
     # Mood trend: average score per local day.
@@ -58,14 +68,17 @@ async def dashboard(
 
     # Adherence: reminders due so far in the window, grouped by local day.
     # Discontinued (D/c) orders never count towards adherence.
-    discontinued = await db.medicines.distinct("_id", {"elder_id": target, "discontinued": True})
-    rems = await db.reminders.find(
-        {
-            "elder_id": target,
-            "medicine_id": {"$nin": discontinued},
-            "scheduled_at": {"$gte": since, "$lte": now},
-        }
-    ).to_list(length=2000)
+    # After mark_missed (statuses are final): the window's doses and the 14-day week comparison.
+    rems, week = await asyncio.gather(
+        db.reminders.find(
+            {
+                "elder_id": target,
+                "medicine_id": {"$nin": discontinued},
+                "scheduled_at": {"$gte": since, "$lte": now},
+            }
+        ).to_list(length=2000),
+        _week_compare(db, target, discontinued, now),
+    )
     adherence: dict[str, dict[str, int]] = defaultdict(
         lambda: {"taken": 0, "skipped": 0, "missed": 0, "pending": 0}
     )
@@ -76,15 +89,7 @@ async def dashboard(
     done = totals["taken"] + totals["skipped"] + totals["missed"]
     totals["adherence_pct"] = round(100 * totals["taken"] / done) if done else None
 
-    vitals = await db.vitals.find({"elder_id": target}).sort("measured_at", -1).to_list(length=50)
-    meds = await db.medicines.find({"elder_id": target, "status": "confirmed"}).to_list(length=50)
-    report = await _report(db, target, rems, now)
-    rx = await db.prescriptions.find({"elder_id": target}).sort("created_at", -1).to_list(length=10)
-    open_alerts = (
-        await db.alerts.count_documents(open_for(user) | {"elder_id": target})
-        if user["role"] != "elder"
-        else 0
-    )
+    report = _report({m["_id"]: m for m in all_meds}, rems, now)
 
     return {
         "elder": {"id": str(target), "name": elder["name"] if elder else ""},
@@ -112,7 +117,7 @@ async def dashboard(
         "last_seen": _aware(elder["last_seen_at"]).isoformat()
         if elder and elder.get("last_seen_at")
         else None,
-        "week_compare": await _week_compare(db, target, discontinued, now),
+        "week_compare": week,
     }
 
 
@@ -155,15 +160,9 @@ def _pct(part: int, whole: int) -> int | None:
     return round(100 * part / whole) if whole else None
 
 
-async def _report(db: Any, elder_id: Any, rems: list[dict], now: datetime) -> dict:
+def _report(names: dict, rems: list[dict], now: datetime) -> dict:
     """Progress report for family / doctor: per medicine, per time of day, on-time rate, recent misses."""
     done = [r for r in rems if r["status"] in ("taken", "skipped", "missed")]
-    names = {
-        m["_id"]: m
-        for m in await db.medicines.find({"_id": {"$in": list({r["medicine_id"] for r in rems})}}).to_list(
-            length=100
-        )
-    }
     per_med: dict = defaultdict(lambda: {"taken": 0, "skipped": 0, "missed": 0, "on_time": 0})
     slots: dict = {name: {"taken": 0, "total": 0} for name, _, _ in SLOTS}
     on_time = 0
@@ -215,3 +214,7 @@ async def _report(db: Any, elder_id: Any, rems: list[dict], now: datetime) -> di
             for r in missed[:10]
         ],
     }
+
+
+async def _zero() -> int:
+    return 0
