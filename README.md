@@ -7,7 +7,7 @@
 |---|---|
 | **Android app (APK)** | https://github.com/Arham-Suhail/sehat-saathi/releases/download/v3.1/SehatSaathi.apk |
 | **Website** (iPhone / laptop, judges) | https://sehat-saathi-delta.vercel.app |
-| **Judge walkthrough** (wakes the server, demo accounts, 3-step script) | https://sehat-saathi-delta.vercel.app/demo |
+| **Judge walkthrough** (demo accounts, 3-step script) | https://sehat-saathi-delta.vercel.app/demo |
 | **API health** | https://sehat-saathi-api.onrender.com/health |
 
 Sehat Saathi helps elderly people in Pakistan take their medicines on time and keeps their family and doctor in
@@ -172,7 +172,6 @@ Details: `docs/security-checklist.md`, `docs/security/audit-findings.md`, `docs/
 - **Family alerts when the family's app is fully closed:** repeating native alarms start once the app has seen the
   alert; on the website, Web Push delivers it. A real fix is Firebase Cloud Messaging (not set up yet).
 - The APK is **debug-signed** (for the demo); a signed release build is needed for the Play Store.
-- The free Render server answers the first request of a screen in about 1–1.5 s (it is kept awake by UptimeRobot).
 - **AI output can be wrong:** every extraction is reviewed by a person, unclear lines ask for a pharmacist, and
   alternatives always say "needs doctor verification". The app does not replace a doctor.
 - The **fall check** is a prototype (phone sensor, only while the app is open) and can miss falls or raise false
