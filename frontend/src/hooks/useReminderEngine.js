@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
 import { t } from '../i18n/useT';
 import { st } from '../i18n/server';
+import { isNative } from '../lib/native';
+import { cancelAlarm, syncAlarms } from '../lib/nativeAlarms';
 
 const POLL_MS = 60_000;
 const DUE_WINDOW_MS = 60 * 60_000; // alert up to 60 min after the scheduled time
@@ -15,7 +17,8 @@ export function notificationsSupported() {
 }
 
 export async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return null;
+  // Android app: native alarms replace the service worker (Web Push isn't available in a WebView).
+  if (isNative() || !('serviceWorker' in navigator)) return null;
   try {
     return await navigator.serviceWorker.register('/sw.js');
   } catch {
@@ -44,7 +47,13 @@ export function useReminderEngine({ enabled }) {
 
   const refresh = useCallback(async () => {
     try {
-      const data = await api('/reminders/upcoming');
+      // Android app: fetch a week so native alarms are scheduled ahead (they ring even if the app
+      // isn't opened for days); the screens still show the usual window (up to 24h ahead).
+      const native = isNative();
+      const full = await api(native ? '/reminders/upcoming?ahead_hours=168' : '/reminders/upcoming');
+      if (native) syncAlarms(full).catch(() => {});
+      const horizon = Date.now() + 24 * 3_600_000;
+      const data = native ? full.filter((r) => new Date(r.scheduled_at).getTime() <= horizon) : full;
       setReminders(data);
       setError(null);
       return data;
@@ -94,6 +103,7 @@ export function useReminderEngine({ enabled }) {
     async (id, action) => {
       const updated = await api(`/reminders/${id}/${action}`, { method: 'POST' });
       setReminders((list) => list.map((r) => (r.id === id ? updated : r)));
+      cancelAlarm(id).catch(() => {});
       setDue((d) => (d && d.id === id ? null : d));
       return updated;
     },

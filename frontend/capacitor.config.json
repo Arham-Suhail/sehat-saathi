@@ -1,0 +1,27 @@
+{
+  "appId": "com.sehatsathi.app",
+  "appName": "Sehat Saathi",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "sehat-saathi-delta.vercel.app"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 700,
+      "launchAutoHide": true,
+      "backgroundColor": "#FBF6EC",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_INSIDE"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_notify",
+      "iconColor": "#0E5B56"
+    }
+  }
+}

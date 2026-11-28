@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sehat Saathi</string>
+    <string name="title_activity_main">Sehat Saathi</string>
+    <string name="package_name">com.sehatsathi.app</string>
+    <string name="custom_url_scheme">com.sehatsathi.app</string>
+</resources>

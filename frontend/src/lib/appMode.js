@@ -3,6 +3,8 @@
    Signals: ?app=1 in the start URL, the TWA referrer "android-app://com.sehatsathi.app", or
    display-mode standalone. ?web=1 forces website mode (for testing). Kept in sessionStorage, which is
    per tab: opening the site in a normal Chrome tab never inherits app mode from the app. */
+import { Capacitor } from '@capacitor/core';
+
 const KEY = 'ss_app';
 const PACKAGE_REFERRER = 'android-app://com.sehatsathi.app';
 
@@ -26,6 +28,7 @@ let cached = null;
 export function isAppMode() {
   if (cached !== null) return cached;
   if (typeof window === 'undefined') return false;
+  if (Capacitor.isNativePlatform()) return (cached = true); // the native Android app
   const params = new URLSearchParams(window.location.search);
   if (params.get('web') === '1') write('0');
   else if (

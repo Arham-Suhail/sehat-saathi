@@ -470,5 +470,9 @@
   "app.welcome.checkin.title": "A check-in every day",
   "app.welcome.checkin.text": "Tell Chotu how you feel: type, speak or call. He listens.",
   "app.welcome.family.title": "Family stays close",
-  "app.welcome.family.text": "Your family and doctor see how you are doing, and get an alert if something is wrong."
+  "app.welcome.family.text": "Your family and doctor see how you are doing, and get an alert if something is wrong.",
+  "native.channel": "Medicine alarms",
+  "native.channel.desc": "Rings when it is time for a dose",
+  "native.action.taken": "✓ Taken",
+  "native.action.snooze": "Remind in 10 min"
 }

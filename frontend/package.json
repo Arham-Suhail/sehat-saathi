@@ -11,6 +11,14 @@
     "test": "node --test src/i18n/translit.test.js src/hooks/vapiClass.test.js src/lib/streaks.test.js src/lib/water.test.js src/i18n/server.test.js src/i18n/toUrdu.test.js src/lib/days.test.js"
   },
   "dependencies": {
+    "@capacitor-community/speech-recognition": "7.0.1",
+    "@capacitor/android": "8.6.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.4",
     "@fontsource/anton": "5.3.0",
     "@fontsource/atkinson-hyperlegible": "5.3.0",
     "@fontsource/fraunces": "5.3.0",
@@ -26,6 +34,7 @@
     "tailwindcss": "4.3.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.6.2",
     "@eslint/js": "9.39.5",
     "@vitejs/plugin-react": "6.3.0",
     "eslint": "9.39.5",

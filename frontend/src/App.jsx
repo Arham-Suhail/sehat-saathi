@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RequireRole } from './auth/AuthContext';
 import AccountSwitchedNotice from './components/AccountSwitchedNotice';
+import NativeBridge from './components/NativeBridge';
 import { ForgotPassword, Login, Register } from './pages/Auth';
 import VerifyEmail from './pages/VerifyEmail';
 import Landing from './pages/Landing';
@@ -34,6 +35,7 @@ export default function App() {
   return (
     <>
       <AccountSwitchedNotice />
+      <NativeBridge />
       <Routes>
         <Route path="/" element={<StartScreen />} />
         <Route path="/login" element={<Login />} />

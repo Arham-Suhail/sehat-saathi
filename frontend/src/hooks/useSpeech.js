@@ -1,16 +1,22 @@
 /* Web Speech API dictation. Feature-detected; the text box always works without it.
    The recogniser follows the UI language: ur-PK returns Urdu script for the Urdu UI, en-IN English
-   for the English UI. A legacy hi-IN caller still gets Hindi script turned into Roman Urdu. */
+   for the English UI. A legacy hi-IN caller still gets Hindi script turned into Roman Urdu.
+   Android app (Capacitor): the WebView has no Web Speech, so the native Google recogniser is used
+   through @capacitor-community/speech-recognition (same hook API for the screens). */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toRoman } from '../i18n/translit';
 import { getLang, t } from '../i18n/useT';
+import { isNative } from '../lib/native';
 
 const SPEECH_LANG = { ur: 'ur-PK', en: 'en-IN' };
 
 const SR = typeof window !== 'undefined' ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 
+const NATIVE = typeof window !== 'undefined' && isNative();
+const nativeSR = () => import('@capacitor-community/speech-recognition').then((m) => m.SpeechRecognition);
+
 export function speechSupported() {
-  return Boolean(SR);
+  return NATIVE || Boolean(SR);
 }
 
 export function useSpeech({ lang, onFinal } = {}) {
@@ -24,8 +30,49 @@ export function useSpeech({ lang, onFinal } = {}) {
   }, [onFinal]);
 
   useEffect(() => () => recRef.current?.abort?.(), []);
+  const [nativeOk, setNativeOk] = useState(NATIVE);
+  useEffect(() => {
+    if (!NATIVE) return;
+    nativeSR()
+      .then((SRN) => SRN.available())
+      .then((r) => setNativeOk(Boolean(r?.available)))
+      .catch(() => setNativeOk(false));
+  }, []);
+
+  const startNative = useCallback(async () => {
+    setError(null);
+    try {
+      const SRN = await nativeSR();
+      const perm = await SRN.requestPermissions();
+      if (perm?.speechRecognition && perm.speechRecognition !== 'granted') {
+        setError(t('mic.denied'));
+        return;
+      }
+      await SRN.removeAllListeners();
+      let last = '';
+      await SRN.addListener('partialResults', (d) => {
+        last = d?.matches?.[0] || last;
+        setInterim(last);
+      });
+      await SRN.addListener('listeningState', (d) => {
+        if (d?.status === 'stopped') {
+          setListening(false);
+          setInterim('');
+          if (last.trim()) onFinalRef.current?.(last.trim());
+          last = '';
+        }
+      });
+      recRef.current = { stop: () => SRN.stop(), abort: () => SRN.stop() };
+      setListening(true);
+      await SRN.start({ language: lang || SPEECH_LANG[getLang()] || 'ur-PK', maxResults: 1, partialResults: true, popup: false });
+    } catch {
+      setListening(false);
+      setError(t('speech.unclear'));
+    }
+  }, [lang]);
 
   const start = useCallback(() => {
+    if (NATIVE) return startNative();
     if (!SR) return;
     setError(null);
     const rec = new SR();
@@ -67,9 +114,9 @@ export function useSpeech({ lang, onFinal } = {}) {
     } catch {
       setListening(false);
     }
-  }, [lang]);
+  }, [lang, startNative]);
 
   const stop = useCallback(() => recRef.current?.stop(), []);
 
-  return { supported: Boolean(SR), listening, interim, error, start, stop };
+  return { supported: NATIVE ? nativeOk : Boolean(SR), listening, interim, error, start, stop };
 }

@@ -18,11 +18,13 @@ import { LangProvider } from './i18n/LangProvider';
 import { applyLang, getLang } from './i18n/useT';
 import { applyAppMode } from './lib/appMode';
 import { applyTheme, watchSystemTheme } from './lib/theme';
+import { setupNativeChrome } from './lib/native';
 
 applyLang(getLang()); // set <html lang dir> before the first paint
 applyTheme(); // light / dark, before the first paint (no flash)
 watchSystemTheme();
 applyAppMode(); // html.is-app inside the Android app / installed PWA
+setupNativeChrome(); // Android app: status bar follows light/dark
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

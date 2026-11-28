@@ -470,5 +470,9 @@
   "app.welcome.checkin.title": "روز کا حال چال",
   "app.welcome.checkin.text": "چھوٹو کو بتائیں آپ کیسا محسوس کر رہے ہیں: لکھ کر، بول کر یا کال پر۔",
   "app.welcome.family.title": "گھر والے ساتھ",
-  "app.welcome.family.text": "آپ کے گھر والے اور ڈاکٹر آپ کا حال دیکھ سکتے ہیں، اور کوئی مسئلہ ہو تو انہیں الرٹ ملتا ہے۔"
+  "app.welcome.family.text": "آپ کے گھر والے اور ڈاکٹر آپ کا حال دیکھ سکتے ہیں، اور کوئی مسئلہ ہو تو انہیں الرٹ ملتا ہے۔",
+  "native.channel": "دوا کے الارم",
+  "native.channel.desc": "خوراک کا وقت ہونے پر بجتا ہے",
+  "native.action.taken": "✓ لے لی",
+  "native.action.snooze": "10 منٹ بعد یاد دلائیں"
 }
