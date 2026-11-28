@@ -8,6 +8,7 @@ import { MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
+import { readCache, writeCache } from '../../lib/cache';
 import { useAuth } from '../../auth/AuthContext';
 import ChotuAgent from '../../components/chotu/ChotuAgent';
 import ChotuBoundary from '../../components/chotu/ChotuBoundary';
@@ -112,13 +113,24 @@ export default function ElderHome() {
   const { user, logout } = useAuth();
   const { reminders, act } = useReminders();
   const { contact } = useEmergencyContact();
-  const [meds, setMeds] = useState([]);
-  const [meetings, setMeetings] = useState([]);
+  // Last known lists draw at once (no jump when switching tabs); fresh ones replace them.
+  const [meds, setMeds] = useState(() => readCache('meds', []));
+  const [meetings, setMeetings] = useState(() => readCache('meetings', []));
   const { simple } = usePrefs(); // Simple mode: only the dose, Chotu and Help
 
   useEffect(() => {
-    api('/medicines').then(setMeds).catch(() => {});
-    api('/meetings').then(setMeetings).catch(() => {});
+    api('/medicines')
+      .then((m) => {
+        setMeds(m);
+        writeCache('meds', m);
+      })
+      .catch(() => {});
+    api('/meetings')
+      .then((m) => {
+        setMeetings(m);
+        writeCache('meetings', m);
+      })
+      .catch(() => {});
   }, []);
 
   const now = Date.now();
