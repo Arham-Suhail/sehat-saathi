@@ -9,6 +9,7 @@
 
     <application
         android:allowBackup="false"
+        android:manageSpaceActivity="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -77,5 +78,12 @@
         <activity
             android:name="com.google.androidbrowserhelper.trusted.NotificationPermissionRequestActivity"
             android:exported="false" />
+        <!-- Required: LauncherActivity enables this on start ("Manage storage" -> the site's data in Chrome). -->
+        <activity
+            android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
+            android:exported="false">
+            <meta-data android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL"
+                android:value="https://sehat-saathi-delta.vercel.app/" />
+        </activity>
     </application>
 </manifest>
