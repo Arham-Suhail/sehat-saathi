@@ -137,7 +137,9 @@ async def _find_medicine(db: Any, elder_id: Any, medicine_name: str) -> tuple[di
     wanted = _norm(medicine_name)
     if not wanted:
         return None, False
-    meds = await db.medicines.find({"elder_id": elder_id, "status": "confirmed"}).to_list(length=100)
+    meds = await db.medicines.find(
+        {"elder_id": elder_id, "status": "confirmed", "review.hold": {"$ne": True}}
+    ).to_list(length=100)
     scored: list[tuple[int, dict]] = []
     for med in meds:
         if med.get("reminder_mode", "fixed") != "fixed":
@@ -226,8 +228,9 @@ async def _alert_family(
         "vapi_call_id": call_id or None,
         "created_at": now,
     }
-    await db.checkins.insert_one(doc)
-    background.add_task(alert_carers_of_concern, db, sender, elder_id)
+    res = await db.checkins.insert_one(doc)
+    doc["_id"] = res.inserted_id
+    background.add_task(alert_carers_of_concern, db, sender, elder_id, doc)
     return "Ghar walon ko alert bhej diya gaya hai."
 
 

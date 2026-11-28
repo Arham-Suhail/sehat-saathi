@@ -7,8 +7,9 @@ from app.db import get_db
 from app.ids import parse_object_id
 from app.schemas import ReminderOut
 from app.security import require_role
+from app.services.care import resolve_alerts
 from app.services.medplan import meal_label
-from app.services.reminders import mark_missed, top_up
+from app.services.reminders import dose_alert, mark_missed, top_up
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
 
@@ -80,4 +81,10 @@ async def act(
     )
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
+    if action == "skipped":
+        await dose_alert(db, doc, "skipped", now)
+    else:  # taken after all (e.g. marked late): the family no longer needs to chase this dose
+        await resolve_alerts(
+            db, {"kind": "missed_dose", "data.reminder_id": rid}, {"name": user["name"]}, now
+        )
     return (await _out(db, [doc]))[0]

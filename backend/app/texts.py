@@ -64,3 +64,36 @@ PUSH_ELDER_DEFAULT: dict[str, str] = {"roman": "Buzurg", "ur": "بزرگ", "en":
 
 def pick(table: dict[str, str], lang: str | None) -> str:
     return table.get(lang or "roman", table["roman"])
+
+
+PUSH_DOSE_AGAIN_TITLE: dict[str, str] = {
+    "roman": "Dawai abhi tak nahi li?",
+    "ur": "دوا ابھی تک نہیں لی؟",
+    "en": "Medicine not taken yet?",
+}
+PUSH_ALERT_TITLE: dict[str, dict[str, str]] = {
+    "missed_dose": {"roman": "Dawai reh gayi", "ur": "دوا رہ گئی", "en": "A dose was missed"},
+    "med_review": {
+        "roman": "Dawai ki tasdeeq karein",
+        "ur": "دوا کی تصدیق کریں",
+        "en": "Please check a medicine",
+    },
+    "meeting": {"roman": "Meeting ki darkhwast", "ur": "میٹنگ کی درخواست", "en": "Meeting request"},
+}
+PUSH_ALERT_BODY: dict[str, dict[str, str]] = {
+    "missed_dose": {
+        "roman": "aaj ki ek dawai nahi li gayi. Meharbani karke rabta karein.",
+        "ur": "آج کی ایک دوا نہیں لی گئی۔ براہ کرم رابطہ کریں۔",
+        "en": "a dose was not taken. Please check on them.",
+    },
+    "med_review": {
+        "roman": "ko ek dawai samajh nahi aayi. App mein tasdeeq karein.",
+        "ur": "کو ایک دوا سمجھ نہیں آئی۔ ایپ میں تصدیق کریں۔",
+        "en": "needs you to confirm a medicine in the app.",
+    },
+    "meeting": {
+        "roman": "ke baare mein meeting ki darkhwast aayi hai.",
+        "ur": "کے بارے میں میٹنگ کی درخواست آئی ہے۔",
+        "en": "a meeting was requested.",
+    },
+}

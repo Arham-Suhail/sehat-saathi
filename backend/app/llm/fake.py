@@ -17,6 +17,8 @@ CLINIC_LINES = ["Tab Panadol 500 mg 1+0+1 khane ke baad 5 din", "Tab Amlo?? 1+0+
 CLINIC = {
     "is_prescription": True,
     "page_lines": CLINIC_LINES,
+    "diagnosis_text": "Dx: Fever, HTN",
+    "diagnosis_confidence": 0.9,
     "medicines": [
         _line(
             CLINIC_LINES[0],

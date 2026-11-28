@@ -268,6 +268,22 @@
     "Abhi dastiyab nahi": [
       "Not available right now",
       "ابھی دستیاب نہیں"
+    ],
+    "Pehle dawai ki tasdeeq karein": [
+      "Please confirm the medicine first",
+      "پہلے دوا کی تصدیق کریں"
+    ],
+    "Meeting ka waqt aane wala hona chahiye": [
+      "Please choose a time in the future",
+      "میٹنگ کا وقت آنے والا ہونا چاہیے"
+    ],
+    "Meeting mein doctor ka hona zaroori hai": [
+      "A meeting needs a doctor in it",
+      "میٹنگ میں ڈاکٹر کا ہونا ضروری ہے"
+    ],
+    "Yeh meeting link qabool nahi": [
+      "Use a Google Meet, Zoom, WhatsApp, Teams or Jitsi link",
+      "یہ میٹنگ لنک قبول نہیں"
     ]
   },
   "patterns": [

@@ -1,12 +1,14 @@
 from datetime import UTC, datetime
 from typing import Any
 
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db import get_db
 from app.ids import parse_object_id
-from app.schemas import ConfirmIn, MedicineEditIn, MedicineOut
+from app.schemas import AskIn, ConfirmIn, MedicineEditIn, MedicineOut, ReviewIn
 from app.security import get_current_user, require_role, resolve_elder_access
+from app.services.care import raise_alert, resolve_alerts
 from app.services.frequency import ROUTE_LABEL, schedule_options
 from app.services.medplan import NeedTime, plan
 from app.services.reminders import create_reminders
@@ -49,7 +51,15 @@ def medicine_out(doc: dict) -> MedicineOut:
         "status",
         "created_at",
     )
+    review = doc.get("review") or {}
     return MedicineOut(
+        review_state=review.get("state") or "none",
+        review_reason=review.get("reason"),
+        on_hold=bool(review.get("hold")) and review.get("state") == "open",
+        reviewed_by=review.get("by_name"),
+        reviewed_role=review.get("by_role"),
+        review_note=review.get("note"),
+        reviewed_at=review.get("at"),
         id=str(doc["_id"]),
         **{k: _get(doc, k) for k in fields},
         route_kind=doc.get("route_kind") or "unknown",
@@ -80,7 +90,21 @@ async def confirm(
             detail="Har dawai ka kam az kam ek waqt set karein.",
         ) from None
     out: list[MedicineOut] = []
+    rx = await db.prescriptions.insert_one(
+        {
+            "elder_id": user["_id"],
+            "diagnosis_text": body.diagnosis_text or None,
+            "diagnosis_unclear": body.diagnosis_unclear,
+            "ask_family": body.ask_family,
+            "medicine_ids": [],
+            "created_at": now,
+        }
+    )
+    med_ids = []
     for m, pl in zip(body.medicines, plans, strict=True):
+        # Family / doctor check: the elder asked for it, or the line was unclear (pharmacist flag).
+        reason = "asked" if body.ask_family else ("unclear" if pl.needs_pharmacist else None)
+        hold = body.ask_family and pl.status == "confirmed"
         doc = {
             "elder_id": user["_id"],
             **m.model_dump(
@@ -107,15 +131,45 @@ async def confirm(
             "meal_timing": pl.meal_timing,
             "status": pl.status,
             "end_at": course_end(now, m.duration_days),
+            "prescription_id": rx.inserted_id,
+            "review": {"state": "open", "reason": reason, "hold": hold, "requested_at": now}
+            if reason
+            else None,
             "created_at": now,
             "updated_at": now,
         }
         res = await db.medicines.insert_one(doc)
         doc["_id"] = res.inserted_id
-        if pl.status == "confirmed" and pl.reminder_mode == "fixed":
+        med_ids.append(doc["_id"])
+        if pl.status == "confirmed" and pl.reminder_mode == "fixed" and not hold:
             await create_reminders(db, doc, start=now, now=now)
+        if reason and pl.status == "confirmed":
+            await _review_alert(db, doc, reason, body.diagnosis_text, now)
         out.append(medicine_out(doc))
+    await db.prescriptions.update_one({"_id": rx.inserted_id}, {"$set": {"medicine_ids": med_ids}})
     return out
+
+
+async def _review_alert(
+    db: Any, med: dict, reason: str, diagnosis: str | None, now: datetime, note=None
+) -> None:
+    await raise_alert(
+        db,
+        med["elder_id"],
+        "med_review",
+        {
+            "medicine_id": med["_id"],
+            "medicine_name": med.get("name") or "Dawai",
+            "dose": med.get("dose_text"),
+            "strength": med.get("strength_text"),
+            "original_text": med.get("original_text"),
+            "reason": reason,
+            "diagnosis": diagnosis,
+            "note": note,
+        },
+        dedupe_key=f"review:{med['_id']}:{ObjectId()}",
+        now=now,
+    )
 
 
 @router.get("", response_model=list[MedicineOut])
@@ -195,4 +249,88 @@ async def stop_medicine(
     await db.reminders.delete_many(
         {"elder_id": user["_id"], "medicine_id": mid, "status": "pending", "scheduled_at": {"$gt": now}}
     )
+    return medicine_out(doc)
+
+
+@router.post("/{medicine_id}/ask", response_model=MedicineOut)
+async def ask_family(
+    medicine_id: str, body: AskIn, user: dict = Depends(require_role("elder")), db: Any = Depends(get_db)
+) -> MedicineOut:
+    """Elder: "I don't understand this medicine, please check it." Alarms keep ringing as set; the
+    family / doctor get a review alert that repeats until one of them confirms the medicine."""
+    mid = parse_object_id(medicine_id)
+    med = await db.medicines.find_one({"_id": mid, "elder_id": user["_id"], "status": "confirmed"})
+    if not med:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
+    now = datetime.now(UTC)
+    prev = med.get("review") or {}
+    already_open = prev.get("state") == "open"
+    review = {"state": "open", "reason": "asked", "hold": bool(prev.get("hold")), "requested_at": now}
+    await db.medicines.update_one({"_id": mid}, {"$set": {"review": review, "updated_at": now}})
+    med["review"] = review
+    if not already_open:
+        await _review_alert(db, med, "asked", None, now, note=body.note)
+    return medicine_out(med)
+
+
+@router.post("/{medicine_id}/review", response_model=MedicineOut)
+async def review_medicine(
+    medicine_id: str,
+    body: ReviewIn,
+    elder_id: str = Query(..., max_length=24),
+    user: dict = Depends(require_role("family", "doctor")),
+    db: Any = Depends(get_db),
+) -> MedicineOut:
+    """A linked family member or doctor checks a medicine (optionally correcting its times, dose or
+    days). This is the one write a doctor may make: confirming what the elder could not. Alarms of an
+    on-hold medicine start now; future reminders move to corrected times; history is kept."""
+    target = resolve_elder_access(user, elder_id, "read")
+    mid = parse_object_id(medicine_id)
+    med = await db.medicines.find_one({"_id": mid, "elder_id": target, "status": "confirmed"})
+    if not med:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
+    fixed = med.get("reminder_mode", "fixed") == "fixed"
+    if body.timings is not None and not fixed:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=NOT_EDITABLE)
+    now = datetime.now(UTC)
+    timings = sorted(set(body.timings)) if body.timings is not None else med.get("timings") or []
+    if fixed and not timings:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Har dawai ka kam az kam ek waqt set karein.",
+        )
+    was_hold = bool((med.get("review") or {}).get("hold"))
+    changed = body.timings is not None and timings != (med.get("timings") or [])
+    created = med.get("created_at") or now
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=UTC)
+    update = {
+        "timings": timings,
+        "dose_text": body.dose_text if body.dose_text is not None else med.get("dose_text"),
+        "needs_pharmacist": False,
+        "review": {
+            "state": "done",
+            "reason": (med.get("review") or {}).get("reason"),
+            "hold": False,
+            "by_id": user["_id"],
+            "by_name": user["name"],
+            "by_role": user["role"],
+            "note": body.note,
+            "at": now,
+        },
+        "updated_at": now,
+    }
+    if body.duration_days is not None:
+        update["duration_days"] = body.duration_days
+        update["end_at"] = course_end(created, body.duration_days)
+    if changed:
+        update["frequency_label"] = None
+    await db.medicines.update_one({"_id": mid, "elder_id": target}, {"$set": update})
+    doc = {**med, **update}
+    if fixed and (changed or was_hold or body.duration_days is not None):
+        await db.reminders.delete_many(
+            {"elder_id": target, "medicine_id": mid, "status": "pending", "scheduled_at": {"$gt": now}}
+        )
+        await create_reminders(db, doc, start=now, now=now)
+    await resolve_alerts(db, {"kind": "med_review", "data.medicine_id": mid}, user, now)
     return medicine_out(doc)

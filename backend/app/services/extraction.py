@@ -214,4 +214,6 @@ async def extract_prescription(provider: LLMProvider, image_jpeg: bytes) -> Extr
         is_prescription=result.is_prescription and bool(drafts),
         medicines=drafts,
         needs_pharmacist=(not drafts) or any(d.needs_pharmacist for d in drafts),
+        diagnosis_text=result.diagnosis_text,
+        diagnosis_unclear=bool(result.diagnosis_text) and result.diagnosis_confidence < 0.7,
     )

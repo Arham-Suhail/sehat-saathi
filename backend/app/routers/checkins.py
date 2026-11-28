@@ -63,7 +63,7 @@ async def _store(db: Any, elder_id, channel: str, transcript: list[dict], result
 def _alert_if_concern(request: Request, background: BackgroundTasks, db: Any, doc: dict) -> None:
     # After the response is sent: a slow push service never delays the elder's check-in.
     if doc["concern_flag"]:
-        background.add_task(alert_carers_of_concern, db, request.app.state.push_sender, doc["elder_id"])
+        background.add_task(alert_carers_of_concern, db, request.app.state.push_sender, doc["elder_id"], doc)
 
 
 @router.post("/text", response_model=CheckinOut, status_code=status.HTTP_201_CREATED)

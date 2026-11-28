@@ -32,6 +32,9 @@ RULES (strict):
 - If something IS written but you cannot read it reliably, set that field to null and list it in
   illegible_fields. Keep any uncertain characters as written (e.g. 'Amlo??').
 - confidence is 0-1 per medicine. Use < 0.7 if anything about that item is unclear or handwritten poorly.
+- diagnosis_text: copy the diagnosis or complaint EXACTLY as written (after "Dx", "Diagnosis", "c/o",
+  "Imp", "Complaint"), or null if none is written. NEVER guess or add a diagnosis from the medicines.
+  diagnosis_confidence < 0.7 if it is written but hard to read.
 - If the image is not a prescription, set is_prescription=false and medicines=[].
 {INJECTION_GUARD}"""
 

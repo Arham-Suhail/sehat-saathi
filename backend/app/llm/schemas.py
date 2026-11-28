@@ -109,6 +109,12 @@ class ExtractionResult(_LLMModel):
         default_factory=list, description="Every medicine-related line on the page, verbatim"
     )
     medicines: Annotated[list[ExtractedMedicine], Field(max_length=15)] = Field(default_factory=list)
+    diagnosis_text: Short(300) = Field(
+        None, description="Diagnosis / complaint exactly as written (Dx, Diagnosis, c/o, Imp), else null"
+    )
+    diagnosis_confidence: Annotated[float, BeforeValidator(_confidence)] = Field(
+        1.0, description="0-1: how sure you are that the diagnosis was read correctly"
+    )
 
 
 def _mood(v: Any) -> str:

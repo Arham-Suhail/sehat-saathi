@@ -154,6 +154,8 @@ class ExtractOut(BaseModel):
     is_prescription: bool
     medicines: list[DraftMedicine]
     needs_pharmacist: bool
+    diagnosis_text: str | None = None
+    diagnosis_unclear: bool = False
     pharmacist_note: str = PHARMACIST_NOTE
     disclaimer: str = DISCLAIMER
 
@@ -185,6 +187,24 @@ class MedicineIn(Strict):
 
 class ConfirmIn(Strict):
     medicines: Annotated[list[MedicineIn], Field(min_length=1, max_length=15)]
+    # Diagnosis / complaint as written on the prescription (shown to family and doctor), if any.
+    diagnosis_text: OptText(300) = None
+    diagnosis_unclear: bool = False
+    # "I'm not sure, ask my family / doctor": save everything, but no alarms until a carer confirms.
+    ask_family: bool = False
+
+
+class ReviewIn(Strict):
+    """A linked family member or doctor confirms (and may correct) a medicine the elder was unsure of."""
+
+    timings: Annotated[list[HHMM], Field(min_length=1, max_length=6)] | None = None
+    dose_text: OptText(80) = None
+    duration_days: Annotated[int, Field(ge=1, le=365)] | None = None
+    note: OptText(300) = None
+
+
+class AskIn(Strict):
+    note: OptText(300) = None
 
 
 class MedicineEditIn(Strict):
@@ -222,6 +242,14 @@ class MedicineOut(BaseModel):
     edited_by_user: bool
     status: Literal["confirmed", "stopped"]
     created_at: datetime
+    # Family / doctor check: "open" = waiting for them; on_hold = no alarms until they confirm.
+    review_state: Literal["none", "open", "done"] = "none"
+    review_reason: str | None = None
+    on_hold: bool = False
+    reviewed_by: str | None = None
+    reviewed_role: str | None = None
+    review_note: str | None = None
+    reviewed_at: datetime | None = None
 
 
 # ---------- reminders ----------

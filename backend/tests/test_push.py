@@ -243,7 +243,7 @@ async def test_concern_checkin_alerts_linked_carers_only(pclient, papp, db):
     assert r.json()["concern_flag"] is True
     assert [e for e, _ in sender.sent] == [f"{FCM}-{linked['user']['id']}"]
     payload = sender.sent[0][1]
-    assert payload["type"] == "concern" and payload["url"] == f"/carer/elder/{elder['user']['id']}"
+    assert payload["type"] == "concern" and payload["url"] == "/carer/alerts"
     assert "dard" not in payload["body"]  # lock-screen text stays generic
 
     sender.sent.clear()

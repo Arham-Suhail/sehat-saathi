@@ -24,6 +24,13 @@ async def ensure_indexes(db: Any) -> None:
     await db.reminders.create_index([("elder_id", ASCENDING), ("scheduled_at", ASCENDING)])
     await db.checkins.create_index([("elder_id", ASCENDING), ("created_at", ASCENDING)])
     await db.vitals.create_index([("elder_id", ASCENDING), ("measured_at", ASCENDING)])
+    await db.alerts.create_index([("dedupe_key", ASCENDING)], unique=True)
+    await db.alerts.create_index(
+        [("elder_id", ASCENDING), ("resolved", ASCENDING), ("created_at", ASCENDING)]
+    )
+    await db.prescriptions.create_index([("elder_id", ASCENDING), ("created_at", ASCENDING)])
+    await db.meetings.create_index([("participant_ids", ASCENDING), ("starts_at", ASCENDING)])
+    await db.meetings.create_index([("elder_id", ASCENDING), ("starts_at", ASCENDING)])
     await db.login_throttle.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
     await db.push_subscriptions.create_index([("endpoint", ASCENDING)], unique=True)
     await db.push_subscriptions.create_index([("user_id", ASCENDING)])

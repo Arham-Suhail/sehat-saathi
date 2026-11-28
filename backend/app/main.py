@@ -24,11 +24,13 @@ from app.ratelimit import limiter
 from app.routers import (
     alternatives,
     auth,
+    care,
     checkins,
     dashboard,
     emergency,
     invites,
     medicines,
+    meetings,
     prescriptions,
     push,
     reminders,
@@ -75,9 +77,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
         # Don't block startup (Render health checks) on a slow/unreachable DB.
         index_task = asyncio.create_task(_indexes())
         # Dose alarms via Web Push (only when VAPID keys are configured; never in tests).
-        push_task = (
-            asyncio.create_task(push_loop(app)) if app.state.push_sender and settings.env != "test" else None
-        )
+        push_task = asyncio.create_task(push_loop(app)) if settings.env != "test" else None
         yield
         index_task.cancel()
         if push_task:
@@ -199,6 +199,8 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.include_router(push.router)
     app.include_router(emergency.router)
     app.include_router(vapi.router)
+    app.include_router(care.router)
+    app.include_router(meetings.router)
     return app
 
 
