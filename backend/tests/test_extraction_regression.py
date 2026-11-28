@@ -415,3 +415,14 @@ def test_quantity_in_text_never_takes_a_duration():
 
     assert quantity_in_text(ORDER_SHEET_LINES[CIPRO]) == "Disp: 14 tabs"
     assert quantity_in_text("Vancomycin 1,500 mg IV q12 hours x 3 days") is None
+
+
+async def test_upcoming_ahead_hours_window(client, order_app):
+    """The Android app asks for 7 days of reminders to schedule native alarms; the default stays 24h."""
+    e = await register(client, "elder")
+    await _extract_and_confirm(client, e["token"])
+    h = auth(e["token"])
+    day = (await client.get("/reminders/upcoming", headers=h)).json()
+    week = (await client.get("/reminders/upcoming?ahead_hours=168", headers=h)).json()
+    assert len(week) > len(day) >= 1
+    assert (await client.get("/reminders/upcoming?ahead_hours=999", headers=h)).status_code == 422

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db import get_db
 from app.ids import parse_object_id
@@ -36,9 +36,13 @@ async def _out(db: Any, docs: list[dict]) -> list[ReminderOut]:
 
 @router.get("/upcoming", response_model=list[ReminderOut])
 async def upcoming(
-    user: dict = Depends(require_role("elder")), db: Any = Depends(get_db)
+    ahead_hours: int = Query(24, ge=1, le=168),
+    user: dict = Depends(require_role("elder")),
+    db: Any = Depends(get_db),
 ) -> list[ReminderOut]:
-    """Reminders from 12h ago to 24h ahead (what the in-app reminder engine polls)."""
+    """Reminders from 12h ago to `ahead_hours` ahead (default 24h: what the in-app engine polls).
+    The Android app asks for up to 7 days so it can schedule native alarms that ring even if the
+    app isn't opened for a few days."""
     now = datetime.now(UTC)
     await top_up(db, user["_id"], now)
     await mark_missed(db, user["_id"], now)
@@ -48,11 +52,14 @@ async def upcoming(
             {
                 "elder_id": user["_id"],
                 "medicine_id": {"$nin": stopped},
-                "scheduled_at": {"$gte": now - timedelta(hours=12), "$lte": now + timedelta(hours=24)},
+                "scheduled_at": {
+                    "$gte": now - timedelta(hours=12),
+                    "$lte": now + timedelta(hours=ahead_hours),
+                },
             }
         )
         .sort("scheduled_at", 1)
-        .to_list(length=200)
+        .to_list(length=500)
     )
     return await _out(db, docs)
 
