@@ -12,6 +12,8 @@ import { useEmergencyContact, useProgress, useWater } from '../../hooks/useElder
 import CallChotuButton from '../../components/CallChotuButton';
 import VerifyEmailBanner from '../../components/VerifyEmailBanner';
 import { LangToggle } from '../../i18n/LangProvider';
+import ThemeToggle from '../../components/ThemeToggle';
+import { isAppMode } from '../../lib/appMode';
 import { st } from '../../i18n/server';
 import { getLang, t } from '../../i18n/useT';
 import { BADGES } from '../../lib/streaks';
@@ -186,6 +188,7 @@ export default function ElderHome() {
           {/* Top row: the live-call button and language switch sit in the top corner of the screen. */}
           <div className="flex items-center justify-end gap-2 rtl:justify-start">
             <CallChotuButton showLabel />
+            <ThemeToggle />
             <LangToggle />
           </div>
           <div className="flex items-center gap-3">
@@ -271,6 +274,13 @@ export default function ElderHome() {
           <p className="m-0 mt-1 text-[1.25rem] text-muted">{t('home.tip.note')}</p>
         </motion.section>
 
+        {/* App mode: "Everything", log out and delete live in the More tab instead. */}
+        {isAppMode() ? (
+          <motion.div variants={item}>
+            <Disclaimer />
+          </motion.div>
+        ) : (
+        <>
         <motion.nav variants={item} aria-labelledby="all-title">
           <h2 id="all-title" className="m-0 mb-3 text-[1.4rem] font-bold">
             {t('home.all')}
@@ -318,6 +328,8 @@ export default function ElderHome() {
             {t('delete.link')}
           </Link>
         </motion.div>
+        </>
+        )}
       </motion.main>
     </MotionConfig>
   );

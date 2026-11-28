@@ -427,5 +427,16 @@
   "app.welcome.chip.family": "گھر والے",
   "app.welcome.note": "چھوٹو ایک اے آئی مددگار ہے، ڈاکٹر نہیں۔",
   "theme.to_dark": "ڈارک موڈ پر جائیں",
-  "theme.to_light": "لائٹ موڈ پر جائیں"
+  "theme.to_light": "لائٹ موڈ پر جائیں",
+  "tab.nav": "مینو",
+  "tab.home": "ہوم",
+  "tab.meds": "دوائیں",
+  "tab.chotu": "چھوٹو",
+  "tab.progress": "کامیابیاں",
+  "tab.more": "مزید",
+  "more.section.tools": "سہولتیں",
+  "more.section.settings": "ترتیبات",
+  "more.section.account": "اکاؤنٹ",
+  "more.language": "زبان",
+  "more.theme": "روشن / گہرا"
 }

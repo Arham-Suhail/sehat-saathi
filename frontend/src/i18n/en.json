@@ -427,5 +427,16 @@
   "app.welcome.chip.family": "Family",
   "app.welcome.note": "Chotu is an AI helper, not a doctor.",
   "theme.to_dark": "Switch to dark mode",
-  "theme.to_light": "Switch to light mode"
+  "theme.to_light": "Switch to light mode",
+  "tab.nav": "Main menu",
+  "tab.home": "Home",
+  "tab.meds": "Medicines",
+  "tab.chotu": "Chotu",
+  "tab.progress": "Progress",
+  "tab.more": "More",
+  "more.section.tools": "Tools",
+  "more.section.settings": "Settings",
+  "more.section.account": "Account",
+  "more.language": "Language",
+  "more.theme": "Light / dark"
 }

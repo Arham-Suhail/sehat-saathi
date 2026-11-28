@@ -42,3 +42,97 @@ html.is-app :is(button, a, summary, label, [role='button'], .btn) {
   color: var(--accent);
   border: 2px solid var(--border);
 }
+
+/* ---------- Bottom tab bar (app mode, elder) ---------- */
+.app-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 0 12px calc(10px + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+.app-tabbar__list {
+  pointer-events: auto;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 6px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: end;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  box-shadow: var(--shadow-lg);
+}
+.app-tabbar__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 62px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.app-tabbar__item:active {
+  transform: scale(0.94);
+}
+.app-tabbar__item.active {
+  color: var(--accent);
+}
+.app-tabbar__pill {
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  border-radius: 18px;
+  background: var(--accent-soft);
+}
+.app-tabbar__icon {
+  display: inline-flex;
+}
+.app-tabbar__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.app-tabbar__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--accent);
+  padding-bottom: 6px;
+}
+.app-tabbar__chotu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin-top: -30px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 4px solid var(--bg);
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.15s ease;
+}
+.app-tabbar__chotu:active {
+  transform: scale(0.92);
+}
+html[lang='ur'] .app-tabbar__label {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+/* Room for the tab bar under the last card. */
+html.has-tabbar .page {
+  padding-bottom: calc(130px + env(safe-area-inset-bottom));
+}

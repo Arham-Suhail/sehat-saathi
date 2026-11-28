@@ -1,6 +1,7 @@
 import { MotionConfig, motion } from 'motion/react';
 import { createContext, useContext, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import AppTabBar from '../../components/AppTabBar';
 import ReminderAlert from '../../components/ReminderAlert';
 import { registerServiceWorker, useReminderEngine } from '../../hooks/useReminderEngine';
 
@@ -32,6 +33,7 @@ export default function ElderLayout() {
           <Outlet />
         </motion.div>
       </MotionConfig>
+      <AppTabBar />
       <ReminderAlert
         reminder={engine.due}
         onTaken={(id) => engine.act(id, 'taken')}
