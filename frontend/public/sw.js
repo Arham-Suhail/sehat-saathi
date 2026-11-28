@@ -27,7 +27,7 @@ self.addEventListener('push', (event) => {
         tag: String(data.tag || 'sehat-saathi').slice(0, 80),
         renotify: true,
         requireInteraction: data.type === 'reminder',
-        icon: '/favicon.svg',
+        icon: '/icons/icon-192.png',
         data: { url: safePath(data.url) },
       });
     })(),

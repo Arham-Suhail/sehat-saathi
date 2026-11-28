@@ -27,7 +27,7 @@ async function showNotification(title, body) {
   if (!notificationsSupported() || Notification.permission !== 'granted') return;
   try {
     const reg = await navigator.serviceWorker?.getRegistration();
-    const opts = { body, tag: 'sehat-saathi-dose', renotify: true, requireInteraction: true, icon: '/favicon.svg' };
+    const opts = { body, tag: 'sehat-saathi-dose', renotify: true, requireInteraction: true, icon: '/icons/icon-192.png' };
     if (reg) await reg.showNotification(title, opts);
     else new Notification(title, opts);
   } catch {
