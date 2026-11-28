@@ -1,7 +1,7 @@
 /* Light / dark theme. The user's choice is kept on this device (localStorage "ss_theme") and set as
    <html data-theme>. With no choice saved the app is light.
    Also keeps <meta name="theme-color"> in step, so the phone's status bar matches the app. */
-const KEY = 'ss_theme';
+const KEY = 'ss_theme_v2'; // v2 (Nov 28): everyone starts on the new light theme
 const BAR = { light: '#F3F2EE', dark: '#111514' };
 
 export function getThemeChoice() {

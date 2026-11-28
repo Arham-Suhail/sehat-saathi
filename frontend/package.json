@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test": "node --test src/i18n/translit.test.js src/hooks/vapiClass.test.js src/lib/streaks.test.js src/lib/water.test.js src/i18n/server.test.js src/i18n/toUrdu.test.js src/lib/days.test.js"
+    "test": "node --test src/i18n/translit.test.js src/hooks/vapiClass.test.js src/lib/streaks.test.js src/lib/water.test.js src/i18n/server.test.js src/i18n/toUrdu.test.js src/lib/days.test.js",
+    "build:android": "vite build --mode android && cap sync android"
   },
   "dependencies": {
     "@capacitor-community/speech-recognition": "7.0.1",

@@ -27,7 +27,7 @@ export async function setupNativeChrome() {
     const apply = async () => {
       const dark = effectiveTheme() === 'dark';
       await StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light });
-      await StatusBar.setBackgroundColor({ color: dark ? '#111514' : '#FBF6EC' }).catch(() => {});
+      await StatusBar.setBackgroundColor({ color: dark ? '#111514' : '#F3F2EE' }).catch(() => {});
     };
     await StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
     await apply();

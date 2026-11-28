@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import ChotuAgent from '../components/chotu/ChotuAgent';
 import ChotuBoundary from '../components/chotu/ChotuBoundary';
 import Icon from '../components/Icon';
-import ThemeToggle from '../components/ThemeToggle';
 import { LangToggle } from '../i18n/LangProvider';
 import { getLang, t } from '../i18n/useT';
 
@@ -66,8 +65,8 @@ export default function AppWelcome() {
         </div>
 
         <header className="flex items-center justify-between gap-3 pt-[max(env(safe-area-inset-top),1rem)]">
-          <ThemeToggle />
-          <p className="m-0 font-serif text-[1.5rem] font-semibold text-accent">{t('app.name')}</p>
+          <span className="w-12" aria-hidden="true" />
+          <p className="m-0 text-[1.35rem] font-bold tracking-[-0.02em] text-accent">{t('app.name')}</p>
           <LangToggle />
         </header>
 
@@ -123,7 +122,7 @@ export default function AppWelcome() {
                 transition={{ duration: 0.35, ease }}
                 aria-live="polite"
               >
-                <h1 className="m-0 font-serif text-[2rem] font-semibold leading-tight text-ink">{t(`app.welcome.${slide.key}.title`)}</h1>
+                <h1 className="m-0 text-[2rem] font-bold leading-tight tracking-[-0.03em] text-ink">{t(`app.welcome.${slide.key}.title`)}</h1>
                 <p className="m-0 mx-auto mt-2 max-w-[21rem] text-balance text-[1.2rem] leading-snug text-muted">
                   {t(`app.welcome.${slide.key}.text`)}
                 </p>

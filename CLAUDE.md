@@ -100,9 +100,10 @@
 - Smartwatch / wearable / Bluetooth device integration (vitals are manual entry only).
 - Pure Kotlin/Swift native rewrites. (Nov 28, user request: the Android app is now a NATIVE Capacitor app in
   `frontend/android/`: the React build is bundled inside the APK, not a Chrome tab. Native dose alarms (Local
-  Notifications, 7 days ahead, Taken/Snooze actions), native speech-to-text, status bar, haptics, hardware Back.
-  The app's local hostname is the Vercel host so API CORS needs no change. Build: `npm run build` with
-  VITE_API_URL, `npx cap sync android`, then `gradlew assembleDebug` with JDK 21. The older TWA project
+  Notifications, 7 days ahead, +15/+30 min follow-ups, Taken/Not taken actions; carers get repeating care
+  alerts until read), native speech-to-text, status bar, haptics, hardware Back.
+  The app's local hostname is the Vercel host so API CORS needs no change. Build: `npm run build:android`
+  (uses `.env.android` = live API; plain `npm run build` would bake in the local .env URL), then `gradlew assembleDebug` with JDK 21. The older TWA project
   `andriod-app/` and Bubblewrap config `android-twa/` are kept only for reference.)
 - OAuth, OTP. (Email verification + forgot-password codes via Brevo were moved INTO scope on Nov 27 at the user's request:
   6-digit codes, optional at runtime like Web Push. With email on, sign-up is CODE-FIRST: no account until the emailed
