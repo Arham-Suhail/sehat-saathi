@@ -28,6 +28,7 @@ from app.routers import (
     checkins,
     dashboard,
     emergency,
+    extras,
     invites,
     medicines,
     meetings,
@@ -201,6 +202,7 @@ def create_app(settings: Settings | None = None, db: Any = None) -> FastAPI:
     app.include_router(vapi.router)
     app.include_router(care.router)
     app.include_router(meetings.router)
+    app.include_router(extras.router)
     return app
 
 

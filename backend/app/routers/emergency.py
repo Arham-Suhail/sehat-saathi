@@ -20,7 +20,7 @@ def _digits_ok(phone: str) -> bool:
     return 7 <= len(re.sub(r"\D", "", phone)) <= 15
 
 
-@router.get("", response_model=EmergencyContactOut | None)
+@router.get("", response_model=EmergencyContactOut | None, response_model_exclude_none=True)
 async def get_contact(
     elder_id: str | None = Query(None, max_length=24),
     user: dict = Depends(get_current_user),
@@ -29,20 +29,24 @@ async def get_contact(
     target = resolve_elder_access(user, elder_id, "read")
     elder = await db.users.find_one({"_id": target, "role": "elder"}, {"emergency_contact": 1})
     c = (elder or {}).get("emergency_contact")
-    return EmergencyContactOut(name=c["name"], phone=c["phone"]) if c else None
+    if not c:
+        return None
+    return EmergencyContactOut(name=c["name"], phone=c["phone"], name2=c.get("name2"), phone2=c.get("phone2"))
 
 
-@router.put("", response_model=EmergencyContactOut)
+@router.put("", response_model=EmergencyContactOut, response_model_exclude_none=True)
 async def set_contact(
     body: EmergencyContactIn,
     user: dict = Depends(require_role("elder")),
     db: Any = Depends(get_db),
 ) -> EmergencyContactOut:
-    if not _digits_ok(body.phone):
+    if not _digits_ok(body.phone) or (body.phone2 and not _digits_ok(body.phone2)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Phone number theek nahi"
         )
     contact = {"name": body.name, "phone": body.phone}
+    if body.phone2:
+        contact |= {"name2": body.name2 or body.phone2, "phone2": body.phone2}
     await db.users.update_one({"_id": user["_id"]}, {"$set": {"emergency_contact": contact}})
     return EmergencyContactOut(**contact)
 

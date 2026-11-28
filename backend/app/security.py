@@ -94,7 +94,19 @@ async def get_current_user(
     # version they were issued with (JWTs can't be revoked otherwise). Old tokens without "ver" = 0.
     if int(payload.get("ver") or 0) != int(user.get("token_version") or 0):
         raise _UNAUTH
+    # Logout revokes this one token server-side (revoked_tokens, TTL = token expiry).
+    jti = payload.get("jti")
+    if jti and await db.revoked_tokens.find_one({"jti": jti}, {"_id": 1}):
+        raise _UNAUTH
     request.state.user_id = sub
+    request.state.token = payload
+    # "Last seen" for the family's elder card (written at most every 5 minutes).
+    now = datetime.now(UTC)
+    seen = user.get("last_seen_at")
+    if seen is not None and seen.tzinfo is None:
+        seen = seen.replace(tzinfo=UTC)
+    if seen is None or now - seen > timedelta(minutes=5):
+        await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_seen_at": now}})
     return user
 
 

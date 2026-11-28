@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.db import get_db
 from app.routers.checkins import checkin_out
+from app.routers.extras import log_view
 from app.routers.medicines import medicine_out
 from app.routers.vitals import vital_out
 from app.security import get_current_user, resolve_elder_access
@@ -33,6 +34,7 @@ async def dashboard(
 ) -> dict:
     target = resolve_elder_access(user, elder_id, "read")
     elder = await db.users.find_one({"_id": target, "role": "elder"})
+    await log_view(db, user, target)
     now = datetime.now(UTC)
     since = now - timedelta(days=days)
     await mark_missed(db, target, now)
@@ -107,7 +109,32 @@ async def dashboard(
             for p in rx
         ],
         "open_alerts": open_alerts,
+        "last_seen": _aware(elder["last_seen_at"]).isoformat()
+        if elder and elder.get("last_seen_at")
+        else None,
+        "week_compare": await _week_compare(db, target, discontinued, now),
     }
+
+
+async def _week_compare(db: Any, target: Any, discontinued: list, now: datetime) -> dict:
+    """Taken % of doses due this week (last 7 days) vs the 7 days before."""
+    rows = await db.reminders.find(
+        {
+            "elder_id": target,
+            "medicine_id": {"$nin": discontinued},
+            "scheduled_at": {"$gte": now - timedelta(days=14), "$lte": now},
+            "status": {"$ne": "pending"},
+        },
+        {"scheduled_at": 1, "status": 1},
+    ).to_list(length=3000)
+    cut = now - timedelta(days=7)
+    cur = [r for r in rows if _aware(r["scheduled_at"]) >= cut]
+    prev = [r for r in rows if _aware(r["scheduled_at"]) < cut]
+
+    def pct(xs: list) -> int | None:
+        return round(100 * sum(1 for r in xs if r["status"] == "taken") / len(xs)) if xs else None
+
+    return {"this_week": pct(cur), "last_week": pct(prev), "this_week_doses": len(cur)}
 
 
 ON_TIME = timedelta(minutes=30)

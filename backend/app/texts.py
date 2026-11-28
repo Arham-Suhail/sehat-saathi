@@ -79,6 +79,18 @@ PUSH_ALERT_TITLE: dict[str, dict[str, str]] = {
         "en": "Please check a medicine",
     },
     "meeting": {"roman": "Meeting ki darkhwast", "ur": "میٹنگ کی درخواست", "en": "Meeting request"},
+    "vitals": {"roman": "Reading check karein", "ur": "ریڈنگ دیکھیں", "en": "Please look at a reading"},
+    "low_mood": {
+        "roman": "Mood kuch dino se low",
+        "ur": "کچھ دنوں سے طبیعت اداس",
+        "en": "Low mood for a few days",
+    },
+    "inactive": {"roman": "Khairiyat maloom karein", "ur": "خیریت معلوم کریں", "en": "Please check on them"},
+    "refill": {
+        "roman": "Dawai khatam hone wali",
+        "ur": "دوا ختم ہونے والی ہے",
+        "en": "Medicine running out",
+    },
 }
 PUSH_ALERT_BODY: dict[str, dict[str, str]] = {
     "missed_dose": {
@@ -95,5 +107,25 @@ PUSH_ALERT_BODY: dict[str, dict[str, str]] = {
         "roman": "ke baare mein meeting ki darkhwast aayi hai.",
         "ur": "کے بارے میں میٹنگ کی درخواست آئی ہے۔",
         "en": "a meeting was requested.",
+    },
+    "vitals": {
+        "roman": "ki ek reading aam had se bahar hai. Doctor se baat karein.",
+        "ur": "کی ایک ریڈنگ عام حد سے باہر ہے۔ ڈاکٹر سے بات کریں۔",
+        "en": "a reading is outside the general range. Talk to their doctor.",
+    },
+    "low_mood": {
+        "roman": "teen din se udaas mehsoos kar rahe hain. Rabta karein.",
+        "ur": "تین دن سے اداس محسوس کر رہے ہیں۔ رابطہ کریں۔",
+        "en": "has felt low for three days. Please get in touch.",
+    },
+    "inactive": {
+        "roman": "ne 24 ghante se app istemal nahi ki. Khairiyat maloom karein.",
+        "ur": "نے 24 گھنٹے سے ایپ استعمال نہیں کی۔ خیریت معلوم کریں۔",
+        "en": "hasn't used the app for 24 hours. Please check on them.",
+    },
+    "refill": {
+        "roman": "ki ek dawai 3 din mein khatam ho jayegi.",
+        "ur": "کی ایک دوا 3 دن میں ختم ہو جائے گی۔",
+        "en": "a medicine will run out within 3 days.",
     },
 }

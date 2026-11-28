@@ -27,6 +27,7 @@ async def _out(db: Any, docs: list[dict]) -> list[ReminderOut]:
                 medicine_name=m.get("name", "Dawai"),
                 dose=m.get("dose_text") or m.get("dose"),
                 instructions=meal_label(m.get("meal_timing")) or m.get("instructions") or None,
+                meal_timing=m.get("meal_timing"),
                 scheduled_at=d["scheduled_at"],
                 status=d["status"],
                 acted_at=d.get("acted_at"),
@@ -81,6 +82,13 @@ async def act(
     )
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nahi mila")
+    prev = await db.reminders.find_one({"_id": rid}, {"_counted": 1})
+    if action == "taken" and not (prev or {}).get("_counted"):
+        # Refill tracking: one dose fewer left (counted once per reminder).
+        await db.reminders.update_one({"_id": rid}, {"$set": {"_counted": True}})
+        await db.medicines.update_one(
+            {"_id": doc["medicine_id"], "doses_left": {"$gt": 0}}, {"$inc": {"doses_left": -1}}
+        )
     if action == "skipped":
         await dose_alert(db, doc, "skipped", now)
     else:  # taken after all (e.g. marked late): the family no longer needs to chase this dose

@@ -1,5 +1,6 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 
@@ -9,6 +10,7 @@ from app.push import alert_carers_of_concern
 from app.ratelimit import LLM_LIMIT, limiter, llm_global, user_key
 from app.schemas import CheckinOut, CheckinTextIn, CheckinVoiceIn
 from app.security import get_current_user, require_role, resolve_elder_access
+from app.services.care import raise_alert
 from app.services.checkin import analyse
 from app.services.translit import to_roman
 from app.texts import GREETING, pick
@@ -21,6 +23,7 @@ def _display(text: str, lang: str) -> str:
 
 
 router = APIRouter(prefix="/checkins", tags=["checkins"])
+PK = ZoneInfo("Asia/Karachi")
 
 MAX_VOICE_CHARS = 6000
 
@@ -57,7 +60,27 @@ async def _store(db: Any, elder_id, channel: str, transcript: list[dict], result
     }
     res = await db.checkins.insert_one(doc)
     doc["_id"] = res.inserted_id
+    if doc["mood"] == "low":
+        await low_mood_check(db, elder_id, now)
     return doc
+
+
+async def low_mood_check(db: Any, elder_id, now: datetime) -> None:
+    """Three Karachi days in a row whose check-ins were all "low" -> one gentle carer alert."""
+    since = now - timedelta(days=3)
+    docs = await db.checkins.find(
+        {"elder_id": elder_id, "created_at": {"$gte": since}, "channel": {"$ne": "ok"}}
+    ).to_list(length=100)
+    by_day: dict[str, list[str]] = {}
+    for c in docs:
+        at = c["created_at"] if c["created_at"].tzinfo else c["created_at"].replace(tzinfo=UTC)
+        by_day.setdefault(at.astimezone(PK).date().isoformat(), []).append(c["mood"])
+    today = now.astimezone(PK).date()
+    days = [(today - timedelta(days=i)).isoformat() for i in range(3)]
+    if all(d in by_day and all(m == "low" for m in by_day[d]) for d in days):
+        await raise_alert(
+            db, elder_id, "low_mood", {"days": 3}, dedupe_key=f"low_mood:{elder_id}:{days[0]}", now=now
+        )
 
 
 def _alert_if_concern(request: Request, background: BackgroundTasks, db: Any, doc: dict) -> None:
@@ -112,6 +135,32 @@ async def voice_checkin(
     stored = [{"role": t["role"], "text": _display(t["text"], body.lang)} for t in kept]
     doc = await _store(db, user["_id"], "vapi", stored, result, body.vapi_call_id)
     _alert_if_concern(request, background, db, doc)
+    return checkin_out(doc)
+
+
+OK_REPLY = {
+    "roman": "Shukriya! Aap ki family ko pata chal gaya ke aap theek hain.",
+    "ur": "شکریہ! آپ کی فیملی کو پتہ چل گیا کہ آپ ٹھیک ہیں۔",
+    "en": "Thank you! Your family can see you're OK today.",
+}
+
+
+@router.post("/ok", response_model=CheckinOut, status_code=status.HTTP_201_CREATED)
+async def im_ok(
+    lang: str = Query("roman", pattern="^(roman|ur|en)$"),
+    user: dict = Depends(require_role("elder")),
+    db: Any = Depends(get_db),
+) -> CheckinOut:
+    """One-tap daily "I'm OK" (no AI): a good-mood check-in the family sees on the dashboard."""
+    result = {
+        "reply": pick(OK_REPLY, lang),
+        "wellness_tip": "",
+        "mood": "good",
+        "mood_score": 3,
+        "concern_flag": False,
+        "concern_reason": None,
+    }
+    doc = await _store(db, user["_id"], "ok", [{"role": "elder", "text": "Main theek hoon"}], result)
     return checkin_out(doc)
 
 

@@ -14,6 +14,7 @@ import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlsplit
+from zoneinfo import ZoneInfo
 
 import aiohttp
 from py_vapid import Vapid
@@ -34,13 +35,15 @@ from app.texts import (
 )
 
 log = logging.getLogger(__name__)
+PK = ZoneInfo("Asia/Karachi")
 
 PUSH_HOSTS = {"fcm.googleapis.com", "web.push.apple.com"}  # Chrome/Edge(Android)/Samsung; Safari
 PUSH_HOST_SUFFIXES = (".push.services.mozilla.com", ".notify.windows.com")  # Firefox; Edge (Windows)
 MAX_ENDPOINT = 1000
 DOSE_WINDOW = timedelta(minutes=10)  # catch-up after a restart; older doses are not pushed
 # Not marked yet? Ring again 15 and 30 minutes after the dose time (then the family is told at 60).
-FOLLOW_UPS = (timedelta(minutes=15), timedelta(minutes=30))
+# Not marked yet? Ring again every 5 minutes (3 times), then once more at 30 min.
+FOLLOW_UPS = (timedelta(minutes=5), timedelta(minutes=10), timedelta(minutes=15), timedelta(minutes=30))
 TICK_SECONDS = 60
 SEND_TIMEOUT = 10
 
@@ -134,7 +137,7 @@ async def due_reminders_tick(db: Any, sender: Any, now: datetime) -> None:
         )
         if claimed:
             await _push_dose(db, sender, r, again=False)
-    # Follow-ups: still pending (not taken / not taken) 15 and 30 minutes later.
+    # Follow-ups: still pending 5, 10, 15 and 30 minutes later.
     for n, delay in enumerate(FOLLOW_UPS, start=1):
         late = await db.reminders.find(
             {
@@ -277,13 +280,81 @@ async def alert_carers_of_concern(db: Any, sender: Any, elder_id: Any, checkin: 
     await notify_users(db, sender, [c["_id"] for c in carers], concern_payload)
 
 
+_last_hourly: dict = {"at": None}
+
+
+async def inactive_tick(db: Any, now: datetime) -> None:
+    """No dose marked, no check-in and no app use for 24 h -> "please check on them" (once a day).
+    Only for elders who have medicines (so a brand-new account is not flagged)."""
+    from app.services.care import raise_alert
+
+    day = now.astimezone(PK).date().isoformat()
+    cut = now - timedelta(hours=24)
+    elders = await db.users.find(
+        {"role": "elder", "created_at": {"$lt": cut}}, {"_id": 1, "last_seen_at": 1}
+    ).to_list(length=2000)
+    for e in elders:
+        seen = e.get("last_seen_at")
+        if seen is not None and (seen if seen.tzinfo else seen.replace(tzinfo=UTC)) >= cut:
+            continue
+        if not await db.medicines.find_one({"elder_id": e["_id"], "status": "confirmed"}, {"_id": 1}):
+            continue
+        if await db.reminders.find_one({"elder_id": e["_id"], "acted_at": {"$gte": cut}}, {"_id": 1}):
+            continue
+        if await db.checkins.find_one({"elder_id": e["_id"], "created_at": {"$gte": cut}}, {"_id": 1}):
+            continue
+        await raise_alert(
+            db, e["_id"], "inactive", {"hours": 24}, dedupe_key=f"inactive:{e['_id']}:{day}", now=now
+        )
+
+
+async def refill_tick(db: Any, now: datetime) -> None:
+    """A medicine whose doses left last 3 days or less -> one refill alert per stock update."""
+    from app.services.care import raise_alert
+
+    meds = await db.medicines.find(
+        {"status": "confirmed", "doses_left": {"$ne": None}, "refill_alerted": {"$ne": True}}
+    ).to_list(length=2000)
+    for m in meds:
+        per_day = len(m.get("timings") or [])
+        if not per_day or (m.get("doses_left") or 0) / per_day > 3:
+            continue
+        await raise_alert(
+            db,
+            m["elder_id"],
+            "refill",
+            {"medicine_id": m["_id"], "medicine_name": m.get("name"), "doses_left": m.get("doses_left")},
+            dedupe_key=f"refill:{m['_id']}:{_iso_key(m.get('stock_set_at'))}",
+            now=now,
+        )
+        await db.medicines.update_one({"_id": m["_id"]}, {"$set": {"refill_alerted": True}})
+
+
+def _iso_key(v: Any) -> str:
+    return v.isoformat() if isinstance(v, datetime) else "0"
+
+
+async def hourly_tick(db: Any, now: datetime) -> None:
+    last = _last_hourly["at"]
+    if last is not None and now - last < timedelta(hours=1):
+        return
+    _last_hourly["at"] = now
+    await inactive_tick(db, now)
+    await refill_tick(db, now)
+
+
 async def push_loop(app: Any) -> None:
     """Runs every minute even without Web Push keys: missed-dose marking raises the family's alerts
     (the apps read them from /alerts); pushing is skipped when there is no sender."""
     while True:
         now = datetime.now(UTC)
         db, sender = app.state.db, app.state.push_sender
-        for tick in (due_reminders_tick(db, sender, now), missed_tick(db, now), alerts_tick(db, sender, now)):
+        for tick in (
+            due_reminders_tick(db, sender, now),
+            missed_tick(db, now),
+            hourly_tick(db, now),
+            alerts_tick(db, sender, now),
+        ):
             try:
                 await tick
             except Exception as e:  # never let one bad tick stop the loop

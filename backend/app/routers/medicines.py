@@ -52,7 +52,15 @@ def medicine_out(doc: dict) -> MedicineOut:
         "created_at",
     )
     review = doc.get("review") or {}
+    left = doc.get("doses_left")
+    per_day = len(doc.get("timings") or []) if (doc.get("reminder_mode") or "fixed") == "fixed" else 0
     return MedicineOut(
+        doses_left=left,
+        days_left=round(left / per_day, 1) if left is not None and per_day else None,
+        notes=[
+            {"text": n["text"], "by_name": n.get("by_name"), "by_role": n.get("by_role"), "at": n["at"]}
+            for n in (doc.get("notes") or [])[-20:]
+        ],
         review_state=review.get("state") or "none",
         review_reason=review.get("reason"),
         on_hold=bool(review.get("hold")) and review.get("state") == "open",

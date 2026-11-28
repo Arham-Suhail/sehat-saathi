@@ -42,6 +42,11 @@ async def ensure_indexes(db: Any) -> None:
     await db.vapi_calls.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
     await db.vapi_tool_calls.create_index([("tool_call_id", ASCENDING)], unique=True)
     await db.vapi_tool_calls.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
+    await db.revoked_tokens.create_index([("jti", ASCENDING)], unique=True)
+    await db.revoked_tokens.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
+    await db.messages.create_index([("elder_id", ASCENDING), ("created_at", ASCENDING)])
+    await db.views.create_index([("elder_id", ASCENDING), ("at", ASCENDING)])
+    await db.views.create_index([("at", ASCENDING)], expireAfterSeconds=60 * 60 * 24 * 90)
 
 
 def get_db(request: Request) -> Any:

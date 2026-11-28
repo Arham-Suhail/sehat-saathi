@@ -6,10 +6,40 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.db import get_db
 from app.schemas import VitalIn, VitalOut
 from app.security import get_current_user, resolve_elder_access
+from app.services.care import raise_alert
 
 router = APIRouter(prefix="/vitals", tags=["vitals"])
 
-UNITS = {"bp": "mmHg", "sugar": "mg/dL", "heart_rate": "bpm"}
+UNITS = {
+    "bp": "mmHg",
+    "sugar": "mg/dL",
+    "heart_rate": "bpm",
+    "weight": "kg",
+    "spo2": "%",
+    "temperature": "°F",
+}
+RANGES = {"heart_rate": (20, 250), "weight": (10, 300), "spo2": (50, 100), "temperature": (90, 110)}
+
+
+def vital_flag(d: dict) -> str | None:
+    """A GENERAL GUIDE only (fixed bands set in code, not personal targets, never a diagnosis):
+    outside it the app says "talk to your doctor"."""
+    t = d["type"]
+    if t == "bp":
+        s, di = d.get("systolic") or 0, d.get("diastolic") or 0
+        if s >= 160 or di >= 100:
+            return "high"
+        if s < 90 or di < 60:
+            return "low"
+        return None
+    v = d.get("value")
+    if v is None:
+        return None
+    bands = {"sugar": (70, 250), "heart_rate": (50, 120), "spo2": (92, 101), "temperature": (95, 100.4)}
+    if t not in bands:
+        return None
+    lo, hi = bands[t]
+    return "low" if v < lo else "high" if v > hi else None
 
 
 def vital_out(d: dict) -> VitalOut:
@@ -23,6 +53,7 @@ def vital_out(d: dict) -> VitalOut:
         measured_at=d["measured_at"],
         entered_by_role=d.get("entered_by_role", "elder"),
         note=d.get("note"),
+        flag=vital_flag(d),
     )
 
 
@@ -42,6 +73,9 @@ async def add_vital(
             raise HTTPException(status_code=422, detail="Reading likhein")
         if body.type == "heart_rate" and not 20 <= body.value <= 250:
             raise HTTPException(status_code=422, detail="Dil ki dhadkan 20 aur 250 ke darmiyan honi chahiye")
+        lo, hi = RANGES.get(body.type, (10, 600))
+        if not lo <= body.value <= hi:
+            raise HTTPException(status_code=422, detail="Reading likhein")
     now = datetime.now(UTC)
     measured = body.measured_at or now
     if measured.tzinfo is None:
@@ -63,7 +97,22 @@ async def add_vital(
     }
     res = await db.vitals.insert_one(doc)
     doc["_id"] = res.inserted_id
+    flag = vital_flag(doc)
+    if flag:
+        await raise_alert(
+            db,
+            target,
+            "vitals",
+            {"vital_id": res.inserted_id, "type": body.type, "flag": flag, "value": _reading(doc)},
+            dedupe_key=f"vitals:{res.inserted_id}",
+        )
     return vital_out(doc)
+
+
+def _reading(d: dict) -> str:
+    if d["type"] == "bp":
+        return f"{d['systolic']}/{d['diastolic']} {d['unit']}"
+    return f"{d['value']:g} {d['unit']}"
 
 
 @router.get("", response_model=list[VitalOut])

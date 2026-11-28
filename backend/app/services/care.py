@@ -20,17 +20,43 @@ from typing import Any
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
-KINDS = ("concern", "missed_dose", "med_review", "meeting")
-SEVERITY = {"concern": "urgent", "med_review": "important", "missed_dose": "important", "meeting": "normal"}
+KINDS = ("concern", "missed_dose", "med_review", "meeting", "vitals", "low_mood", "inactive", "refill")
+# vitals    a reading outside a generic, code-set band ("general guide", never a diagnosis)
+# low_mood  three days in a row with a "low" mood check-in
+# inactive  no dose marked and no check-in for 24 hours (early warning: please check on them)
+# refill    a medicine's doses left will run out within 3 days
+SEVERITY = {
+    "concern": "urgent",
+    "med_review": "important",
+    "missed_dose": "important",
+    "meeting": "normal",
+    "vitals": "important",
+    "low_mood": "important",
+    "inactive": "important",
+    "refill": "normal",
+}
 REPEAT_EVERY = {
     "concern": timedelta(minutes=10),
     "med_review": timedelta(minutes=30),
     "missed_dose": timedelta(minutes=30),
     "meeting": timedelta(hours=6),
+    "vitals": timedelta(hours=1),
+    "low_mood": timedelta(hours=4),
+    "inactive": timedelta(hours=2),
+    "refill": timedelta(hours=12),
 }
-MAX_PUSHES = {"concern": 36, "med_review": 24, "missed_dose": 4, "meeting": 2}
+MAX_PUSHES = {
+    "concern": 36,
+    "med_review": 24,
+    "missed_dose": 4,
+    "meeting": 2,
+    "vitals": 6,
+    "low_mood": 3,
+    "inactive": 6,
+    "refill": 3,
+}
 # Read-only alerts: "mark as read" closes them for that carer. A review closes only when confirmed.
-ACKABLE = {"concern", "missed_dose", "meeting"}
+ACKABLE = {"concern", "missed_dose", "meeting", "vitals", "low_mood", "inactive", "refill"}
 
 
 async def raise_alert(

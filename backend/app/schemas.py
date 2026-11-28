@@ -250,6 +250,30 @@ class MedicineOut(BaseModel):
     reviewed_role: str | None = None
     review_note: str | None = None
     reviewed_at: datetime | None = None
+    # Refill tracking: doses left (set by elder / family), counted down by "taken" doses.
+    doses_left: int | None = None
+    days_left: float | None = None
+    # Side-effect / free-text notes from the elder or family (shown to the doctor; no AI).
+    notes: list[dict] = []
+
+
+class StockIn(Strict):
+    doses: Annotated[int, Field(ge=0, le=2000)]
+    elder_id: OptText(24) = None
+
+
+class NoteIn(Strict):
+    text: Text(300, 1)
+    elder_id: OptText(24) = None
+
+
+class MessageIn(Strict):
+    elder_id: Text(24, 24)
+    text: Text(300, 1)
+
+
+class FallIn(Strict):
+    answered: bool = False
 
 
 # ---------- reminders ----------
@@ -259,6 +283,7 @@ class ReminderOut(BaseModel):
     medicine_name: str
     dose: str | None
     instructions: str | None
+    meal_timing: str | None = None
     scheduled_at: datetime
     status: Literal["pending", "taken", "skipped", "missed"]
     acted_at: datetime | None
@@ -290,7 +315,7 @@ class CheckinVoiceIn(Strict):
 class CheckinOut(BaseModel):
     id: str
     created_at: datetime
-    channel: Literal["text", "speech", "vapi"]
+    channel: Literal["text", "speech", "vapi", "ok"]
     transcript: list[dict]
     reply: str
     wellness_tip: str
@@ -302,7 +327,7 @@ class CheckinOut(BaseModel):
 
 
 # ---------- vitals ----------
-VitalType = Literal["bp", "sugar", "heart_rate"]
+VitalType = Literal["bp", "sugar", "heart_rate", "weight", "spo2", "temperature"]
 
 
 # ---------- emergency contact (elder's "Madad" button) ----------
@@ -313,11 +338,16 @@ PHONE_PATTERN = r"^\+?[0-9][0-9 -]{5,18}[0-9]$"
 class EmergencyContactIn(Strict):
     name: Text(40, 1)
     phone: Annotated[str, StringConstraints(max_length=20, pattern=PHONE_PATTERN)]
+    # Second contact: offered when the first one doesn't answer (escalation).
+    name2: OptText(40) = None
+    phone2: Annotated[str, StringConstraints(max_length=20, pattern=PHONE_PATTERN)] | None = None
 
 
 class EmergencyContactOut(BaseModel):
     name: str
     phone: str
+    name2: str | None = None
+    phone2: str | None = None
 
 
 class VitalIn(Strict):
@@ -340,6 +370,8 @@ class VitalOut(BaseModel):
     measured_at: datetime
     entered_by_role: str
     note: str | None
+    # Generic band check set in code ("general guide"), never a diagnosis: "high" | "low" | None.
+    flag: str | None = None
 
 
 # ---------- invites ----------
