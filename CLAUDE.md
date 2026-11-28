@@ -99,7 +99,9 @@
 ## Out of scope — do NOT build
 - Smartwatch / wearable / Bluetooth device integration (vitals are manual entry only).
 - Native mobile app code. (An Android APK was moved INTO scope on Nov 28 at the user's request, as a Trusted Web
-  Activity around the live PWA, built with Bubblewrap from `android-twa/twa-manifest.json`. It has no native code, so
+  Activity around the live PWA: Android Studio project `andriod-app/` using Google's androidbrowserhelper (Bubblewrap
+  config in `android-twa/` is the alternative for Linux). Signed with the debug key; its SHA-256 is in
+  `frontend/public/.well-known/assetlinks.json` (rebuild on another machine = new key = update that file). No native code, so
   Web Push, Web Speech and Vapi behave exactly as in Chrome. Sideloaded; no Play Store.)
 - OAuth, OTP. (Email verification + forgot-password codes via Brevo were moved INTO scope on Nov 27 at the user's request:
   6-digit codes, optional at runtime like Web Push. With email on, sign-up is CODE-FIRST: no account until the emailed

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sehat Saathi palette (matches frontend/src/styles/theme.css) -->
+    <color name="brand_teal">#FF0E5B56</color>
+    <color name="brand_teal_dark">#FF0B4F4A</color>
+    <color name="brand_bg">#FFFBF6EC</color>
+    <color name="ic_launcher_background">#FF0E5B56</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

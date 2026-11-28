@@ -1,5 +1,8 @@
 # Sehat Saathi — Android APK (Trusted Web Activity)
 
+> The APK used for the demo is built in Android Studio from `../andriod-app/` (same TWA, via androidbrowserhelper).
+> This Bubblewrap config is the CLI alternative (e.g. on Linux).
+
 The APK is a thin Android shell (Trusted Web Activity) that opens the live PWA,
 https://sehat-saathi-delta.vercel.app, full screen in the phone's Chrome engine. There is
 no separate app code. Everything tested in Chrome keeps working: Web Push dose alarms

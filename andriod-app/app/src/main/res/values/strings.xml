@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Sehat Saathi</string>
+    <!-- Digital Asset Links: the app trusts the site; the site's /.well-known/assetlinks.json trusts the app.
+         When both match, Android hides the URL bar (full-screen Trusted Web Activity). -->
+    <string name="asset_statements" translatable="false">
+        [{
+            \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+            \"target\": {\"namespace\": \"web\", \"site\": \"https://sehat-saathi-delta.vercel.app\"}
+        }]
+    </string>
+</resources>

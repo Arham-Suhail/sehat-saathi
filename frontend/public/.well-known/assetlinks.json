@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sehatsathi.app",
+      "sha256_cert_fingerprints": [
+        "B1:F7:D6:EF:84:86:CE:55:D2:A5:42:1F:48:8A:AC:6C:FE:83:EB:AF:38:F8:75:24:E8:F3:42:B2:88:7B:46:65"
+      ]
+    }
+  }
+]
