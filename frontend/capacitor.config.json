@@ -12,11 +12,11 @@
   },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 700,
-      "launchAutoHide": true,
+      "launchAutoHide": false,
       "backgroundColor": "#F3F2EE",
       "showSpinner": false,
-      "androidScaleType": "CENTER_INSIDE"
+      "androidScaleType": "CENTER_INSIDE",
+      "launchShowDuration": 0
     },
     "LocalNotifications": {
       "smallIcon": "ic_stat_notify",

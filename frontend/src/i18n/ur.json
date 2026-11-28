@@ -621,5 +621,6 @@
   "native.care.meeting.title": "میٹنگ کی درخواست",
   "native.care.meeting.body": "{name} کے بارے میں میٹنگ کی درخواست آئی ہے۔",
   "native.meeting.title": "۱۵ منٹ میں میٹنگ",
-  "native.meeting.body": "{who} کے ساتھ آپ کی میٹنگ جلد شروع ہو رہی ہے۔"
+  "native.meeting.body": "{who} کے ساتھ آپ کی میٹنگ جلد شروع ہو رہی ہے۔",
+  "dose.save_failed": "محفوظ نہیں ہو سکا۔ دوبارہ دبائیں۔"
 }

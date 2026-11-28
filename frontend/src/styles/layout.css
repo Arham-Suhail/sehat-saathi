@@ -958,3 +958,7 @@
   font-weight: 650;
   letter-spacing: -0.01em;
 }
+/* App: the route wrapper (PageTransition) already animates; no second entrance on .page. */
+html.is-app .page {
+  animation: none;
+}

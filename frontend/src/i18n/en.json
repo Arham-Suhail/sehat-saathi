@@ -621,5 +621,6 @@
   "native.care.meeting.title": "Meeting request",
   "native.care.meeting.body": "A meeting about {name} was requested.",
   "native.meeting.title": "Meeting in 15 minutes",
-  "native.meeting.body": "Your meeting with {who} starts soon."
+  "native.meeting.body": "Your meeting with {who} starts soon.",
+  "dose.save_failed": "Could not save. Please tap again."
 }

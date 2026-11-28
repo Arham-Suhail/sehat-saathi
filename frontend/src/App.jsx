@@ -4,39 +4,54 @@ import { RequireRole } from './auth/AuthContext';
 import AccountSwitchedNotice from './components/AccountSwitchedNotice';
 import NativeBridge from './components/NativeBridge';
 import { ForgotPassword, Login, Register } from './pages/Auth';
-import VerifyEmail from './pages/VerifyEmail';
-import Landing from './pages/Landing';
 import AppWelcome from './pages/AppWelcome';
 import { isAppMode } from './lib/appMode';
 import { homeFor, useAuth } from './auth/AuthContext';
-import DeleteAccount from './pages/DeleteAccount';
-import CarerHome from './pages/carer/CarerHome';
 import CarerHomeApp from './pages/carer/CarerHomeApp';
 import CarerLayout from './pages/carer/CarerLayout';
-import Alerts from './pages/carer/Alerts';
-import CheckIn from './pages/elder/CheckIn';
-import ConfirmMeds from './pages/elder/ConfirmMeds';
 import ElderLayout from './pages/elder/ElderLayout';
-import AlternativesPage from './pages/elder/AlternativesPage';
-import Emergency from './pages/elder/Emergency';
 import ElderHome from './pages/elder/Home';
-import Invite from './pages/elder/Invite';
-import Progress from './pages/elder/Progress';
-import More from './pages/elder/More';
-import Reminders from './pages/elder/Reminders';
-import Upload from './pages/elder/Upload';
-import Vitals from './pages/elder/Vitals';
-import Meetings from './pages/Meetings';
-import { t } from './i18n/useT';
+import { PageSkeleton } from './components/ui';
 
+const Landing = lazy(() => import('./pages/Landing'));
+const CarerHome = lazy(() => import('./pages/carer/CarerHome'));
+const Alerts = lazy(() => import('./pages/carer/Alerts'));
+const CheckIn = lazy(() => import('./pages/elder/CheckIn'));
+const ConfirmMeds = lazy(() => import('./pages/elder/ConfirmMeds'));
+const AlternativesPage = lazy(() => import('./pages/elder/AlternativesPage'));
+const Emergency = lazy(() => import('./pages/elder/Emergency'));
+const Invite = lazy(() => import('./pages/elder/Invite'));
+const Progress = lazy(() => import('./pages/elder/Progress'));
+const More = lazy(() => import('./pages/elder/More'));
+const Reminders = lazy(() => import('./pages/elder/Reminders'));
+const Upload = lazy(() => import('./pages/elder/Upload'));
+const Vitals = lazy(() => import('./pages/elder/Vitals'));
+const Meetings = lazy(() => import('./pages/Meetings'));
+const DeleteAccount = lazy(() => import('./pages/DeleteAccount'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 // Charts (Recharts) only load for carers.
 const Dashboard = lazy(() => import('./pages/carer/Dashboard'));
+
+// Fetch the other screens' code while the phone is idle, so the first tap on a tab is instant.
+if (typeof window !== 'undefined') {
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 2500));
+  idle(() => {
+    import('./pages/elder/Reminders');
+    import('./pages/elder/CheckIn');
+    import('./pages/elder/Progress');
+    import('./pages/elder/More');
+    import('./pages/carer/Alerts');
+    import('./pages/Meetings');
+    import('./pages/elder/Upload');
+  });
+}
 
 export default function App() {
   return (
     <>
       <AccountSwitchedNotice />
       <NativeBridge />
+      <Suspense fallback={<PageSkeleton />}>
       <Routes>
         <Route path="/" element={<StartScreen />} />
         <Route path="/login" element={<Login />} />
@@ -87,11 +102,7 @@ export default function App() {
           <Route path="more" element={<More />} />
           <Route
             path="elder/:elderId"
-            element={
-              <Suspense fallback={<p className="page muted">{t('common.loading')}</p>}>
-                <Dashboard />
-              </Suspense>
-            }
+            element={<Dashboard />}
           />
         </Route>
         <Route
@@ -104,6 +115,7 @@ export default function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </>
   );
 }

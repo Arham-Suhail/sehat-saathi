@@ -1,3 +1,9 @@
+// Website-only display fonts (kept out of the app's first load).
+import '@fontsource/fraunces/400.css';
+import '@fontsource/fraunces/400-italic.css';
+import '@fontsource/fraunces/600.css';
+import '@fontsource/anton/400.css';
+import '@fontsource/yellowtail/400.css';
 import { MotionConfig, motion } from 'motion/react';
 import { Navigate } from 'react-router-dom';
 import { homeFor, useAuth } from '../auth/AuthContext';

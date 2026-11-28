@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { t } from '../i18n/useT';
 import { isAppMode } from '../lib/appMode';
+import { hapticSelect } from '../lib/native';
 import ChotuAgent from './chotu/ChotuAgent';
 import ChotuBoundary from './chotu/ChotuBoundary';
 import Icon from './Icon';
@@ -40,13 +41,7 @@ const CARER = [
   { to: '/carer/more', label: 'tab.more', icon: <MoreIcon /> },
 ];
 
-const buzz = () => {
-  try {
-    navigator.vibrate?.(8);
-  } catch {
-    /* not supported */
-  }
-};
+const buzz = () => hapticSelect();
 
 export function useTabBarVisible() {
   const { pathname } = useLocation();
@@ -79,7 +74,7 @@ export default function AppTabBar({ badge = 0 }) {
             </li>
           ) : (
             <li key={tab.to}>
-              <NavLink to={tab.to} end onClick={buzz} className="app-tabbar__item">
+              <NavLink to={tab.to} end onClick={buzz} className="app-tabbar__item pressable">
                 {({ isActive }) => (
                   <>
                     {isActive ? (

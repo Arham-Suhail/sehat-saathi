@@ -5,11 +5,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { st } from '../i18n/server';
 import { t } from '../i18n/useT';
-import { haptic } from '../lib/native';
+import { hapticTap } from '../lib/native';
+import { spring as springs } from '../lib/motion';
 import Icon from './Icon';
 import { ErrorText, fmtTime } from './ui';
 
-const spring = { type: 'spring', stiffness: 500, damping: 30 };
+const spring = springs.press;
 
 export default function DoseCard({ reminder, onAct, label, className = '' }) {
   const [busy, setBusy] = useState(null);
@@ -19,7 +20,7 @@ export default function DoseCard({ reminder, onAct, label, className = '' }) {
   const run = async (action) => {
     setBusy(action);
     setErr(null);
-    haptic();
+    if (action !== 'taken') hapticTap(); // Taken gets the success haptic + chime from the engine
     try {
       await onAct(reminder.id, action);
     } catch (e) {

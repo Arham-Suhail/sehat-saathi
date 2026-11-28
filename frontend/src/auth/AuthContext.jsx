@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { TOKEN_KEY, api, getToken, setToken, setUnauthorizedHandler } from '../api/client';
 import { disablePushForLogout } from '../hooks/usePush';
 import { cancelAllAlarms } from '../lib/nativeAlarms';
+import { clearCaches, readUser, writeUser } from '../lib/cache';
 
 const AuthContext = createContext(null);
 
@@ -14,12 +15,20 @@ export function homeFor(role) {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [ready, setReady] = useState(false);
+  // Draw the app at once from the last known session (Render may be asleep for ~50 s); /me then
+  // re-checks it in the background and a 401 clears it.
+  const cached = getToken() ? readUser() : null;
+  const [user, setUserState] = useState(cached);
+  const [ready, setReady] = useState(!!cached);
+  const setUser = useCallback((u) => {
+    writeUser(u);
+    setUserState(u);
+  }, []);
 
   const clearSession = useCallback(() => {
     setToken(null);
-    setUser(null);
+    clearCaches();
+    setUserState(null);
   }, []);
 
   // Explicit logout also stops this browser's push alerts and, in the Android app, every native dose
@@ -41,7 +50,7 @@ export function AuthProvider({ children }) {
         /* 401 handled by logout; network errors keep token for retry */
       })
       .finally(() => setReady(true));
-  }, [clearSession]);
+  }, [clearSession, setUser]);
 
   // The login token is shared by every tab of this browser. If another tab logs in (as anyone) or
   // logs out, this tab would keep showing the old account while its requests already use the new
@@ -62,11 +71,15 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const finish = useCallback((data) => {
-    setToken(data.access_token);
-    setUser(data.user);
-    return data.user;
-  }, []);
+  const finish = useCallback(
+    (data) => {
+      clearCaches(); // a different account may have used this phone
+      setToken(data.access_token);
+      setUser(data.user);
+      return data.user;
+    },
+    [setUser],
+  );
 
   const login = useCallback(
     async (email, password) =>
@@ -90,7 +103,7 @@ export function AuthProvider({ children }) {
     [finish],
   );
 
-  const refresh = useCallback(async () => setUser(await api('/me')), []);
+  const refresh = useCallback(async () => setUser(await api('/me')), [setUser]);
 
   const value = useMemo(
     () => ({ user, ready, login, register, registerStart, registerVerify, logout, refresh }),

@@ -106,3 +106,38 @@ export function fmtHHMM(hhmm) {
   const d = new Date(Date.UTC(2000, 0, 1, h, m));
   return urduPeriod(new Intl.DateTimeFormat(locale(), { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' }).format(d));
 }
+
+/** Shimmering placeholder blocks (never a blank screen or a bare spinner). */
+export function Skeleton({ className = '', style }) {
+  return <div aria-hidden="true" className={`skeleton ${className}`} style={style} />;
+}
+
+export function SkeletonList({ rows = 3, height = 84 }) {
+  return (
+    <div className="flex flex-col gap-3" role="status" aria-label={t('common.loading')}>
+      {Array.from({ length: rows }, (_, i) => (
+        <Skeleton key={i} style={{ height }} />
+      ))}
+    </div>
+  );
+}
+
+export function PageSkeleton() {
+  return (
+    <main className="page flex flex-col gap-4" role="status" aria-label={t('common.loading')}>
+      <Skeleton style={{ height: 40, width: '60%' }} />
+      <Skeleton style={{ height: 180 }} />
+      <SkeletonList rows={3} />
+    </main>
+  );
+}
+
+/** Small toast at the bottom (aria-live), e.g. "Could not save, try again". */
+export function Toast({ text, tone = 'danger' }) {
+  if (!text) return null;
+  return (
+    <div role="status" aria-live="polite" className={`ss-toast ss-toast--${tone}`}>
+      {text}
+    </div>
+  );
+}

@@ -515,3 +515,55 @@ label.ios-row {
   border-radius: 16px;
   padding: 0 12px;
 }
+
+.ss-toast {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(var(--sab) + 104px);
+  z-index: 80;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-lg);
+  animation: ss-toast-in var(--dur-base) var(--ease-out) both;
+}
+.ss-toast--danger {
+  background: var(--danger);
+  color: #fff;
+}
+.ss-toast--ok {
+  background: var(--text);
+  color: var(--bg);
+}
+@keyframes ss-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+/* Gentle pulse around a due dose ("heartbeat" guide). transform/opacity only. */
+.dose-pulse {
+  position: relative;
+}
+.dose-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 30px;
+  border: 3px solid var(--accent);
+  opacity: 0;
+  animation: ss-pulse 2.4s var(--ease-out) infinite;
+  pointer-events: none;
+}
+@keyframes ss-pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
