@@ -43,6 +43,61 @@ const TILES = [
   { to: '/elder/alternatives', key: 'alternatives', icon: 'swap', tint: 'bg-accent-soft text-accent' },
 ];
 
+
+/* Today's doses as a ring (taken / all) with one small chip per dose: the first thing an elder or a
+   carer wants to know. Statuses come from the reminder engine (same data as the Medicines tab). */
+function TodayRing({ reminders }) {
+  const today = reminders.filter((r) => dayOffset(r.scheduled_at) === 0);
+  if (!today.length) return null;
+  const taken = today.filter((r) => r.status === 'taken').length;
+  const r = 34;
+  const c = 2 * Math.PI * r;
+  const pct = taken / today.length;
+  const mark = { taken: '✓', skipped: '–', missed: '✕', pending: '' };
+  const tone = {
+    taken: 'bg-success-bg text-success',
+    skipped: 'bg-surface-alt text-muted',
+    missed: 'bg-danger-bg text-danger',
+    pending: 'bg-accent-soft text-accent',
+  };
+  return (
+    <section aria-labelledby="today-title" className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-4 shadow-soft">
+      <svg viewBox="0 0 84 84" width="84" height="84" className="shrink-0" role="img" aria-label={t('home.today.ring', { done: taken, all: today.length })}>
+        <circle cx="42" cy="42" r={r} fill="none" stroke="var(--surface-alt)" strokeWidth="9" />
+        <circle
+          cx="42"
+          cy="42"
+          r={r}
+          fill="none"
+          stroke="var(--success)"
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - pct)}
+          transform="rotate(-90 42 42)"
+          style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+        />
+        <text x="42" y="49" textAnchor="middle" style={{ fill: 'var(--text)', fontSize: 20, fontWeight: 700 }}>
+          {taken}/{today.length}
+        </text>
+      </svg>
+      <div className="min-w-0 flex-1">
+        <h2 id="today-title" className="m-0 text-[1.25rem] font-bold">
+          {t('home.today.title')}
+        </h2>
+        <p className="m-0 text-[1.05rem] text-muted">{t('home.today.ring', { done: taken, all: today.length })}</p>
+        <ul className="m-0 mt-2 flex list-none flex-wrap gap-1.5 p-0">
+          {today.map((x) => (
+            <li key={x.id} className={`rounded-full px-2.5 py-0.5 text-[0.95rem] font-bold [font-variant-numeric:tabular-nums] ${tone[x.status] || tone.pending}`}>
+              {mark[x.status]} {fmtTime(x.scheduled_at)}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 function dayOfYear(d = new Date()) {
   return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86_400_000);
 }
@@ -248,6 +303,10 @@ export default function ElderHome() {
             <Icon name="chevron" size={20} className="rtl:-scale-x-100" />
           </Link>
         </motion.section>
+
+        <motion.div variants={item}>
+          <TodayRing reminders={reminders} />
+        </motion.div>
 
         {water.nudge ? (
           <motion.p

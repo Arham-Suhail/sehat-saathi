@@ -2,7 +2,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import CallChotuButton from './CallChotuButton';
 import ThemeToggle from './ThemeToggle';
-import { ELDER_TABS } from './AppTabBar';
+import { TAB_ROOTS } from './AppTabBar';
 import { isAppMode } from '../lib/appMode';
 import { LangToggle } from '../i18n/LangProvider';
 import { getLang, t } from '../i18n/useT';
@@ -60,7 +60,7 @@ export function TopBar({ title, back: backTo, right }) {
   const { pathname } = useLocation();
   const elder = pathname.startsWith('/elder');
   // App mode: the four tab screens are top level (the tab bar is the navigation), so no Back button.
-  const back = isAppMode() && ELDER_TABS.includes(pathname.replace(/\/$/, '')) ? null : backTo;
+  const back = isAppMode() && TAB_ROOTS.includes(pathname.replace(/\/$/, '')) ? null : backTo;
   return (
     <header className="topbar">
       {back ? (

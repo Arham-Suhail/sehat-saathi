@@ -13,6 +13,8 @@ import { karachiToday, progressFrom } from '../../lib/streaks';
 import { st } from '../../i18n/server';
 import { toUrdu } from '../../i18n/toUrdu';
 import { t } from '../../i18n/useT';
+import Segmented from '../../components/Segmented';
+import { isAppMode } from '../../lib/appMode';
 
 // Cards fade up once as they scroll into view (Stage B); off with reduced motion via MotionConfig.
 const reveal = {
@@ -93,6 +95,7 @@ export default function Dashboard() {
   const [err, setErr] = useState(null);
   const [showVitalsForm, setShowVitalsForm] = useState(false);
   const [contact, setContact] = useState(null);
+  const [seg, setSeg] = useState('overview');
 
   useEffect(() => {
     api(`/emergency-contact?elder_id=${encodeURIComponent(elderId)}`)
@@ -129,6 +132,10 @@ export default function Dashboard() {
 
   const tot = d.adherence_totals;
   const streak = progressFrom(d, karachiToday()).streak;
+  // App mode: one section at a time under a segmented control (no long scroll). Website: everything.
+  const app = isAppMode();
+  const show = (s) => !app || seg === s;
+  const last = d.checkins[0];
   return (
     <MotionConfig reducedMotion="user">
       <main className="page page--wide stack">
@@ -141,8 +148,46 @@ export default function Dashboard() {
             </BigButton>
           }
         />
-        <h1>{t('dash.heading', { name: d.elder.name, days: d.days })}</h1>
+        {app ? (
+          <>
+            <section className="relative overflow-hidden rounded-[28px] bg-accent p-5 text-accent-text shadow-lift">
+              <span aria-hidden="true" className="absolute -right-12 -top-12 h-44 w-44 rounded-full" style={{ background: 'radial-gradient(closest-side, var(--glow-gold), transparent)' }} />
+              <p className="m-0 text-[1.05rem] font-bold opacity-90">{t('dash.days_label', { days: d.days })}</p>
+              <h1 className="m-0 mt-1 text-[1.9rem] leading-tight">{d.elder.name}</h1>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {last ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-[1.05rem] font-bold text-accent">
+                    {MOOD_EMOJI[last.mood]} {t(`mood.${last.mood}`)} · {fmtDay(last.created_at)}
+                  </span>
+                ) : null}
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-[1.05rem] font-bold text-accent">
+                  ✓ {tot.adherence_pct == null ? '—' : `${tot.adherence_pct}%`} {t('carerapp.on_time')}
+                </span>
+                {d.concerns ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-danger-bg px-3 py-1 text-[1.05rem] font-bold text-danger">
+                    ⚠ {d.concerns}
+                  </span>
+                ) : null}
+              </div>
+            </section>
+            <Segmented
+              id="dash"
+              label={t('dash.sections')}
+              value={seg}
+              onChange={setSeg}
+              options={[
+                ['overview', t('dash.seg.overview')],
+                ['meds', t('dash.seg.meds')],
+                ['checkins', t('dash.seg.checkins')],
+                ['vitals', t('dash.seg.vitals')],
+              ]}
+            />
+          </>
+        ) : (
+          <h1>{t('dash.heading', { name: d.elder.name, days: d.days })}</h1>
+        )}
 
+        {show('overview') ? (
         <motion.div {...reveal} className="grid gap-4 sm:grid-cols-2">
           <div className="flex items-center gap-4 rounded-3xl bg-gold-soft p-5">
             <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gold text-ink">
@@ -179,8 +224,10 @@ export default function Dashboard() {
             </div>
           )}
         </motion.div>
+        ) : null}
 
         <div className="dash-grid">
+          {show('overview') ? (
           <motion.section {...reveal} className="card" aria-labelledby="sum-h">
             <h2 id="sum-h">{t('dash.summary')}</h2>
             <div className="stat-ring">
@@ -202,21 +249,36 @@ export default function Dashboard() {
               <p className="muted">{t('dash.no_concerns')}</p>
             )}
           </motion.section>
+          ) : null}
+
+          {show('overview') ? (
 
           <motion.section {...reveal} className="card" aria-labelledby="mood-h">
             <h2 id="mood-h">{t('chart.mood')}</h2>
             <MoodChart series={d.mood_series} />
           </motion.section>
 
+          ) : null}
+
+          {show('meds') ? (
+
           <motion.section {...reveal} className="card" aria-labelledby="adh-h">
             <h2 id="adh-h">{t('dash.adherence')}</h2>
             <AdherenceBars series={d.adherence} totals={tot} />
           </motion.section>
 
+          ) : null}
+
+          {show('checkins') ? (
+
           <motion.section {...reveal} className="card span-all" aria-labelledby="tl-h">
             <h2 id="tl-h">{t('dash.timeline')}</h2>
             <Timeline checkins={d.checkins} />
           </motion.section>
+
+          ) : null}
+
+          {show('meds') ? (
 
           <motion.section {...reveal} className="card stack" aria-labelledby="meds-h">
             <h2 id="meds-h">{t('dash.medicines')}</h2>
@@ -249,6 +311,10 @@ export default function Dashboard() {
             <Disclaimer />
           </motion.section>
 
+          ) : null}
+
+          {show('vitals') ? (
+
           <motion.section {...reveal} className="card stack" aria-labelledby="vit-h">
             <h2 id="vit-h">{t('dash.vitals')}</h2>
             {d.can_add_vitals ? (
@@ -262,6 +328,8 @@ export default function Dashboard() {
             ) : null}
             <VitalsList vitals={d.vitals} />
           </motion.section>
+
+          ) : null}
         </div>
       </main>
     </MotionConfig>

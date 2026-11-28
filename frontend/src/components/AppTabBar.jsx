@@ -7,10 +7,12 @@ import ChotuAgent from './chotu/ChotuAgent';
 import ChotuBoundary from './chotu/ChotuBoundary';
 import Icon from './Icon';
 
-/* App-mode bottom navigation for elders (Android app / installed PWA only; the website keeps its
-   own navigation). Shown on the four tab screens; deeper screens (upload, confirm ...) keep their
-   Back button and hide the bar. The middle button opens the check-in with Chotu. */
+/* App-mode bottom navigation (Android app / installed PWA only; the website keeps its own navigation).
+   Elders: Home, Medicines, Chotu (raised middle button -> check-in), Progress, More.
+   Family / doctor: Home, Alerts, More. Shown on the tab screens only; deeper screens keep Back. */
 export const ELDER_TABS = ['/elder', '/elder/reminders', '/elder/progress', '/elder/more'];
+export const CARER_TABS = ['/carer', '/carer/alerts', '/carer/more'];
+export const TAB_ROOTS = [...ELDER_TABS, ...CARER_TABS];
 
 const HomeIcon = () => (
   <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -24,12 +26,17 @@ const MoreIcon = () => (
   </svg>
 );
 
-const TABS = [
+const ELDER = [
   { to: '/elder', label: 'tab.home', icon: <HomeIcon /> },
   { to: '/elder/reminders', label: 'tab.meds', icon: <Icon name="pill" size={26} /> },
   { to: '/elder/checkin', label: 'tab.chotu', center: true },
   { to: '/elder/progress', label: 'tab.progress', icon: <Icon name="trophy" size={26} /> },
   { to: '/elder/more', label: 'tab.more', icon: <MoreIcon /> },
+];
+const CARER = [
+  { to: '/carer', label: 'tab.home', icon: <HomeIcon /> },
+  { to: '/carer/alerts', label: 'tab.alerts', icon: <Icon name="bell" size={26} /> },
+  { to: '/carer/more', label: 'tab.more', icon: <MoreIcon /> },
 ];
 
 const buzz = () => {
@@ -42,11 +49,14 @@ const buzz = () => {
 
 export function useTabBarVisible() {
   const { pathname } = useLocation();
-  return isAppMode() && ELDER_TABS.includes(pathname.replace(/\/$/, '') || '/');
+  return isAppMode() && TAB_ROOTS.includes(pathname.replace(/\/$/, '') || '/');
 }
 
-export default function AppTabBar() {
+export default function AppTabBar({ badge = 0 }) {
   const visible = useTabBarVisible();
+  const { pathname } = useLocation();
+  const carer = pathname.startsWith('/carer');
+  const tabs = carer ? CARER : ELDER;
   useEffect(() => {
     document.documentElement.classList.toggle('has-tabbar', visible);
     return () => document.documentElement.classList.remove('has-tabbar');
@@ -55,8 +65,8 @@ export default function AppTabBar() {
 
   return (
     <nav aria-label={t('tab.nav')} className="app-tabbar">
-      <ul className="app-tabbar__list">
-        {TABS.map((tab) =>
+      <ul className={`app-tabbar__list${carer ? ' app-tabbar__list--3' : ''}`}>
+        {tabs.map((tab) =>
           tab.center ? (
             <li key={tab.to} className="app-tabbar__center">
               <NavLink to={tab.to} onClick={buzz} aria-label={t(tab.label)} className="app-tabbar__chotu">
@@ -74,7 +84,10 @@ export default function AppTabBar() {
                     {isActive ? (
                       <motion.span layoutId="tab-pill" className="app-tabbar__pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />
                     ) : null}
-                    <span className="app-tabbar__icon">{tab.icon}</span>
+                    <span className="app-tabbar__icon">
+                      {tab.icon}
+                      {tab.to === '/carer/alerts' && badge > 0 ? <span className="app-tabbar__badge">{badge > 9 ? '9+' : badge}</span> : null}
+                    </span>
                     <span className="app-tabbar__label">{t(tab.label)}</span>
                   </>
                 )}

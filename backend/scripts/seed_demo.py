@@ -152,6 +152,8 @@ async def main(reset: bool) -> None:
                 if at < now - timedelta(hours=1):
                     roll = rng.random()
                     status = "taken" if roll < 0.8 else ("skipped" if roll < 0.88 else "missed")
+                    if d >= 8:  # the last 5 days are all on time, so the demo shows a real streak
+                        status = "taken"
                     acted = at + timedelta(minutes=rng.randint(2, 40)) if status != "missed" else None
                 else:
                     status, acted = "pending", None

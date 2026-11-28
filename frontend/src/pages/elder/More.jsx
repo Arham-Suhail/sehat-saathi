@@ -4,11 +4,12 @@ import { useAuth } from '../../auth/AuthContext';
 import Icon from '../../components/Icon';
 import ThemeToggle from '../../components/ThemeToggle';
 import { Disclaimer } from '../../components/ui';
+import { usePush } from '../../hooks/usePush';
 import { LangToggle } from '../../i18n/LangProvider';
 import { t } from '../../i18n/useT';
 
-/* "More" tab (app mode): everything that is not one of the four main tabs, as a native-style
-   settings list. Every row is a 64px target. */
+/* "More" tab (app mode), for elders and for family / doctors: profile, tools (elders), settings
+   (language, light/dark, urgent alerts for carers) and account, as a native-style list. 64px rows. */
 const TOOLS = [
   { to: '/elder/upload', key: 'home.upload', icon: 'camera', tint: 'bg-accent-soft text-accent' },
   { to: '/elder/vitals', key: 'home.vitals', icon: 'heart', tint: 'bg-danger-bg text-danger' },
@@ -30,6 +31,8 @@ function Row({ children }) {
 
 export default function More() {
   const { user, logout } = useAuth();
+  const elder = user?.role === 'elder';
+  const push = usePush();
   const initial = (user?.name || '?').trim().charAt(0).toUpperCase();
   return (
     <MotionConfig reducedMotion="user">
@@ -39,11 +42,17 @@ export default function More() {
             {initial}
           </span>
           <div className="min-w-0">
+            {elder ? null : (
+              <p className="m-0 mb-1 inline-flex rounded-full bg-surface px-3 py-0.5 text-[1rem] font-bold text-accent">
+                {t(user?.role === 'doctor' ? 'auth.role.doctor' : 'auth.role.family')}
+              </p>
+            )}
             <h1 className="m-0 truncate text-[1.6rem] leading-tight">{user?.name}</h1>
             <p className="m-0 truncate text-[1.05rem] opacity-90">{user?.email}</p>
           </div>
         </motion.header>
 
+        {elder ? (
         <section aria-labelledby="more-tools">
           <h2 id="more-tools" className="m-0 mb-2 px-1 text-[1.1rem] font-bold uppercase tracking-wide text-muted">{t('more.section.tools')}</h2>
           <motion.ul variants={list} className="m-0 list-none overflow-hidden rounded-3xl border border-line bg-surface p-0 shadow-soft">
@@ -60,6 +69,7 @@ export default function More() {
             ))}
           </motion.ul>
         </section>
+        ) : null}
 
         <section aria-labelledby="more-settings">
           <h2 id="more-settings" className="m-0 mb-2 px-1 text-[1.1rem] font-bold uppercase tracking-wide text-muted">{t('more.section.settings')}</h2>
@@ -76,6 +86,22 @@ export default function More() {
                 <ThemeToggle />
               </div>
             </Row>
+            {!elder && ['on', 'off', 'denied'].includes(push.state) ? (
+              <Row>
+                <div className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-2">
+                  <span className="flex-1 text-[1.25rem] font-bold">{t('more.alerts')}</span>
+                  {push.state === 'on' ? (
+                    <span className="rounded-full bg-success-bg px-3 py-1 text-[1.05rem] font-bold text-success">{t('more.alerts.on')}</span>
+                  ) : push.state === 'denied' ? (
+                    <span className="text-[1.05rem] text-muted">{t('push.denied')}</span>
+                  ) : (
+                    <button type="button" onClick={push.enable} className="min-h-12 rounded-full border-0 bg-accent px-4 text-[1.1rem] font-bold text-accent-text">
+                      {t('more.alerts.turn_on')}
+                    </button>
+                  )}
+                </div>
+              </Row>
+            ) : null}
           </motion.ul>
         </section>
 

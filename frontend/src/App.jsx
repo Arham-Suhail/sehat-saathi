@@ -10,6 +10,9 @@ import { isAppMode } from './lib/appMode';
 import { homeFor, useAuth } from './auth/AuthContext';
 import DeleteAccount from './pages/DeleteAccount';
 import CarerHome from './pages/carer/CarerHome';
+import CarerHomeApp from './pages/carer/CarerHomeApp';
+import CarerLayout from './pages/carer/CarerLayout';
+import Alerts from './pages/carer/Alerts';
 import CheckIn from './pages/elder/CheckIn';
 import ConfirmMeds from './pages/elder/ConfirmMeds';
 import ElderLayout from './pages/elder/ElderLayout';
@@ -70,20 +73,22 @@ export default function App() {
           path="/carer"
           element={
             <RequireRole roles={['family', 'doctor']}>
-              <CarerHome />
+              <CarerLayout />
             </RequireRole>
           }
-        />
-        <Route
-          path="/carer/elder/:elderId"
-          element={
-            <RequireRole roles={['family', 'doctor']}>
+        >
+          <Route index element={isAppMode() ? <CarerHomeApp /> : <CarerHome />} />
+          <Route path="alerts" element={<Alerts />} />
+          <Route path="more" element={<More />} />
+          <Route
+            path="elder/:elderId"
+            element={
               <Suspense fallback={<p className="page muted">{t('common.loading')}</p>}>
                 <Dashboard />
               </Suspense>
-            </RequireRole>
-          }
-        />
+            }
+          />
+        </Route>
         <Route
           path="/account/delete"
           element={
