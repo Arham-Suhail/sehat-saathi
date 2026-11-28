@@ -5,6 +5,9 @@ import AccountSwitchedNotice from './components/AccountSwitchedNotice';
 import { ForgotPassword, Login, Register } from './pages/Auth';
 import VerifyEmail from './pages/VerifyEmail';
 import Landing from './pages/Landing';
+import AppWelcome from './pages/AppWelcome';
+import { isAppMode } from './lib/appMode';
+import { homeFor, useAuth } from './auth/AuthContext';
 import DeleteAccount from './pages/DeleteAccount';
 import CarerHome from './pages/carer/CarerHome';
 import CheckIn from './pages/elder/CheckIn';
@@ -28,7 +31,7 @@ export default function App() {
     <>
       <AccountSwitchedNotice />
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<StartScreen />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot" element={<ForgotPassword />} />
@@ -91,4 +94,12 @@ export default function App() {
       </Routes>
     </>
   );
+}
+
+/** "/" : the app gets a one-screen welcome; the website keeps its scrolling landing page. */
+function StartScreen() {
+  const { user, ready } = useAuth();
+  if (!isAppMode()) return <Landing />;
+  if (ready && user) return <Navigate to={homeFor(user.role)} replace />;
+  return <AppWelcome />;
 }

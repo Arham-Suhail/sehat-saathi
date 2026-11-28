@@ -421,5 +421,11 @@
   "day.tomorrow": "کل",
   "rem.status.upcoming": "آنے والی",
   "home.call.label": "آواز میں بات",
-  "home.checkin.label": "آج کا حال چال"
+  "home.checkin.label": "آج کا حال چال",
+  "app.welcome.chip.reminders": "یاد دہانی",
+  "app.welcome.chip.checkin": "روز کا حال چال",
+  "app.welcome.chip.family": "گھر والے",
+  "app.welcome.note": "چھوٹو ایک اے آئی مددگار ہے، ڈاکٹر نہیں۔",
+  "theme.to_dark": "ڈارک موڈ پر جائیں",
+  "theme.to_light": "لائٹ موڈ پر جائیں"
 }

@@ -16,8 +16,13 @@ import App from './App';
 import { AuthProvider } from './auth/AuthContext';
 import { LangProvider } from './i18n/LangProvider';
 import { applyLang, getLang } from './i18n/useT';
+import { applyAppMode } from './lib/appMode';
+import { applyTheme, watchSystemTheme } from './lib/theme';
 
 applyLang(getLang()); // set <html lang dir> before the first paint
+applyTheme(); // light / dark, before the first paint (no flash)
+watchSystemTheme();
+applyAppMode(); // html.is-app inside the Android app / installed PWA
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

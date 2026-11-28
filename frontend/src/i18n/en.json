@@ -421,5 +421,11 @@
   "day.tomorrow": "Tomorrow",
   "rem.status.upcoming": "Upcoming",
   "home.call.label": "Voice call",
-  "home.checkin.label": "Daily check-in"
+  "home.checkin.label": "Daily check-in",
+  "app.welcome.chip.reminders": "Reminders",
+  "app.welcome.chip.checkin": "Daily check-in",
+  "app.welcome.chip.family": "Family",
+  "app.welcome.note": "Chotu is an AI helper, not a doctor.",
+  "theme.to_dark": "Switch to dark mode",
+  "theme.to_light": "Switch to light mode"
 }

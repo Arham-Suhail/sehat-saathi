@@ -15,6 +15,7 @@
    Glow colours are decoration only (never text).
    ============================================================ */
 :root {
+  color-scheme: light;
   --bg: #fbf6ec;
   --surface: #ffffff;
   --surface-alt: #f4ecdd;
@@ -45,13 +46,13 @@
   --glass-border: rgb(255 255 255 / 0.75);
   --dot: rgb(31 27 22 / 0.09);
 
-  /* Chotu (mascot): pastel iridescent ghost, from the user's reference images. Decoration only. */
-  --chotu-body: #f6f7f2;
-  --chotu-green: #8fdfb0;
-  --chotu-blue: #93c6ea;
-  --chotu-pink: #f0b6cf;
-  --chotu-yellow: #f2e58a;
-  --chotu-eye: #141414;
+  /* Chotu (mascot): a medicine capsule in the brand colours. Decoration only. */
+  --chotu-cap: #0e5b56;
+  --chotu-shell: #fbf6ec;
+  --chotu-line: #1f1b16;
+  --chotu-eye: #1f1b16;
+  --chotu-plus: #e3a93c;
+  --chotu-cheek: #f3a6a0;
   --chotu-shadow: rgb(31 27 22 / 0.14);
   --chotu-ring: rgb(14 91 86 / 0.35);
 
@@ -66,4 +67,82 @@
   --radius-sm: 10px;
   --shadow: 0 1px 2px rgb(31 27 22 / 0.06), 0 4px 14px rgb(31 27 22 / 0.06);
   --shadow-lg: 0 2px 6px rgb(31 27 22 / 0.06), 0 18px 40px rgb(31 27 22 / 0.10);
+}
+
+/* ============================================================
+   DARK MODE. Chosen with the toggle (html[data-theme]) or, with no choice saved, by the phone's
+   setting. Contrast (computed): text on bg 15.8, muted on surface 9.1, accent on surface 7.9,
+   accent-text on accent 8.2, success / danger on surface 9.5 / 8.1, warning text on its bg 10.3.
+   ============================================================ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #111514;
+  --surface: #1a201f;
+  --surface-alt: #222a28;
+  --text: #f3ede2;
+  --text-muted: #c9bfae;
+  --accent: #5cc4b8;
+  --accent-text: #0a1f1d;
+  --accent-soft: #173835;
+  --success: #7bd897;
+  --success-bg: #14301f;
+  --warning-text: #ffd27a;
+  --warning-bg: #33270a;
+  --warning-border: #c98a00;
+  --danger: #ff9b91;
+  --danger-bg: #3a1715;
+  --border: #36403d;
+  --focus: #8fe0d6;
+  --overlay: rgb(0 0 0 / 0.62);
+  --gold-soft: #3a2f17;
+  --gold-text: #f0c46a;
+  --glow-gold: rgb(227 169 60 / 0.16);
+  --glow-teal: rgb(92 196 184 / 0.14);
+  --glow-peach: rgb(240 150 110 / 0.12);
+  --glass: rgb(26 32 31 / 0.72);
+  --glass-border: rgb(255 255 255 / 0.08);
+  --dot: rgb(255 255 255 / 0.06);
+  --chotu-shell: #f3ede2;
+  --chotu-line: #f3ede2;
+  --chotu-shadow: rgb(0 0 0 / 0.4);
+  --chotu-ring: rgb(92 196 184 / 0.4);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.35), 0 18px 40px rgb(0 0 0 / 0.45);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #111514;
+    --surface: #1a201f;
+    --surface-alt: #222a28;
+    --text: #f3ede2;
+    --text-muted: #c9bfae;
+    --accent: #5cc4b8;
+    --accent-text: #0a1f1d;
+    --accent-soft: #173835;
+    --success: #7bd897;
+    --success-bg: #14301f;
+    --warning-text: #ffd27a;
+    --warning-bg: #33270a;
+    --warning-border: #c98a00;
+    --danger: #ff9b91;
+    --danger-bg: #3a1715;
+    --border: #36403d;
+    --focus: #8fe0d6;
+    --overlay: rgb(0 0 0 / 0.62);
+    --gold-soft: #3a2f17;
+    --gold-text: #f0c46a;
+    --glow-gold: rgb(227 169 60 / 0.16);
+    --glow-teal: rgb(92 196 184 / 0.14);
+    --glow-peach: rgb(240 150 110 / 0.12);
+    --glass: rgb(26 32 31 / 0.72);
+    --glass-border: rgb(255 255 255 / 0.08);
+    --dot: rgb(255 255 255 / 0.06);
+    --chotu-shell: #f3ede2;
+    --chotu-line: #f3ede2;
+    --chotu-shadow: rgb(0 0 0 / 0.4);
+    --chotu-ring: rgb(92 196 184 / 0.4);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.35), 0 18px 40px rgb(0 0 0 / 0.45);
+  }
 }

@@ -1,0 +1,44 @@
+/* App mode (html.is-app): native-app feel inside the Android app / installed PWA.
+   No browser bounce, no grey tap flash, no accidental text selection on controls. */
+html.is-app,
+html.is-app body {
+  overscroll-behavior: none;
+}
+html.is-app body {
+  -webkit-tap-highlight-color: transparent;
+}
+html.is-app :is(button, a, summary, label, [role='button'], .btn) {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Big app buttons (welcome screen and app screens). 60px tall: easy for older thumbs. */
+.app-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 60px;
+  padding: 0 1.25rem;
+  border-radius: 18px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+.app-btn:active {
+  transform: scale(0.97);
+}
+.app-btn--primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-lg);
+}
+.app-btn--secondary {
+  background: var(--surface);
+  color: var(--accent);
+  border: 2px solid var(--border);
+}
