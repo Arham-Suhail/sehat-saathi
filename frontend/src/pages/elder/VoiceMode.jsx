@@ -31,6 +31,7 @@ export default function VoiceMode() {
   return (
     <main className="page flex min-h-[80dvh] flex-col gap-6">
       <TopBar back="/elder" title={t('home.voice')} />
+      <h1 className="m-0">{t('home.voice')}</h1>
       <div className="flex flex-col items-center gap-6 text-center">
       <ChotuBoundary>
         <ChotuAgent size={200} state="speaking" />

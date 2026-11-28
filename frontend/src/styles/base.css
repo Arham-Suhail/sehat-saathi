@@ -200,3 +200,14 @@ html[lang='ur'][data-textsize='xl'] {
     animation: none;
   }
 }
+
+/* Text never spills out of its box: a word that can't fit (long medicine name, big text size,
+   narrow phone) breaks inside the word instead of running off the card. Times and numbers that
+   must stay whole use .nowrap. */
+body {
+  overflow-wrap: anywhere;
+}
+.nowrap {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}

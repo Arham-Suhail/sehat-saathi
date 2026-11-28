@@ -161,7 +161,7 @@ export default function ElderHome() {
               </h2>
               {next ? (
                 <>
-                  <p className="m-0 mt-2 text-[2.3rem] font-bold leading-none tracking-[-0.03em] [font-variant-numeric:tabular-nums]">
+                  <p className="nowrap m-0 mt-2 text-[2.3rem] font-bold leading-none tracking-[-0.03em] [font-variant-numeric:tabular-nums]">
                     {dayOffset(next.scheduled_at) === 1 ? <span className="me-2 text-[1.2rem] font-semibold text-accent">{t('day.tomorrow')}</span> : null}
                     {fmtTime(next.scheduled_at)}
                   </p>

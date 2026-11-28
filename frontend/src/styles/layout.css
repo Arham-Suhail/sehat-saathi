@@ -987,3 +987,9 @@ html[lang='ur'] .line-clamp-2 {
   -webkit-line-clamp: 3;
   line-clamp: 3;
 }
+
+/* Big text / Urdu: the top bar keeps Back + language only; the page heading shows the title. */
+html[data-textsize] .topbar__title,
+html[lang='ur'] .topbar__title {
+  display: none;
+}

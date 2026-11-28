@@ -38,7 +38,7 @@ export default function DoseCard({ reminder, onAct, label, className = '' }) {
         </span>
         {label || t('dose.now')}
       </p>
-      <p className="m-0 mt-3 text-[2.6rem] font-bold leading-none tracking-[-0.03em] [font-variant-numeric:tabular-nums]">
+      <p className="nowrap m-0 mt-3 text-[2.6rem] font-bold leading-none tracking-[-0.03em] [font-variant-numeric:tabular-nums]">
         {fmtTime(reminder.scheduled_at)}
       </p>
       <h2 id={`dose-${reminder.id}`} className="m-0 mt-2 text-[1.6rem] font-bold leading-tight" dir="auto">
